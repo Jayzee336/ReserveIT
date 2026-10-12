@@ -159,33 +159,72 @@ php artisan config:clear
 
 A new local database starts without the accounts from another developer's computer. Register a regular user through the application if registration is enabled.
 
-The supported role names used by the application include:
+The role names used by the application include:
 
 - `user` — regular user
 - `facility_admin` — facility administrator
 - `super_admin` — super administrator
 
-Admin accounts may require authorized provisioning by an existing administrator or a trusted developer using Laravel Tinker. Do not assume that cloning the repository creates admin accounts automatically.
+Cloning the repository and running migrations does **not** automatically create accounts. The examples below are for a local development database only. Create administrator accounts only when you are authorized to do so, and never use these examples to grant privileges on a production system.
 
-For local-only testing, you can create a user through Tinker after migrations have completed:
+### Create test accounts with Laravel Tinker
+
+First, make sure your migrations have completed, then open Tinker:
 
 ```bat
 php artisan tinker
 ```
 
-Then enter the following PHP, changing the name, email, and password to values intended only for your local test database:
+Run **one snippet at a time**. Change the example names, email addresses, and passwords as needed for your local test database.
+
+**1. Regular user**
 
 ```php
-\App\Models\User::create([
+$user = \App\Models\User::create([
     'name' => 'Local Test User',
     'email' => 'local-user@example.test',
     'password' => \Illuminate\Support\Facades\Hash::make('CHANGE-THIS-LOCAL-TEST-PASSWORD'),
     'role' => 'user',
-    'email_verified_at' => now(),
+    'is_active' => true,
+    'must_change_password' => false,
 ]);
+
+$user->forceFill(['email_verified_at' => now()])->save();
 ```
 
-Type `exit` to leave Tinker. Do not use this example password on a public deployment, and do not commit real credentials or real user data. For admin-role testing, use an authorized local development process and follow the application's required account status and password-change fields.
+**2. Facility administrator**
+
+```php
+$admin = \App\Models\User::create([
+    'name' => 'Local Facility Admin',
+    'email' => 'local-facility-admin@example.test',
+    'password' => \Illuminate\Support\Facades\Hash::make('CHANGE-THIS-LOCAL-TEST-PASSWORD'),
+    'role' => 'facility_admin',
+    'is_active' => true,
+    'must_change_password' => false,
+]);
+
+$admin->forceFill(['email_verified_at' => now()])->save();
+```
+
+A facility administrator may also need to be assigned to one or more facilities in the application's facility-admin assignment interface before they can manage those facilities.
+
+**3. Super administrator**
+
+```php
+$admin = \App\Models\User::create([
+    'name' => 'Local Super Admin',
+    'email' => 'local-super-admin@example.test',
+    'password' => \Illuminate\Support\Facades\Hash::make('CHANGE-THIS-LOCAL-TEST-PASSWORD'),
+    'role' => 'super_admin',
+    'is_active' => true,
+    'must_change_password' => false,
+]);
+
+$admin->forceFill(['email_verified_at' => now()])->save();
+```
+
+Type `exit` to leave Tinker. Use unique email addresses for each account. The sample password is a placeholder—replace it with a strong password for local testing, and never use it on a public deployment. Do not commit credentials or real user data to GitHub. These snippets create accounts in **your local database only**; they do not create accounts for other people who clone the repository.
 
 ## Useful commands
 
