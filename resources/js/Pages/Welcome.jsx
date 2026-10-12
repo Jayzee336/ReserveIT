@@ -313,11 +313,22 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                                     : 'md:flex-1 flex-none h-20 md:h-auto opacity-80 hover:opacity-100'
                                             }`}
                                         >
+                                            
+
                                             <img
-                                                src={facility.image || facility.image_url || 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1000'}
-                                                alt={facility.name || facility.title}
+                                                src={
+                                                    facility.image ||
+                                                    facility.image_url ||
+                                                    '/images/facility-placeholder.svg'
+                                                }
+                                                alt={facility.name || facility.title || 'Campus facility'}
+                                                onError={(e) => {
+                                                    e.currentTarget.onerror = null;
+                                                    e.currentTarget.src = '/images/facility-placeholder.svg';
+                                                }}
                                                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 scale-105"
                                             />
+
                                             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
 
                                             {!isActive && (

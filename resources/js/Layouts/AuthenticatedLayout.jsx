@@ -141,10 +141,26 @@ export default function AuthenticatedLayout({ header, action, children }) {
     const [ticketAppealDate, setTicketAppealDate] = useState('');
     const [ticketCategory, setTicketCategory] = useState('');
     const [ticketDetailedInfo, setTicketDetailedInfo] = useState('');
+    const [ticketFormError, setTicketFormError] = useState('');
     const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
+    const TICKET_DESCRIPTION_MAX_LENGTH = 1000;
 
     const submitTicket = (e) => {
         e.preventDefault();
+
+        const trimmedDescription = ticketDetailedInfo.trim();
+
+        if (!trimmedDescription) {
+            setTicketFormError('Please enter details about your concern.');
+            return;
+        }
+
+        if (trimmedDescription.length > TICKET_DESCRIPTION_MAX_LENGTH) {
+            setTicketFormError(`Your ticket description must be ${TICKET_DESCRIPTION_MAX_LENGTH} characters or fewer.`);
+            return;
+        }
+
+        setTicketFormError('');
         setIsSubmittingTicket(true);
 
         router.post(
@@ -162,6 +178,13 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     setTicketAppealDate('');
                     setTicketCategory('');
                     setTicketDetailedInfo('');
+                    setTicketFormError('');
+                },
+                onError: (errors) => {
+                    const descriptionError = errors.detailed_info || errors.message;
+                    if (descriptionError) {
+                        setTicketFormError(descriptionError);
+                    }
                 },
                 onFinish: () => setIsSubmittingTicket(false),
             },
@@ -236,26 +259,46 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             </>
                         )}
 
-                        {isFacilityAdmin && (
-                            <>
-                                <NavLink
-                                    href={route('facilitator.bookings.index')}
-                                    active={route().current('facilitator.bookings.index')}
-                                    icon={ClipboardCheck}
-                                    collapsed={collapsed}
-                                >
-                                    Booking Approvals
-                                </NavLink>
-                                <NavLink
-                                    href={route('facilitator.managed-facilities.index')}
-                                    active={route().current('facilitator.managed-facilities.index')}
-                                    icon={Building2}
-                                    collapsed={collapsed}
-                                >
-                                    Managed Facilities
-                                </NavLink>
-                            </>
-                        )}
+                        
+{isFacilityAdmin && (
+    <>
+        <NavLink
+            href={route('facilitator.bookings.index')}
+            active={route().current('facilitator.bookings.index')}
+            icon={ClipboardCheck}
+            collapsed={collapsed}
+        >
+            Booking Approvals
+        </NavLink>
+
+        <NavLink
+            href={route('facilitator.managed-facilities.index')}
+            active={route().current('facilitator.managed-facilities.index')}
+            icon={Building2}
+            collapsed={collapsed}
+        >
+            Managed Facilities
+        </NavLink>
+
+        <NavLink
+            href={route('bookings.index')}
+            active={route().current('bookings.index')}
+            icon={CalendarCheck}
+            collapsed={collapsed}
+        >
+            My Bookings
+        </NavLink>
+
+        <NavLink
+            href={route('concerns.my-tickets')}
+            active={route().current('concerns.my-tickets')}
+            icon={Ticket}
+            collapsed={collapsed}
+        >
+            My Tickets
+        </NavLink>
+    </>
+)}
 
                         {isSuperAdmin && (
                             <>
@@ -536,12 +579,36 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 <label className="mb-1 block text-sm font-medium text-gray-700">Detailed Information</label>
                                 <textarea
                                     value={ticketDetailedInfo}
-                                    onChange={(e) => setTicketDetailedInfo(e.target.value)}
+                                    onChange={(e) => {
+                                        const nextValue = e.target.value;
+                                        if (nextValue.length <= TICKET_DESCRIPTION_MAX_LENGTH) {
+                                            setTicketDetailedInfo(nextValue);
+                                            setTicketFormError('');
+                                        }
+                                    }}
                                     rows={5}
+                                    maxLength={TICKET_DESCRIPTION_MAX_LENGTH}
+                                    aria-describedby="ticket-description-counter ticket-description-error"
+                                    aria-invalid={Boolean(ticketFormError)}
                                     className="block w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                                     placeholder="Describe the issue or feedback in detail…"
                                     required
                                 />
+                                <div className="mt-1 flex items-start justify-between gap-3">
+                                    <p id="ticket-description-error" role="alert" className="text-xs text-rose-600">
+                                        {ticketFormError}
+                                    </p>
+                                    <p
+                                        id="ticket-description-counter"
+                                        className={`ml-auto shrink-0 text-xs ${
+                                            ticketDetailedInfo.length >= TICKET_DESCRIPTION_MAX_LENGTH
+                                                ? 'font-semibold text-rose-600'
+                                                : 'text-gray-500'
+                                        }`}
+                                    >
+                                        {ticketDetailedInfo.length} / {TICKET_DESCRIPTION_MAX_LENGTH} characters
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="flex justify-end gap-2">
@@ -554,7 +621,11 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={isSubmittingTicket || ticketDetailedInfo.trim().length === 0}
+                                    disabled={
+                                        isSubmittingTicket ||
+                                        ticketDetailedInfo.trim().length === 0 ||
+                                        ticketDetailedInfo.length > TICKET_DESCRIPTION_MAX_LENGTH
+                                    }
                                     className="rounded-xl bg-[#6A535C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isSubmittingTicket ? 'Submitting…' : 'Submit a ticket'}

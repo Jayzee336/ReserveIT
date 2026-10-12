@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Head } from '@inertiajs/react';
 import {
   Users, MapPin, AlertCircle, Calendar as CalendarIcon,
   ArrowLeft, BadgeCheck, X,
@@ -14,19 +15,24 @@ export default function FacilityDetails({ facility, blackoutDates, bookings, ava
 
   if (!facility) {
     return (
-      <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Not Found</h2>}>
+      <>
+        <Head title="Facility Not Found | ReserveIT" />
+        <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Not Found</h2>}>
         <div className="text-center py-12">
           <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Facility not found</h2>
         </div>
-      </AuthenticatedLayout>
+        </AuthenticatedLayout>
+      </>
     );
   }
 
   const isAlwaysConsent = facility.requirement === 'CONSENT_REQUIRED';
 
   return (
-    <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">{facility.name} Details</h2>}>
+    <>
+      <Head title={`${facility.name} | ReserveIT`} />
+      <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">{facility.name} Details</h2>}>
       <div className="max-w-4xl mx-auto py-6 px-4">
         <button onClick={() => window.history.back()} className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 mb-6 group">
           <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
@@ -116,6 +122,7 @@ export default function FacilityDetails({ facility, blackoutDates, bookings, ava
           </div>
         </div>
       )}
-    </AuthenticatedLayout>
+      </AuthenticatedLayout>
+    </>
   );
 }

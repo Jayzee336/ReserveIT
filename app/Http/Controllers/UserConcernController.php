@@ -14,10 +14,15 @@ class UserConcernController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'message'       => ['nullable', 'string', 'min:1'],
+            'message'       => ['nullable', 'string', 'min:1', 'max:1000'],
             'appeal_date'   => ['nullable', 'date'],
             'category'      => ['nullable', 'string', 'in:Facility,UI Improvements,Account,Bug,Others'],
-            'detailed_info' => ['nullable', 'string', 'min:1'],
+            'detailed_info' => ['required', 'string', 'min:1', 'max:1000'],
+        ], [
+            'message.max' => 'The ticket description may not exceed 1,000 characters.',
+            'detailed_info.required' => 'Please enter details about your concern.',
+            'detailed_info.min' => 'Please enter details about your concern.',
+            'detailed_info.max' => 'The ticket description may not exceed 1,000 characters.',
         ]);
 
         $userConcern = UserConcern::create([

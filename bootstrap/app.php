@@ -1,9 +1,14 @@
+
 <?php
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\ForcePasswordChange;
+use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\PreventBackHistory;
+use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,33 +18,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->web(append: [
-        \App\Http\Middleware\HandleInertiaRequests::class,
-        \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-        \App\Http\Middleware\ForcePasswordChange::class,
-    ]);
+        $middleware->web(append: [
+            HandleInertiaRequests::class,
+            AddLinkHeadersForPreloadedAssets::class,
+            ForcePasswordChange::class,
+        ]);
 
-    $middleware->alias([
-        'role' => \App\Http\Middleware\EnsureUserHasRole::class,
-        'force.password.change' => \App\Http\Middleware\ForcePasswordChange::class,
-    ]);
-})
-    ->withExceptions(function (Exceptions $exceptions): void {
-        //
-    })->create();
-
-return Application::configure(basePath: dirname(__DIR__))
-    ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
-        health: '/up',
-    )
-    ->withMiddleware(function (Middleware $middleware) {
-        // Register an alias for your middleware
         $middleware->alias([
+            'role' => EnsureUserHasRole::class,
+            'force.password.change' => ForcePasswordChange::class,
             'prevent-back-history' => PreventBackHistory::class,
         ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
+    ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();

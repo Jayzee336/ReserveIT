@@ -49,7 +49,7 @@ Route::get('/', function () {
 });
 
 // 2. Authenticated Dashboard & Application Space
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function () {
 
     Route::get('/force-password-change', [ForcePasswordChangeController::class, 'edit'])
         ->name('password.force.edit');
@@ -226,6 +226,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ── Booking Operations ─────────────────────────────────────────────────
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
     Route::get('/my-bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::get('/receipt/{id}', [BookingController::class, 'receipt'])->name('bookings.receipt');
     Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
     Route::put('/bookings/{id}', [BookingController::class, 'update'])->name('bookings.update');
 
@@ -321,9 +322,4 @@ Route::fallback(fn() => Inertia::render('Error/HttpError', [
 Route::middleware('guest')->group(function () {
     Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
-});
-
-// 2. Authenticated Dashboard & Application Space
-Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function () {
-    // All your protected routes here...
 });

@@ -70,6 +70,23 @@ class BookingController extends Controller
         ]);
     }
 
+
+    /**
+     * Display a receipt for an approved booking owned by the authenticated user.
+     */
+    public function receipt(string $id)
+    {
+        $booking = Booking::with('facility')
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        abort_unless($booking->status === 'approved', 403, 'Receipts are available only for approved bookings.');
+
+        return Inertia::render('Receipt', [
+            'booking' => $booking,
+        ]);
+    }
+
     public function update(Request $request, string $id)
     {
         $booking = Booking::where('user_id', Auth::id())->findOrFail($id);

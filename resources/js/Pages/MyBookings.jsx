@@ -8,6 +8,7 @@ export default function MyBookings({ auth, bookings = [], activityLogs = [] }) {
     const [cancelModalId, setCancelModalId] = useState(null);
     const [detailModalId, setDetailModalId] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
     const { data, setData, put, processing, errors, reset } = useForm({
         date: '',
@@ -37,6 +38,7 @@ export default function MyBookings({ auth, bookings = [], activityLogs = [] }) {
     const handleCloseDetails = () => {
         setDetailModalId(null);
         setIsEditing(false);
+        setShowSaveConfirm(false);
         reset();
     };
 
@@ -60,29 +62,39 @@ export default function MyBookings({ auth, bookings = [], activityLogs = [] }) {
         }
     };
 
-    const handleUpdateBooking = (e) => {
-        e.preventDefault();
-        
-        // Extra guardrail safeguard
-        if (selectedDetailBooking?.status?.toLowerCase() !== 'pending') {
-            toast.error('Only pending bookings can be edited.');
-            return;
-        }
+    
+const handleUpdateBooking = (e) => {
+    e.preventDefault();
 
-        const confirmSave = window.confirm("Are you sure you want to update this pending booking? These changes will be updated for administrator review.");
-        if (!confirmSave) return;
+    // Only pending bookings can be edited.
+    if (selectedDetailBooking?.status?.toLowerCase() !== 'pending') {
+        toast.error('Only pending bookings can be edited.');
+        return;
+    }
 
-        put(`/bookings/${detailModalId}`, {
-            onSuccess: () => {
-                setIsEditing(false);
-                setDetailModalId(null);
-                toast.success('Booking modified successfully!');
-            },
-            onError: () => {
-                toast.error('Failed to update booking. Please review your inputs.');
-            }
-        });
-    };
+    // Show our custom confirmation popup.
+    setShowSaveConfirm(true);
+};
+
+const handleConfirmSave = () => {
+    if (processing) return;
+
+    // Close the confirmation popup before submitting.
+    setShowSaveConfirm(false);
+
+    put(`/bookings/${detailModalId}`, {
+        onSuccess: () => {
+            setIsEditing(false);
+            setDetailModalId(null);
+            setShowSaveConfirm(false);
+            toast.success('Booking modified successfully!');
+        },
+        onError: () => {
+            toast.error('Failed to update booking. Please review your inputs.');
+        },
+    });
+};
+
 
     const handleCancel = (id) => {
         router.put(`/bookings/${id}/cancel`, {}, {
@@ -454,6 +466,65 @@ export default function MyBookings({ auth, bookings = [], activityLogs = [] }) {
                                     </div>
                                 </div>
                             </form>
+
+                            
+                            {/* Save Changes Confirmation Modal */}
+                            {showSaveConfirm && (
+                                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                                    <button
+                                        type="button"
+                                        aria-label="Close confirmation"
+                                        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+                                        onClick={() => setShowSaveConfirm(false)}
+                                        disabled={processing}
+                                    />
+
+                                    <div
+                                        role="dialog"
+                                        aria-modal="true"
+                                        aria-labelledby="save-confirm-title"
+                                        className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+                                    >
+                                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
+                                            <Save className="h-6 w-6 text-indigo-600" />
+                                        </div>
+
+                                        <h3
+                                            id="save-confirm-title"
+                                            className="text-xl font-bold text-gray-900"
+                                        >
+                                            Save booking changes?
+                                        </h3>
+
+                                        <p className="mt-2 text-sm leading-6 text-gray-600">
+                                            Are you sure you want to save the changes
+                                            you've made to this booking? Your updated
+                                            details will be submitted for administrator review.
+                                        </p>
+
+                                        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowSaveConfirm(false)}
+                                                disabled={processing}
+                                                className="inline-flex justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                            >
+                                                Go Back
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={handleConfirmSave}
+                                                disabled={processing}
+                                                className="inline-flex justify-center items-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                <Save className="mr-2 h-4 w-4" />
+                                                {processing ? 'Saving...' : 'Yes, Save Changes'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                         </div>
                     </div>

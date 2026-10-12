@@ -117,8 +117,8 @@ export default function Concerns({ concerns, filters = {} }) {
                     ) : (
                         <ul className="divide-y divide-stone-100">
                             {records.map((concern) => (
-                                <li key={concern.id} className="flex flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between">
-                                    <div className="flex-1 min-w-0">
+                                <li key={concern.id} className="flex min-w-0 flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2 mb-2">
                                             {concern.category && (
                                                 <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${CATEGORY_COLORS[concern.category] ?? CATEGORY_COLORS.Others}`}>
@@ -129,8 +129,8 @@ export default function Concerns({ concerns, filters = {} }) {
                                                 <span className="text-xs text-gray-400">Appeal: {concern.appeal_date}</span>
                                             )}
                                         </div>
-                                        <p className="whitespace-pre-wrap text-sm text-slate-800">{concern.detailed_info ?? concern.message}</p>
-                                        <p className="mt-2 text-xs text-slate-500">
+                                        <p className="min-w-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm text-slate-800">{concern.detailed_info ?? concern.message}</p>
+                                        <p className="mt-2 min-w-0 break-words [overflow-wrap:anywhere] text-xs text-slate-500">
                                             {concern.user?.name ?? 'Guest'} {concern.user?.email ? `(${concern.user.email})` : ''} · {new Date(concern.created_at).toLocaleString()}
                                         </p>
 
@@ -138,12 +138,12 @@ export default function Concerns({ concerns, filters = {} }) {
                                         {concern.admin_reply && (
                                             <div className="mt-3 rounded-xl bg-emerald-50 p-3 border border-emerald-100">
                                                 <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1">Admin Reply</p>
-                                                <p className="text-sm text-emerald-800 whitespace-pre-wrap">{concern.admin_reply}</p>
+                                                <p className="min-w-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm text-emerald-800">{concern.admin_reply}</p>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="flex gap-2 shrink-0">
+                                    <div className="flex shrink-0 flex-wrap gap-2">
                                         {concern.status === 'pending' ? (
                                             <>
                                                 <button
@@ -206,9 +206,9 @@ export default function Concerns({ concerns, filters = {} }) {
                             </p>
                         </div>
 
-                        <div className="mb-4 rounded-xl bg-stone-50 p-3 text-sm text-gray-600">
+                        <div className="mb-4 min-w-0 rounded-xl bg-stone-50 p-3 text-sm text-gray-600">
                             <p className="font-medium text-gray-800 mb-1">Original message:</p>
-                            <p className="whitespace-pre-wrap">{replyModal.detailed_info ?? replyModal.message}</p>
+                            <p className="min-w-0 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{replyModal.detailed_info ?? replyModal.message}</p>
                         </div>
 
                         <form onSubmit={submitReply} className="space-y-4">
@@ -216,7 +216,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 value={replyText}
                                 onChange={(e) => setReplyText(e.target.value)}
                                 rows={5}
-                                className="block w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                className="block w-full min-w-0 resize-y rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                                 placeholder="Type your reply here…"
                                 required
                             />

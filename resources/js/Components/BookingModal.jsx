@@ -40,7 +40,7 @@ export default function BookingModal({
     const [startTime, setStartTime] = useState(selectedStartTime || '');
     const [endTime, setEndTime] = useState('');
     const [notes, setNotes] = useState('');
-    const [attendees, setAttendees] = useState(1);
+    const [attendees, setAttendees] = useState('1');
     const [eventName, setEventName] = useState('');
     const [department, setDepartment] = useState('');
     const [designation, setDesignation] = useState('');
@@ -94,7 +94,9 @@ export default function BookingModal({
     };
 
     const capacity = facility?.capacity || 0;
-    const isOverCapacity = !!(capacity && attendees > capacity);
+    const isOverCapacity = !!(
+        capacity && attendees !== '' && Number(attendees) > capacity
+    );
 
     // ── Conflict check with 30-min buffer ──────────────────────────────────
     const checkConflict = () => {
@@ -122,6 +124,16 @@ export default function BookingModal({
     const handleSubmit = (e) => {
         e.preventDefault();
         setConflictError('');
+
+        const attendeeCount = Number(attendees);
+        if (!Number.isInteger(attendeeCount) || attendeeCount < 1) {
+            setConflictError('Attendees count must be a whole number of at least 1.');
+            return;
+        }
+        if (capacity && attendeeCount > capacity) {
+            setConflictError(`Capacity exceeded. Max ${capacity} people.`);
+            return;
+        }
 
         if (!isAuthenticated && (!guestEmail || !guestName)) {
             toast.error('Guest details are required.');
@@ -173,7 +185,7 @@ export default function BookingModal({
             start_time: startTime,
             end_time: endTime,
             notes: finalNotes,
-            attendees,
+            attendees: attendeeCount,
             guest_name: isAuthenticated ? null : guestName,
             guest_email: isAuthenticated ? null : guestEmail,
             guest_phone: isAuthenticated ? null : guestPhone,
@@ -395,9 +407,18 @@ export default function BookingModal({
                     <input
                         type="number"
                         min={1}
+                        step={1}
                         required
                         value={attendees}
-                        onChange={(e) => setAttendees(Number(e.target.value))}
+                        onChange={(e) => {
+                            setAttendees(e.target.value);
+                            setConflictError('');
+                        }}
+                        onBlur={() => {
+                            if (attendees === '' || Number(attendees) < 1) {
+                                setAttendees('1');
+                            }
+                        }}
                         className={`block w-full border rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-400 ${isOverCapacity ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
                     />
                     {isOverCapacity && (

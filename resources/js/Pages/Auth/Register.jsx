@@ -4,7 +4,7 @@ import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Building2, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Building2, Eye, EyeOff } from 'lucide-react';
 
 export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +28,15 @@ export default function Register() {
             <Head title="Register" />
 
             <div className="w-full max-w-md rounded-3xl border border-[#E8D8D1] bg-white p-8 shadow-xl shadow-[#7A4A57]/5 sm:p-10">
+                <Link
+                    href="/"
+                    className="mb-5 inline-flex items-center gap-2 rounded-lg text-xs font-semibold text-slate-500 transition hover:text-[#7A4A57] focus:outline-none focus:ring-2 focus:ring-[#7A4A57]/30 focus:ring-offset-2"
+                    aria-label="Back to home"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back to home
+                </Link>
+
                 {/* Brand Header */}
                 <div className="mb-8 text-center space-y-2">
                     <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#7A4A57] text-white shadow-md shadow-[#7A4A57]/20">

@@ -8,6 +8,13 @@ import { Toaster } from 'sonner';
 
 const appName = import.meta.env.VITE_APP_NAME || 'ReserveIT';
 
+// Handle pages restored from the browser's back-forward cache.
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) =>
@@ -22,7 +29,7 @@ createInertiaApp({
             <>
                 <App {...props} />
                 <Toaster richColors position="top-right" />
-            </>
+            </>,
         );
     },
 });
