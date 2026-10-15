@@ -5,44 +5,53 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
 {
-    /**
-     * Redirect the user to the Google authentication page.
-     */
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->redirect();
     }
 
-    /**
-     * Handle the callback from Google.
-     */
     public function handleGoogleCallback()
     {
         try {
             $googleUser = Socialite::driver('google')->user();
 
-            // Find existing user by google_id or email
-            $user = User::where('google_id', $googleUser->getId())
-                ->orWhere('email', $googleUser->getEmail())
+            $googleId = $googleUser->getId();
+            $email = $googleUser->getEmail();
+
+            // Look for an account already linked to this Google ID.
+            $user = User::withTrashed()
+                ->where('google_id', $googleId)
                 ->first();
 
+            // If no Google ID match exists, check the email.
+            if (!$user && $email) {
+                $user = User::withTrashed()
+                    ->where('email', $email)
+                    ->first();
+            }
+
             if ($user) {
-                // Link account and update avatar if missing
-                $user->update([
-                    'google_id' => $googleUser->getId(),
-                    'avatar' => $googleUser->getAvatar(),
-                    'password' => null,
-                ]);
+                // Restore a soft-deleted account, if necessary.
+                if (method_exists($user, 'trashed') && $user->trashed()) {
+                    $user->restore();
+                }
+
+                $user->google_id = $googleId;
+                $user->avatar = $googleUser->getAvatar();
+
+                // Do not erase an existing password.
+                $user->save();
             } else {
-                // Register new user
+                // Create a new account only when no matching account exists.
                 $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
+                    'name' => $googleUser->getName() ?? 'Google User',
+                    'email' => $email,
+                    'google_id' => $googleId,
                     'avatar' => $googleUser->getAvatar(),
                     'password' => null,
                 ]);
@@ -52,7 +61,12 @@ class GoogleController extends Controller
 
             return redirect()->intended('/dashboard');
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error(
+                'Google SSO callback failed: ' .
+                get_class($e) . ' - ' . $e->getMessage()
+            );
+
             return redirect()->route('login')->withErrors([
                 'email' => 'Unable to authenticate with Google. Please try again.',
             ]);

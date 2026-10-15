@@ -4,33 +4,40 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DeveloperContactController;
 use App\Http\Controllers\UserConcernController;
+
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\FacilityManagementController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\ConcernManagementController;
 use App\Http\Controllers\Admin\SystemSettingsController;
+
 use App\Http\Controllers\BookingCheckInOutController;
 use App\Http\Controllers\Facilitator\BookingApprovalController;
 use App\Http\Controllers\Facilitator\FacilitatorDashboardController;
+
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Auth\SetPasswordController;
+
 use App\Models\Facility;
 use App\Models\Booking;
 use App\Models\UserConcern;
+
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Notifications\DatabaseNotification;
 
 // 1. Welcome Page
-// 1. Welcome Page (Connected to Database with live records)
+// Connected to the database with live records.
 Route::get('/', function () {
-    // Fetch active facilities (latest 6 records)
+    // Fetch the latest 6 facilities.
     $dbFacilities = Facility::latest()
         ->take(6)
         ->get();
 
-    // Fetch today's approved/pending bookings for the live schedule preview
+    // Fetch today's approved/pending bookings for the schedule preview.
     $dbSchedules = Booking::with(['facility:id,name', 'user:id,name'])
         ->whereDate('booking_date', today()->toDateString())
         ->whereNotIn('status', ['declined', 'cancelled'])
@@ -51,35 +58,45 @@ Route::get('/', function () {
 // 2. Authenticated Dashboard & Application Space
 Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function () {
 
+    // Force Password Change
     Route::get('/force-password-change', [ForcePasswordChangeController::class, 'edit'])
         ->name('password.force.edit');
 
     Route::put('/force-password-change', [ForcePasswordChangeController::class, 'update'])
         ->name('password.force.update');
 
+    // Set a ReserveIT password for Google SSO users.
+    Route::get('/set-password', [SetPasswordController::class, 'edit'])
+        ->name('password.set.edit');
+
+    Route::put('/set-password', [SetPasswordController::class, 'update'])
+        ->name('password.set.update');
+
+    // Protected Super Admin Test Page
     Route::get('/admin-test', function () {
         return 'You are a super admin! This page is protected.';
     })->middleware('role:super_admin')->name('admin.test');
 
-    // Central dashboard redirect — sends each role to the right place
+    // Central dashboard redirect — sends each role to the correct dashboard.
     Route::get('/dashboard', function () {
         return match (Auth::user()->role) {
-            'super_admin' => redirect()->route('admin.dashboard'),
+            'super_admin'   => redirect()->route('admin.dashboard'),
             'facility_admin' => redirect()->route('facilitator.dashboard'),
-            default => redirect()->route('user.dashboard'),
+            default         => redirect()->route('user.dashboard'),
         };
     })->name('dashboard');
 
-    // ── Super Admin Dashboard ──────────────────────────────────────────────
+    // Super Admin Dashboard
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
-        ->middleware('role:super_admin,facility_admin')->name('admin.dashboard');
+        ->middleware('role:super_admin,facility_admin')
+        ->name('admin.dashboard');
 
-    // ── Super Admin Bookings Management ────────────────────────────────────
+    // Super Admin Bookings Management
     Route::get('/admin/bookings', [BookingApprovalController::class, 'index'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.bookings.index');
 
-    // ── Super Admin Booking Management Updates ─────────────────────────────
+    // Booking Approval / Decline
     Route::match(['patch', 'post'], '/admin/bookings/{booking}/approve', [BookingApprovalController::class, 'approve'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.bookings.approve');
@@ -88,7 +105,7 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.bookings.decline');
 
-    // ── Facilitator Bookings (facility_admin & super_admin) ─────────────────
+    // Facilitator Bookings
     Route::get('/facilitator/bookings', [BookingApprovalController::class, 'index'])
         ->middleware('role:facility_admin,super_admin')
         ->name('facilitator.bookings.index');
@@ -109,61 +126,90 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
         ->middleware('role:facility_admin,super_admin')
         ->name('facilitator.bookings.destroy');
 
-    // Active Bookings Monitor Page (Inertia page, distinct URL from JSON endpoint)
+    // Active Bookings Monitor Page
     Route::get('/admin/active-bookings-monitor', function () {
         return Inertia::render('Admin/ActiveBookings');
     })->middleware('role:super_admin,facility_admin')->name('admin.active-bookings.page');
 
-    // ── Super Admin Concerns ───────────────────────────────────────────────
+    // Super Admin Concerns
     Route::get('/admin/concerns', [ConcernManagementController::class, 'index'])
-        ->middleware('role:super_admin')->name('admin.concerns.index');
+        ->middleware('role:super_admin')
+        ->name('admin.concerns.index');
+
     Route::patch('/admin/concerns/{concern}/resolve', [ConcernManagementController::class, 'resolve'])
-        ->middleware('role:super_admin')->name('admin.concerns.resolve');
+        ->middleware('role:super_admin')
+        ->name('admin.concerns.resolve');
 
-    // ── Super Admin Settings ───────────────────────────────────────────────
-    Route::get('/admin/settings', [SystemSettingsController::class, 'edit'])->middleware('role:super_admin')->name('admin.settings.edit');
-    Route::patch('/admin/settings', [SystemSettingsController::class, 'update'])->middleware('role:super_admin')->name('admin.settings.update');
+    // Super Admin Settings
+    Route::get('/admin/settings', [SystemSettingsController::class, 'edit'])
+        ->middleware('role:super_admin')
+        ->name('admin.settings.edit');
 
-    // ── Super Admin — User Management ──────────────────────────────────────
+    Route::patch('/admin/settings', [SystemSettingsController::class, 'update'])
+        ->middleware('role:super_admin')
+        ->name('admin.settings.update');
+
+    // Super Admin — User Management
     Route::post('/admin/users', [UserManagementController::class, 'store'])
-        ->middleware('role:super_admin')->name('admin.users.store');
+        ->middleware('role:super_admin')
+        ->name('admin.users.store');
+
     Route::get('/admin/users', [UserManagementController::class, 'index'])
-        ->middleware('role:super_admin')->name('admin.users.index');
+        ->middleware('role:super_admin')
+        ->name('admin.users.index');
+
     Route::patch('/admin/users/{user}/role', [UserManagementController::class, 'updateRole'])
-        ->middleware('role:super_admin')->name('admin.users.updateRole');
+        ->middleware('role:super_admin')
+        ->name('admin.users.updateRole');
+
     Route::post('/admin/users/{user}/regenerate-password', [UserManagementController::class, 'regeneratePassword'])
-        ->middleware('role:super_admin')->name('admin.users.regeneratePassword');
+        ->middleware('role:super_admin')
+        ->name('admin.users.regeneratePassword');
+
     Route::patch('/admin/users/{user}', [UserManagementController::class, 'update'])
-        ->middleware('role:super_admin')->name('admin.users.update');
+        ->middleware('role:super_admin')
+        ->name('admin.users.update');
+
     Route::patch('/admin/users/{user}/toggle-active', [UserManagementController::class, 'toggleActive'])
-        ->middleware('role:super_admin')->name('admin.users.toggleActive');
+        ->middleware('role:super_admin')
+        ->name('admin.users.toggleActive');
+
     Route::delete('/admin/users/{user}', [UserManagementController::class, 'destroy'])
-        ->middleware('role:super_admin')->name('admin.users.destroy');
+        ->middleware('role:super_admin')
+        ->name('admin.users.destroy');
 
-    // ── Super Admin — Facility Management ──────────────────────────────────
+    // Super Admin — Facility Management
     Route::get('/admin/facilities', [FacilityManagementController::class, 'index'])
-        ->middleware('role:super_admin')->name('admin.facilities.index');
-    Route::post('/admin/facilities', [FacilityManagementController::class, 'store'])
-        ->middleware('role:super_admin')->name('admin.facilities.store');
-    Route::patch('/admin/facilities/{facility}', [FacilityManagementController::class, 'update'])
-        ->middleware('role:super_admin,facility_admin')->name('admin.facilities.update');
-    Route::delete('/admin/facilities/{facility}', [FacilityManagementController::class, 'destroy'])
-        ->middleware('role:super_admin')->name('admin.facilities.destroy');
+        ->middleware('role:super_admin')
+        ->name('admin.facilities.index');
 
-    // ── Facility Admin (facilitator) dashboard ─────────────────────────────
+    Route::post('/admin/facilities', [FacilityManagementController::class, 'store'])
+        ->middleware('role:super_admin')
+        ->name('admin.facilities.store');
+
+    Route::patch('/admin/facilities/{facility}', [FacilityManagementController::class, 'update'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('admin.facilities.update');
+
+    Route::delete('/admin/facilities/{facility}', [FacilityManagementController::class, 'destroy'])
+        ->middleware('role:super_admin')
+        ->name('admin.facilities.destroy');
+
+    // Facility Admin Dashboard
     Route::get('/facilitator/dashboard', [FacilitatorDashboardController::class, 'index'])
         ->middleware('role:facility_admin,super_admin')
         ->name('facilitator.dashboard');
 
-    // ── Facility Admin — Managed Facilities (only facilities they are assigned to) ──
+    // Facility Admin — Managed Facilities
     Route::get('/facilitator/managed-facilities', [FacilityManagementController::class, 'managed'])
         ->middleware('role:facility_admin,super_admin')
         ->name('facilitator.managed-facilities.index');
 
+    // Developer Contact
     Route::post('/developer/contact', [DeveloperContactController::class, 'store'])
         ->name('developer.contact');
 
-    // ── General User dashboard ─────────────────────────────────────────────
+    // General User Dashboard
     Route::get('/user/dashboard', function () {
         return Inertia::render('User/Dashboard', [
             'stats' => [
@@ -182,15 +228,17 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
                 [
                     'id' => 1,
                     'text' => 'Welcome to your new ReserveIT dashboard hub!',
-                    'time' => 'Just now'
-                ]
-            ]
+                    'time' => 'Just now',
+                ],
+            ],
         ]);
     })->middleware('role:user,super_admin,facility_admin')->name('user.dashboard');
 
-    // ── Schedule Grid ──────────────────────────────────────────────────────
+    // Schedule Grid
     Route::get('/schedule', function (\Illuminate\Http\Request $request) {
-        $selectedDate = $request->validate(['date' => ['nullable', 'date']])['date'] ?? today()->toDateString();
+        $selectedDate = $request->validate([
+            'date' => ['nullable', 'date'],
+        ])['date'] ?? today()->toDateString();
 
         return Inertia::render('CalendarDashboard', [
             'selectedDate' => $selectedDate,
@@ -198,18 +246,30 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
             'serverBookings' => Booking::with('user:id,name,email')
                 ->whereDate('booking_date', $selectedDate)
                 ->whereNotIn('status', ['declined', 'cancelled'])
-                ->get(['id', 'facility_id', 'user_id', 'guest_name', 'guest_email', 'guest_phone', 'start_time', 'end_time', 'attendees', 'notes', 'status']),
+                ->get([
+                    'id',
+                    'facility_id',
+                    'user_id',
+                    'guest_name',
+                    'guest_email',
+                    'guest_phone',
+                    'start_time',
+                    'end_time',
+                    'attendees',
+                    'notes',
+                    'status',
+                ]),
         ]);
     })->name('schedule.index');
 
-    // ── Browse Facilities ──────────────────────────────────────────────────
+    // Browse Facilities
     Route::get('/facilities', function () {
         return Inertia::render('Facilities', [
-            'facilities' => Facility::all()
+            'facilities' => Facility::all(),
         ]);
     })->name('facilities.index');
 
-    // ── Facility Details ───────────────────────────────────────────────────
+    // Facility Details
     Route::get('/facility/{id}', function ($id) {
         $facility = Facility::with('facilityAdmins:id,name,email')->findOrFail($id);
 
@@ -223,14 +283,23 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
         ]);
     })->name('facility.show');
 
-    // ── Booking Operations ─────────────────────────────────────────────────
-    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
-    Route::get('/my-bookings', [BookingController::class, 'index'])->name('bookings.index');
-    Route::get('/receipt/{id}', [BookingController::class, 'receipt'])->name('bookings.receipt');
-    Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
-    Route::put('/bookings/{id}', [BookingController::class, 'update'])->name('bookings.update');
+    // Booking Operations
+    Route::post('/bookings', [BookingController::class, 'store'])
+        ->name('bookings.store');
 
-    // Direct Booking Controller Endpoints (fallback for simple AJAX/Inertia requests)
+    Route::get('/my-bookings', [BookingController::class, 'index'])
+        ->name('bookings.index');
+
+    Route::get('/receipt/{id}', [BookingController::class, 'receipt'])
+        ->name('bookings.receipt');
+
+    Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel'])
+        ->name('bookings.cancel');
+
+    Route::put('/bookings/{id}', [BookingController::class, 'update'])
+        ->name('bookings.update');
+
+    // Direct Booking Controller Endpoints
     Route::match(['patch', 'post'], '/bookings/{id}/approve', [BookingController::class, 'approve'])
         ->middleware('role:super_admin,facility_admin')
         ->name('bookings.approve');
@@ -239,87 +308,115 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
         ->middleware('role:super_admin,facility_admin')
         ->name('bookings.decline');
 
-    // ── Overtime Check-In / Check-Out ──────────────────────────────────────
+    // Overtime Check-In / Check-Out
     Route::post('/bookings/{booking}/check-in', [BookingCheckInOutController::class, 'checkIn'])
         ->middleware('role:facility_admin,super_admin')
         ->name('bookings.check-in');
+
     Route::post('/bookings/{booking}/check-out', [BookingCheckInOutController::class, 'checkOut'])
         ->middleware('role:facility_admin,super_admin')
         ->name('bookings.check-out');
 
-    // Active bookings monitor (returns JSON for real-time dashboard usage)
+    // Active Bookings Monitor JSON Endpoint
     Route::get('/admin/active-bookings', [BookingCheckInOutController::class, 'activeBookings'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.active-bookings');
 
-    // ── Profile Settings ───────────────────────────────────────────────────
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // Profile Settings
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
 
-    // ── User Tickets ───────────────────────────────────────────────────────
-    Route::get('/my-tickets', [UserConcernController::class, 'myTickets'])->name('concerns.my-tickets');
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
 
-    // ── Admin reply to concerns ────────────────────────────────────────────
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
+
+    // User Tickets
+    Route::get('/my-tickets', [UserConcernController::class, 'myTickets'])
+        ->name('concerns.my-tickets');
+
+    // Admin Reply to Concerns
     Route::post('/admin/concerns/{concern}/reply', [UserConcernController::class, 'reply'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.concerns.reply');
 
-    // ── Notification: Mark all as read ─────────────────────────────────────
+    // Notification: Mark All as Read
     Route::post('/notifications/clear', function () {
         $user = Auth::user();
+
         if ($user) {
             $user->unreadNotifications->markAsRead();
         }
+
         return redirect()->back()->with('toast', [
             'type' => 'success',
             'message' => 'Notifications cleared.',
         ]);
     })->name('notifications.clear');
 
-    // ── Notification: Mark single notification as read ─────────────────────
-    Route::post('/notifications/{notification}/read', function ($notificationId) {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
+            // Notification: Mark Single Notification as Read
+Route::post('/notifications/{notification}/read', function ($notificationId) {
+    $user = Auth::user();
 
-        if ($user) {
-            $notification = $user->notifications()->where('id', $notificationId)->firstOrFail();
-            $notification->markAsRead();
-        }
+    abort_unless($user, 401);
 
-        return redirect()->back();
-    })->name('notifications.read');
+    $notification = DatabaseNotification::query()
+        ->where('notifiable_type', \App\Models\User::class)
+        ->where('notifiable_id', $user->id)
+        ->where('id', $notificationId)
+        ->firstOrFail();
 
-    // ── Serve consent files (authenticated, admin/facilitator only) ────────
+    $notification->markAsRead();
+
+    return redirect()->back();
+})->name('notifications.read');
+
+    // Serve Consent Files
     Route::get('/bookings/{booking}/consent', function (\App\Models\Booking $booking) {
         $user = Auth::user();
+
         if ($user->role === 'facility_admin') {
-            $isAssigned = $booking->facility->facilityAdmins()->whereKey($user->id)->exists();
+            $isAssigned = $booking->facility->facilityAdmins()
+                ->whereKey($user->id)
+                ->exists();
+
             abort_unless($isAssigned, 403);
         } elseif ($user->role !== 'super_admin') {
             abort(403);
         }
 
-        abort_unless($booking->consent_file_uploaded && $booking->consent_file_path, 404);
+        abort_unless(
+            $booking->consent_file_uploaded && $booking->consent_file_path,
+            404
+        );
 
         return response()->streamDownload(function () use ($booking) {
-            echo \Illuminate\Support\Facades\Storage::disk('local')->get($booking->consent_file_path);
+            echo \Illuminate\Support\Facades\Storage::disk('local')
+                ->get($booking->consent_file_path);
         }, $booking->consent_file_name ?? 'consent-letter.pdf', [
             'Content-Type' => 'application/pdf',
         ]);
-    })->middleware('auth')->name('bookings.consent');
+    })->name('bookings.consent');
 });
 
-Route::post('/concerns', [UserConcernController::class, 'store'])->name('concerns.store');
+// Public Concern Submission
+Route::post('/concerns', [UserConcernController::class, 'store'])
+    ->name('concerns.store');
 
+// Authentication Routes
 require __DIR__ . '/auth.php';
 
-Route::fallback(fn() => Inertia::render('Error/HttpError', [
+// Fallback 404 Page
+Route::fallback(fn () => Inertia::render('Error/HttpError', [
     'status' => 404,
     'message' => 'We could not find the page you were looking for.',
 ])->toResponse(request())->setStatusCode(404));
 
+// Google SSO Routes
 Route::middleware('guest')->group(function () {
-    Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
+    Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])
+        ->name('auth.google');
+
     Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 });
