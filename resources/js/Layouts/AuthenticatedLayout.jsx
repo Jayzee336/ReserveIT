@@ -39,7 +39,11 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
                     : 'text-purple-100 hover:bg-[#543F48] hover:text-white'
             }`}
         >
-            <Icon className={`h-5 w-5 ${collapsed ? 'mr-0' : 'mr-3'} opacity-80 shrink-0`} />
+            <Icon
+                className={`h-5 w-5 ${
+                    collapsed ? 'mr-0' : 'mr-3'
+                } shrink-0 opacity-80`}
+            />
             {!collapsed && <span className="truncate">{children}</span>}
         </Link>
     );
@@ -48,7 +52,7 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
 export default function AuthenticatedLayout({ header, action, children }) {
     const page = usePage();
 
-    // ── Collapsible sidebar state (persisted) ──────────────────────────────
+    // Collapsible sidebar state (persisted)
     const [collapsed, setCollapsed] = useState(() => {
         if (typeof window === 'undefined') return false;
         return localStorage.getItem('sidebar_collapsed') === 'true';
@@ -58,7 +62,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
         localStorage.setItem('sidebar_collapsed', String(collapsed));
     }, [collapsed]);
 
-    // ── Force reload if restored from Chrome BF Cache ─────────────────────
+    // Force reload if restored from Chrome BF Cache
     useEffect(() => {
         const handlePageShow = (event) => {
             if (event.persisted) {
@@ -67,31 +71,50 @@ export default function AuthenticatedLayout({ header, action, children }) {
         };
 
         window.addEventListener('pageshow', handlePageShow);
-        return () => window.removeEventListener('pageshow', handlePageShow);
+
+        return () => {
+            window.removeEventListener('pageshow', handlePageShow);
+        };
     }, []);
 
-    // ── Defensive user check ───────────────────────────────────────────────
+    // Defensive user check
     const user = page.props.auth?.user;
     const role = user?.role;
+
     const isSuperAdmin = role === 'super_admin';
     const isFacilityAdmin = role === 'facility_admin';
     const isUser = role === 'user';
 
-    // ── Notification state & Dropdown Toggle ───────────────────────────────
-    const [realtimeNotifications, setRealtimeNotifications] = useState(page.props.notifications ?? []);
+    // Notification state and dropdown toggle
+    const [realtimeNotifications, setRealtimeNotifications] = useState(
+        page.props.notifications ?? [],
+    );
     const [notificationsOpen, setNotificationsOpen] = useState(false);
-    const [isClearingNotifications, setIsClearingNotifications] = useState(false);
+    const [isClearingNotifications, setIsClearingNotifications] =
+        useState(false);
     const [viewingNotification, setViewingNotification] = useState(null);
-    const prevCountRef = useRef(realtimeNotifications.length);
 
-    const unreadCount = realtimeNotifications.filter((n) => !n.read).length;
+    const prevCountRef = useRef(
+        (page.props.notifications ?? []).filter((notification) => !notification.read)
+            .length,
+    );
 
-    // Sync when Inertia re-shares props
+    const unreadCount = realtimeNotifications.filter(
+        (notification) => !notification.read,
+    ).length;
+
+    // Sync when Inertia re-shares notification props
     useEffect(() => {
-        setRealtimeNotifications(page.props.notifications ?? []);
+        const freshNotifications = page.props.notifications ?? [];
+
+        setRealtimeNotifications(freshNotifications);
+
+        prevCountRef.current = freshNotifications.filter(
+            (notification) => !notification.read,
+        ).length;
     }, [page.props.notifications]);
 
-    // ── Inertia Polling: every 30 seconds ──────────────────────────────────
+    // Inertia polling: every 30 seconds
     useEffect(() => {
         if (!user) return;
 
@@ -101,15 +124,28 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 preserveScroll: true,
                 preserveState: true,
                 onSuccess: (updatedPage) => {
-                    const freshNotifications = updatedPage.props.notifications ?? [];
-                    const freshUnreadCount = freshNotifications.filter((n) => !n.read).length;
-                    const prevCount = prevCountRef.current;
+                    const freshNotifications =
+                        updatedPage.props.notifications ?? [];
 
-                    if (freshUnreadCount > prevCount) {
-                        const newOnes = freshUnreadCount - prevCount;
-                        toast.message(`${newOnes} new notification${newOnes > 1 ? 's' : ''}`, {
-                            description: 'You have unread updates. Check the bell icon.',
-                        });
+                    const freshUnreadCount = freshNotifications.filter(
+                        (notification) => !notification.read,
+                    ).length;
+
+                    const previousUnreadCount = prevCountRef.current;
+
+                    if (freshUnreadCount > previousUnreadCount) {
+                        const newNotifications =
+                            freshUnreadCount - previousUnreadCount;
+
+                        toast.message(
+                            `${newNotifications} new notification${
+                                newNotifications > 1 ? 's' : ''
+                            }`,
+                            {
+                                description:
+                                    'You have unread updates. Check the bell icon.',
+                            },
+                        );
                     }
 
                     prevCountRef.current = freshUnreadCount;
@@ -121,9 +157,10 @@ export default function AuthenticatedLayout({ header, action, children }) {
         return () => clearInterval(interval);
     }, [user]);
 
-    // ── Clear all notifications ─────────────────────────────────────────────
+    // Clear all notifications
     const clearAllNotifications = () => {
         setIsClearingNotifications(true);
+
         router.post(
             route('notifications.clear'),
             {},
@@ -135,28 +172,49 @@ export default function AuthenticatedLayout({ header, action, children }) {
         );
     };
 
+    // Support ticket modal state
     const [helpOpen, setHelpOpen] = useState(false);
-
-    // Ticket form state
-    const [ticketAppealDate, setTicketAppealDate] = useState('');
     const [ticketCategory, setTicketCategory] = useState('');
     const [ticketDetailedInfo, setTicketDetailedInfo] = useState('');
     const [ticketFormError, setTicketFormError] = useState('');
     const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
+
     const TICKET_DESCRIPTION_MAX_LENGTH = 1000;
 
-    const submitTicket = (e) => {
-        e.preventDefault();
+    const resetTicketForm = () => {
+        setTicketCategory('');
+        setTicketDetailedInfo('');
+        setTicketFormError('');
+    };
+
+    const closeTicketModal = () => {
+        if (isSubmittingTicket) return;
+
+        setHelpOpen(false);
+        resetTicketForm();
+    };
+
+    const submitTicket = (event) => {
+        event.preventDefault();
 
         const trimmedDescription = ticketDetailedInfo.trim();
 
         if (!trimmedDescription) {
-            setTicketFormError('Please enter details about your concern.');
+            setTicketFormError(
+                'Please enter details about your concern.',
+            );
             return;
         }
 
         if (trimmedDescription.length > TICKET_DESCRIPTION_MAX_LENGTH) {
-            setTicketFormError(`Your ticket description must be ${TICKET_DESCRIPTION_MAX_LENGTH} characters or fewer.`);
+            setTicketFormError(
+                `Your ticket description must be ${TICKET_DESCRIPTION_MAX_LENGTH} characters or fewer.`,
+            );
+            return;
+        }
+
+        if (!ticketCategory) {
+            setTicketFormError('Please select a concern category.');
             return;
         }
 
@@ -166,24 +224,28 @@ export default function AuthenticatedLayout({ header, action, children }) {
         router.post(
             route('concerns.store'),
             {
-                appeal_date: ticketAppealDate || null,
-                category: ticketCategory || null,
-                detailed_info: ticketDetailedInfo,
-                message: ticketDetailedInfo,
+                category: ticketCategory,
+                detailed_info: trimmedDescription,
+                message: trimmedDescription,
             },
             {
                 preserveScroll: true,
                 onSuccess: () => {
                     setHelpOpen(false);
-                    setTicketAppealDate('');
-                    setTicketCategory('');
-                    setTicketDetailedInfo('');
-                    setTicketFormError('');
+                    resetTicketForm();
                 },
                 onError: (errors) => {
-                    const descriptionError = errors.detailed_info || errors.message;
+                    const descriptionError =
+                        errors.detailed_info || errors.message;
+
                     if (descriptionError) {
                         setTicketFormError(descriptionError);
+                    } else if (errors.category) {
+                        setTicketFormError(errors.category);
+                    } else {
+                        setTicketFormError(
+                            'Unable to submit your ticket. Please check your information and try again.',
+                        );
                     }
                 },
                 onFinish: () => setIsSubmittingTicket(false),
@@ -200,21 +262,30 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 }`}
             >
                 <div>
-                    {/* Top Header with App Title & Collapse Toggle Button */}
+                    {/* App title and sidebar collapse button */}
                     <div
                         className={`flex items-center border-b border-[#543F48] transition-all duration-300 ${
-                            collapsed ? 'flex-col gap-3 px-2 py-4 justify-center' : 'justify-between p-5'
+                            collapsed
+                                ? 'flex-col justify-center gap-3 px-2 py-4'
+                                : 'justify-between p-5'
                         }`}
                     >
                         <div className="flex items-center text-xl font-serif font-bold tracking-tight">
-                            <span className="mr-0.5 rounded border-2 border-white px-1.5 shadow-sm">R</span>
+                            <span className="mr-0.5 rounded border-2 border-white px-1.5 shadow-sm">
+                                R
+                            </span>
                             {!collapsed && <span>eservedIT</span>}
                         </div>
 
                         <button
                             type="button"
-                            onClick={() => setCollapsed((c) => !c)}
-                            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                            onClick={() => setCollapsed((current) => !current)}
+                            title={
+                                collapsed ? 'Expand sidebar' : 'Collapse sidebar'
+                            }
+                            aria-label={
+                                collapsed ? 'Expand sidebar' : 'Collapse sidebar'
+                            }
                             className="rounded-lg p-1.5 text-purple-100 transition-colors hover:bg-[#543F48] hover:text-white"
                         >
                             {collapsed ? (
@@ -226,15 +297,30 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     </div>
 
                     <nav className="mt-6 space-y-1 px-3">
-                        <NavLink href={route('dashboard')} active={route().current('dashboard')} icon={LayoutDashboard} collapsed={collapsed}>
+                        <NavLink
+                            href={route('dashboard')}
+                            active={route().current('dashboard')}
+                            icon={LayoutDashboard}
+                            collapsed={collapsed}
+                        >
                             Dashboard
                         </NavLink>
 
-                        <NavLink href={route('facilities.index')} active={route().current('facilities.index')} icon={SquareTerminal} collapsed={collapsed}>
+                        <NavLink
+                            href={route('facilities.index')}
+                            active={route().current('facilities.index')}
+                            icon={SquareTerminal}
+                            collapsed={collapsed}
+                        >
                             Facilities
                         </NavLink>
 
-                        <NavLink href={route('schedule.index')} active={route().current('schedule.index')} icon={CalendarDays} collapsed={collapsed}>
+                        <NavLink
+                            href={route('schedule.index')}
+                            active={route().current('schedule.index')}
+                            icon={CalendarDays}
+                            collapsed={collapsed}
+                        >
                             Schedule Grid
                         </NavLink>
 
@@ -248,6 +334,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 >
                                     My Bookings
                                 </NavLink>
+
                                 <NavLink
                                     href={route('concerns.my-tickets')}
                                     active={route().current('concerns.my-tickets')}
@@ -259,46 +346,53 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             </>
                         )}
 
-                        
-{isFacilityAdmin && (
-    <>
-        <NavLink
-            href={route('facilitator.bookings.index')}
-            active={route().current('facilitator.bookings.index')}
-            icon={ClipboardCheck}
-            collapsed={collapsed}
-        >
-            Booking Approvals
-        </NavLink>
+                        {isFacilityAdmin && (
+                            <>
+                                <NavLink
+                                    href={route('facilitator.bookings.index')}
+                                    active={route().current(
+                                        'facilitator.bookings.index',
+                                    )}
+                                    icon={ClipboardCheck}
+                                    collapsed={collapsed}
+                                >
+                                    Booking Approvals
+                                </NavLink>
 
-        <NavLink
-            href={route('facilitator.managed-facilities.index')}
-            active={route().current('facilitator.managed-facilities.index')}
-            icon={Building2}
-            collapsed={collapsed}
-        >
-            Managed Facilities
-        </NavLink>
+                                <NavLink
+                                    href={route(
+                                        'facilitator.managed-facilities.index',
+                                    )}
+                                    active={route().current(
+                                        'facilitator.managed-facilities.index',
+                                    )}
+                                    icon={Building2}
+                                    collapsed={collapsed}
+                                >
+                                    Managed Facilities
+                                </NavLink>
 
-        <NavLink
-            href={route('bookings.index')}
-            active={route().current('bookings.index')}
-            icon={CalendarCheck}
-            collapsed={collapsed}
-        >
-            My Bookings
-        </NavLink>
+                                <NavLink
+                                    href={route('bookings.index')}
+                                    active={route().current('bookings.index')}
+                                    icon={CalendarCheck}
+                                    collapsed={collapsed}
+                                >
+                                    My Bookings
+                                </NavLink>
 
-        <NavLink
-            href={route('concerns.my-tickets')}
-            active={route().current('concerns.my-tickets')}
-            icon={Ticket}
-            collapsed={collapsed}
-        >
-            My Tickets
-        </NavLink>
-    </>
-)}
+                                <NavLink
+                                    href={route('concerns.my-tickets')}
+                                    active={route().current(
+                                        'concerns.my-tickets',
+                                    )}
+                                    icon={Ticket}
+                                    collapsed={collapsed}
+                                >
+                                    My Tickets
+                                </NavLink>
+                            </>
+                        )}
 
                         {isSuperAdmin && (
                             <>
@@ -307,22 +401,29 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                         Admin
                                     </div>
                                 )}
+
                                 <NavLink
                                     href={route('admin.bookings.index')}
-                                    active={route().current('admin.bookings.index')}
+                                    active={route().current(
+                                        'admin.bookings.index',
+                                    )}
                                     icon={ClipboardCheck}
                                     collapsed={collapsed}
                                 >
                                     Booking Approvals
                                 </NavLink>
+
                                 <NavLink
                                     href={route('admin.facilities.index')}
-                                    active={route().current('admin.facilities.index')}
+                                    active={route().current(
+                                        'admin.facilities.index',
+                                    )}
                                     icon={Building2}
                                     collapsed={collapsed}
                                 >
                                     Manage Facilities
                                 </NavLink>
+
                                 <NavLink
                                     href={route('admin.users.index')}
                                     active={route().current('admin.users.index')}
@@ -331,15 +432,26 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 >
                                     Manage Users
                                 </NavLink>
+
                                 <NavLink
                                     href={route('admin.concerns.index')}
-                                    active={route().current('admin.concerns.index')}
+                                    active={route().current(
+                                        'admin.concerns.index',
+                                    )}
                                     icon={MessageSquareText}
                                     collapsed={collapsed}
                                 >
                                     User Concerns
                                 </NavLink>
-                                <NavLink href={route('admin.settings.edit')} active={route().current('admin.settings.edit')} icon={Settings} collapsed={collapsed}>
+
+                                <NavLink
+                                    href={route('admin.settings.edit')}
+                                    active={route().current(
+                                        'admin.settings.edit',
+                                    )}
+                                    icon={Settings}
+                                    collapsed={collapsed}
+                                >
                                     Booking Settings
                                 </NavLink>
                             </>
@@ -347,11 +459,11 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     </nav>
                 </div>
 
-                {/* Sidebar Footer Context Actions */}
+                {/* Sidebar footer actions */}
                 <div className="border-t border-[#543F48] bg-[#5C4750] p-4">
-                    {/* User Profile Badge */}
+                    {/* User profile badge */}
                     <div
-                        className={`mb-3 flex items-center rounded-xl bg-[#4E3A43]/50 p-2.5 border border-[#543F48]/40 ${
+                        className={`mb-3 flex items-center rounded-xl border border-[#543F48]/40 bg-[#4E3A43]/50 p-2.5 ${
                             collapsed ? 'justify-center' : 'gap-3'
                         }`}
                         title={collapsed ? user?.name ?? 'User' : undefined}
@@ -359,9 +471,12 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-[#6A535C]">
                             {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
                         </div>
+
                         {!collapsed && (
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold leading-tight text-white">{user?.name ?? 'User'}</p>
+                                <p className="truncate text-sm font-semibold leading-tight text-white">
+                                    {user?.name ?? 'User'}
+                                </p>
                                 <p className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.15em] text-purple-200/70">
                                     {ROLE_LABELS[role] ?? role ?? 'Guest'}
                                 </p>
@@ -373,7 +488,9 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         href={route('profile.edit')}
                         title={collapsed ? 'Settings' : undefined}
                         className={`mb-1 flex w-full items-center rounded-xl text-sm font-medium text-purple-100 transition-colors hover:bg-[#4E3A43] hover:text-white ${
-                            collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-4 py-2.5'
+                            collapsed
+                                ? 'justify-center px-0 py-2.5'
+                                : 'gap-3 px-4 py-2.5'
                         }`}
                     >
                         <Settings className="h-4 w-4 shrink-0 opacity-70" />
@@ -383,15 +500,21 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     <button
                         type="button"
                         onClick={() => {
-                            router.post(route('logout'), {}, {
-                                onSuccess: () => {
-                                    window.location.replace('/login');
+                            router.post(
+                                route('logout'),
+                                {},
+                                {
+                                    onSuccess: () => {
+                                        window.location.replace('/login');
+                                    },
                                 },
-                            });
+                            );
                         }}
                         title={collapsed ? 'Logout' : undefined}
                         className={`flex w-full items-center rounded-xl text-left text-sm font-medium text-rose-200 transition-colors hover:bg-rose-900/30 hover:text-white ${
-                            collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-4 py-2.5'
+                            collapsed
+                                ? 'justify-center px-0 py-2.5'
+                                : 'gap-3 px-4 py-2.5'
                         }`}
                     >
                         <LogOut className="h-4 w-4 shrink-0 opacity-70" />
@@ -400,80 +523,142 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 </div>
             </aside>
 
-            {/* Main Workspace */}
-            <div className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${collapsed ? 'ml-16' : 'ml-64'}`}>
+            {/* Main workspace */}
+            <div
+                className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${
+                    collapsed ? 'ml-16' : 'ml-64'
+                }`}
+            >
                 <header className="flex items-center justify-between border-b border-gray-200/70 bg-white/80 px-4 py-4 sm:px-8">
                     <div className="min-w-0 flex-1">{header}</div>
 
                     <div className="ml-4 flex items-center gap-4">
-                        {/* Interactive Notification Bell Container */}
+                        {/* Notification bell */}
                         <div className="relative flex items-center">
                             <button
-                                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                                type="button"
+                                onClick={() =>
+                                    setNotificationsOpen((open) => !open)
+                                }
+                                aria-label="View notifications"
+                                aria-expanded={notificationsOpen}
                                 className="relative rounded-xl p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none"
                             >
-                                <span className="sr-only">View notifications</span>
+                                <span className="sr-only">
+                                    View notifications
+                                </span>
                                 <Bell className="h-5 w-5" />
+
                                 {unreadCount > 0 && (
                                     <span className="absolute right-2 top-2 flex h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
                                 )}
                             </button>
 
-                            {/* Notifications Dropdown Panel */}
                             {notificationsOpen && (
                                 <>
-                                    <div className="fixed inset-0 z-30" onClick={() => setNotificationsOpen(false)} />
-                                    <div className="absolute right-0 top-full mt-2 z-40 w-80 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl ring-1 ring-black/5">
+                                    <div
+                                        className="fixed inset-0 z-30"
+                                        onClick={() =>
+                                            setNotificationsOpen(false)
+                                        }
+                                    />
+
+                                    <div className="absolute right-0 top-full z-40 mt-2 w-80 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl ring-1 ring-black/5">
                                         <div className="mb-2 flex items-center justify-between border-b border-gray-100 pb-2">
-                                            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Notifications</span>
+                                            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                                                Notifications
+                                            </span>
+
                                             <div className="flex items-center gap-2">
                                                 {unreadCount > 0 && (
                                                     <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-[#6A535C]">
                                                         {unreadCount} New
                                                     </span>
                                                 )}
+
                                                 {unreadCount > 0 && (
                                                     <button
                                                         type="button"
-                                                        onClick={clearAllNotifications}
-                                                        disabled={isClearingNotifications}
+                                                        onClick={
+                                                            clearAllNotifications
+                                                        }
+                                                        disabled={
+                                                            isClearingNotifications
+                                                        }
                                                         className="text-[10px] font-semibold text-indigo-600 transition hover:text-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
-                                                        {isClearingNotifications ? 'Clearing…' : 'Clear all'}
+                                                        {isClearingNotifications
+                                                            ? 'Clearing…'
+                                                            : 'Clear all'}
                                                     </button>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="max-h-64 overflow-y-auto space-y-1">
-                                            {realtimeNotifications.length === 0 ? (
+
+                                        <div className="max-h-64 space-y-1 overflow-y-auto">
+                                            {realtimeNotifications.length ===
+                                            0 ? (
                                                 <div className="py-6 text-center text-xs text-gray-400">
-                                                    All caught up! No new notifications.
+                                                    All caught up! No new
+                                                    notifications.
                                                 </div>
                                             ) : (
-                                                realtimeNotifications.map((notification, index) => (
-                                                    <button
-                                                        key={notification.id || index}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            if (!notification.read) {
-                                                                router.post(route('notifications.read', notification.id), {}, {
-                                                                    preserveScroll: true,
-                                                                    preserveState: true,
-                                                                });
+                                                realtimeNotifications.map(
+                                                    (notification, index) => (
+                                                        <button
+                                                            key={
+                                                                notification.id ??
+                                                                index
                                                             }
-                                                            setViewingNotification(notification);
-                                                            setNotificationsOpen(false);
-                                                        }}
-                                                        className={`w-full text-left rounded-xl p-2.5 text-xs transition hover:bg-gray-50 ${
-                                                            notification.read ? 'text-gray-500' : 'bg-purple-50/60 text-gray-600'
-                                                        }`}
-                                                    >
-                                                        <p className={`font-semibold ${notification.read ? 'text-gray-600' : 'text-gray-900'}`}>
-                                                            {notification.title || 'System Notification'}
-                                                        </p>
-                                                        <p className="mt-0.5 text-gray-500">{notification.message || 'Update details received.'}</p>
-                                                    </button>
-                                                ))
+                                                            type="button"
+                                                            onClick={() => {
+                                                                if (
+                                                                    !notification.read
+                                                                ) {
+                                                                    router.post(
+                                                                        route(
+                                                                            'notifications.read',
+                                                                            notification.id,
+                                                                        ),
+                                                                        {},
+                                                                        {
+                                                                            preserveScroll: true,
+                                                                            preserveState: true,
+                                                                        },
+                                                                    );
+                                                                }
+
+                                                                setViewingNotification(
+                                                                    notification,
+                                                                );
+                                                                setNotificationsOpen(
+                                                                    false,
+                                                                );
+                                                            }}
+                                                            className={`w-full rounded-xl p-2.5 text-left text-xs transition hover:bg-gray-50 ${
+                                                                notification.read
+                                                                    ? 'text-gray-500'
+                                                                    : 'bg-purple-50/60 text-gray-600'
+                                                            }`}
+                                                        >
+                                                            <p
+                                                                className={`font-semibold ${
+                                                                    notification.read
+                                                                        ? 'text-gray-600'
+                                                                        : 'text-gray-900'
+                                                                }`}
+                                                            >
+                                                                {notification.title ??
+                                                                    'System Notification'}
+                                                            </p>
+
+                                                            <p className="mt-0.5 text-gray-500">
+                                                                {notification.message ??
+                                                                    'Update details received.'}
+                                                            </p>
+                                                        </button>
+                                                    ),
+                                                )
                                             )}
                                         </div>
                                     </div>
@@ -482,7 +667,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         </div>
 
                         {action && (
-                            <div className="flex items-center shrink-0">
+                            <div className="flex shrink-0 items-center">
                                 {action}
                             </div>
                         )}
@@ -501,74 +686,132 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 </main>
             </div>
 
-            {/* Notification Detail Modal */}
+            {/* Notification detail modal */}
             {viewingNotification && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" onClick={() => setViewingNotification(null)}>
-                    <div className="w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-start justify-between gap-3 mb-4">
-                            <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">Notification</p>
-                                <h3 className="mt-1 text-xl font-semibold text-gray-900">{viewingNotification.title || 'System Notification'}</h3>
-                            </div>
-                            <button type="button" onClick={() => setViewingNotification(null)} className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700">✕</button>
-                        </div>
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap">{viewingNotification.message || 'No additional details.'}</p>
-                        <div className="mt-6 flex justify-end">
-                            <button type="button" onClick={() => setViewingNotification(null)} className="rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]">Close</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Support Ticket Float Trigger */}
-            <button
-                type="button"
-                onClick={() => setHelpOpen(true)}
-                className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#6A535C] text-xl font-semibold text-white shadow-lg transition hover:bg-[#533e45]"
-                aria-label="Submit a ticket"
-            >
-                <MessageCircleQuestion className="h-6 w-6" />
-            </button>
-
-            {/* Support Ticket Modal Dialog */}
-            {helpOpen && (
-                <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4">
-                    <div className="w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+                    onClick={() => setViewingNotification(null)}
+                >
+                    <div
+                        className="w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl"
+                        onClick={(event) => event.stopPropagation()}
+                    >
                         <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">Submit a Ticket</p>
-                                <h3 className="mt-1 text-xl font-semibold text-gray-900">Report an issue or share feedback</h3>
+                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">
+                                    Notification
+                                </p>
+                                <h3 className="mt-1 text-xl font-semibold text-gray-900">
+                                    {viewingNotification.title ??
+                                        'System Notification'}
+                                </h3>
                             </div>
+
                             <button
                                 type="button"
-                                onClick={() => setHelpOpen(false)}
+                                onClick={() => setViewingNotification(null)}
+                                aria-label="Close notification"
                                 className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        <form onSubmit={submitTicket} className="space-y-4">
+                        <p className="whitespace-pre-wrap text-sm text-gray-700">
+                            {viewingNotification.message ??
+                                'No additional details.'}
+                        </p>
+
+                        <div className="mt-6 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setViewingNotification(null)}
+                                className="rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Floating support ticket trigger */}
+            <button
+                type="button"
+                onClick={() => {
+                    setTicketFormError('');
+                    setHelpOpen(true);
+                }}
+                className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#6A535C] text-xl font-semibold text-white shadow-lg transition hover:bg-[#533e45]"
+                aria-label="Submit a ticket"
+                title="Submit a ticket"
+            >
+                <MessageCircleQuestion className="h-6 w-6" />
+            </button>
+
+            {/* Support ticket modal */}
+            {helpOpen && (
+                <div
+                    className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4"
+                    onClick={(event) => {
+                        if (event.target === event.currentTarget) {
+                            closeTicketModal();
+                        }
+                    }}
+                >
+                    <div className="w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl">
+                        <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-gray-700">Appeal Date</label>
-                                <input
-                                    type="date"
-                                    value={ticketAppealDate}
-                                    onChange={(e) => setTicketAppealDate(e.target.value)}
-                                    className="block w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                                />
+                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">
+                                    Submit a Ticket
+                                </p>
+                                <h3 className="mt-1 text-xl font-semibold text-gray-900">
+                                    Report an issue or share feedback
+                                </h3>
+                                <p className="mt-1 text-sm text-gray-500">
+                                    Your report date will be recorded automatically when you submit.
+                                </p>
                             </div>
 
+                            <button
+                                type="button"
+                                onClick={closeTicketModal}
+                                disabled={isSubmittingTicket}
+                                aria-label="Close ticket form"
+                                className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={submitTicket} className="space-y-4">
+                            {/* Appeal Date removed: the server should record created_at automatically. */}
+
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-gray-700">Concern Category</label>
+                                <label
+                                    htmlFor="ticket-category"
+                                    className="mb-1 block text-sm font-medium text-gray-700"
+                                >
+                                    Concern Category
+                                </label>
+
                                 <select
+                                    id="ticket-category"
+                                    required
                                     value={ticketCategory}
-                                    onChange={(e) => setTicketCategory(e.target.value)}
+                                    onChange={(event) => {
+                                        setTicketCategory(event.target.value);
+                                        setTicketFormError('');
+                                    }}
                                     className="block w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                                 >
-                                    <option value="">Select a category…</option>
+                                    <option value="">
+                                        Select a category…
+                                    </option>
                                     <option value="Facility">Facility</option>
-                                    <option value="UI Improvements">UI Improvements</option>
+                                    <option value="UI Improvements">
+                                        UI Improvements
+                                    </option>
                                     <option value="Account">Account</option>
                                     <option value="Bug">Bug</option>
                                     <option value="Others">Others</option>
@@ -576,12 +819,23 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             </div>
 
                             <div>
-                                <label className="mb-1 block text-sm font-medium text-gray-700">Detailed Information</label>
+                                <label
+                                    htmlFor="ticket-detailed-info"
+                                    className="mb-1 block text-sm font-medium text-gray-700"
+                                >
+                                    Detailed Information
+                                </label>
+
                                 <textarea
+                                    id="ticket-detailed-info"
                                     value={ticketDetailedInfo}
-                                    onChange={(e) => {
-                                        const nextValue = e.target.value;
-                                        if (nextValue.length <= TICKET_DESCRIPTION_MAX_LENGTH) {
+                                    onChange={(event) => {
+                                        const nextValue = event.target.value;
+
+                                        if (
+                                            nextValue.length <=
+                                            TICKET_DESCRIPTION_MAX_LENGTH
+                                        ) {
                                             setTicketDetailedInfo(nextValue);
                                             setTicketFormError('');
                                         }
@@ -594,19 +848,28 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     placeholder="Describe the issue or feedback in detail…"
                                     required
                                 />
+
                                 <div className="mt-1 flex items-start justify-between gap-3">
-                                    <p id="ticket-description-error" role="alert" className="text-xs text-rose-600">
+                                    <p
+                                        id="ticket-description-error"
+                                        role="alert"
+                                        className="text-xs text-rose-600"
+                                    >
                                         {ticketFormError}
                                     </p>
+
                                     <p
                                         id="ticket-description-counter"
                                         className={`ml-auto shrink-0 text-xs ${
-                                            ticketDetailedInfo.length >= TICKET_DESCRIPTION_MAX_LENGTH
+                                            ticketDetailedInfo.length >=
+                                            TICKET_DESCRIPTION_MAX_LENGTH
                                                 ? 'font-semibold text-rose-600'
                                                 : 'text-gray-500'
                                         }`}
                                     >
-                                        {ticketDetailedInfo.length} / {TICKET_DESCRIPTION_MAX_LENGTH} characters
+                                        {ticketDetailedInfo.length} /{' '}
+                                        {TICKET_DESCRIPTION_MAX_LENGTH}{' '}
+                                        characters
                                     </p>
                                 </div>
                             </div>
@@ -614,21 +877,27 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             <div className="flex justify-end gap-2">
                                 <button
                                     type="button"
-                                    onClick={() => setHelpOpen(false)}
-                                    className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+                                    onClick={closeTicketModal}
+                                    disabled={isSubmittingTicket}
+                                    className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
+
                                 <button
                                     type="submit"
                                     disabled={
                                         isSubmittingTicket ||
+                                        !ticketCategory ||
                                         ticketDetailedInfo.trim().length === 0 ||
-                                        ticketDetailedInfo.length > TICKET_DESCRIPTION_MAX_LENGTH
+                                        ticketDetailedInfo.trim().length >
+                                            TICKET_DESCRIPTION_MAX_LENGTH
                                     }
                                     className="rounded-xl bg-[#6A535C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
-                                    {isSubmittingTicket ? 'Submitting…' : 'Submit a ticket'}
+                                    {isSubmittingTicket
+                                        ? 'Submitting…'
+                                        : 'Submit a ticket'}
                                 </button>
                             </div>
                         </form>

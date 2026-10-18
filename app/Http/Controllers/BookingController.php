@@ -3,20 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Facility;
 use App\Models\SystemSetting;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class BookingController extends Controller
 {
     /**
-     * "My Bookings" — lists the authenticated user's own bookings, split into
-     * upcoming (pending/approved, not yet passed) and history (everything
-     * else: declined, cancelled, or past).
+     * Display the authenticated user's bookings.
      */
     public function index(Request $request)
     {
@@ -24,14 +23,17 @@ class BookingController extends Controller
         $status = $request->input('status');
         $openBookingId = $request->input('booking');
 
-        $query = Booking::with('facility')->where('user_id', Auth::id());
+        $query = Booking::with('facility')
+            ->where('user_id', Auth::id());
 
         if ($status) {
             $query->where('status', $status);
         }
 
         if ($search) {
-            $query->whereHas('facility', fn ($f) => $f->where('name', 'like', "%{$search}%"));
+            $query->whereHas('facility', function ($facilityQuery) use ($search) {
+                $facilityQuery->where('name', 'like', "%{$search}%");
+            });
         }
 
         $bookings = $query->orderByDesc('date')->get();
@@ -39,14 +41,20 @@ class BookingController extends Controller
         $today = Carbon::today();
 
         $upcomingBookings = $bookings
-            ->filter(fn ($b) => in_array($b->status, ['pending', 'approved']) && Carbon::parse($b->date)->gte($today))
+            ->filter(fn ($booking) =>
+                in_array($booking->status, ['pending', 'approved']) &&
+                Carbon::parse($booking->date)->gte($today)
+            )
             ->values();
 
         $historyBookings = $bookings
-            ->reject(fn ($b) => $upcomingBookings->contains('id', $b->id))
+            ->reject(fn ($booking) =>
+                $upcomingBookings->contains('id', $booking->id)
+            )
             ->values();
 
         $openBooking = null;
+
         if ($openBookingId) {
             $openBooking = Booking::with('facility')
                 ->where('user_id', Auth::id())
@@ -54,8 +62,12 @@ class BookingController extends Controller
         }
 
         $activityLogs = [];
-        if (class_exists('\App\Models\ActivityLog')) {
-            $activityLogs = \App\Models\ActivityLog::whereIn('booking_id', $bookings->pluck('id'))
+
+        if (class_exists(\App\Models\ActivityLog::class)) {
+            $activityLogs = \App\Models\ActivityLog::whereIn(
+                'booking_id',
+                $bookings->pluck('id')
+            )
                 ->orderByDesc('created_at')
                 ->get();
         }
@@ -70,9 +82,8 @@ class BookingController extends Controller
         ]);
     }
 
-
     /**
-     * Display a receipt for an approved booking owned by the authenticated user.
+     * Display a receipt for an approved booking owned by the user.
      */
     public function receipt(string $id)
     {
@@ -80,68 +91,145 @@ class BookingController extends Controller
             ->where('user_id', Auth::id())
             ->findOrFail($id);
 
-        abort_unless($booking->status === 'approved', 403, 'Receipts are available only for approved bookings.');
+        abort_unless(
+            $booking->status === 'approved',
+            403,
+            'Receipts are available only for approved bookings.'
+        );
 
         return Inertia::render('Receipt', [
             'booking' => $booking,
         ]);
     }
 
+    /**
+     * Update a pending booking owned by the authenticated user.
+     */
     public function update(Request $request, string $id)
     {
-        $booking = Booking::where('user_id', Auth::id())->findOrFail($id);
+        $booking = Booking::with('facility')
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
 
         if ($booking->status !== 'pending') {
-            return redirect()->back()->withErrors(['status' => 'Only pending bookings can be edited.']);
+            return back()->withErrors([
+                'status' => 'Only pending bookings can be edited.',
+            ]);
         }
 
         $validated = $request->validate([
-            'date'           => 'required|date|after_or_equal:today',
-            'start_time'     => 'required|date_format:H:i',
-            'end_time'       => 'required|date_format:H:i|after:start_time',
-            'attendees'      => 'required|integer|min:1',
-            'needs_manpower' => 'required|boolean',
-            'notes'          => 'nullable|string|max:10000',
+            'date' => ['required', 'date', 'after_or_equal:today'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'attendees' => ['required', 'integer', 'min:1'],
+            'needs_manpower' => ['required', 'boolean'],
+            'notes' => ['nullable', 'string', 'max:10000'],
         ]);
 
-        $settings = SystemSetting::current();
-        $bookingDate = Carbon::parse($validated['date']);
-        $maxDays = $settings->max_advance_days ?? 30;
-        if ($bookingDate->gt(now()->addDays($maxDays))) {
-            return back()->withErrors(['date' => "You can only book facilities up to {$maxDays} days in advance."])->withInput();
+        $facility = $booking->facility;
+
+        if (!$facility) {
+            return back()->withErrors([
+                'facility' => 'The facility associated with this booking could not be found.',
+            ]);
         }
 
-        $buffer = $settings->cleanup_buffer_minutes ?? 30;
-        $start = Carbon::createFromFormat('H:i', $validated['start_time']);
-        $end = Carbon::createFromFormat('H:i', $validated['end_time']);
-        $conflictingBookings = Booking::where('facility_id', $booking->facility_id)
+        // Enforce the facility's capacity server-side.
+        if (
+            $facility->capacity !== null &&
+            (int) $validated['attendees'] > (int) $facility->capacity
+        ) {
+            return back()->withErrors([
+                'attendees' => "This facility allows a maximum of {$facility->capacity} attendees.",
+            ]);
+        }
+
+        // Do not accept manpower requests for unsupported facilities.
+        $needsManpower = (bool) $validated['needs_manpower'];
+
+        if ($needsManpower && !$facility->allowTdevsManpower) {
+            throw ValidationException::withMessages([
+                'needs_manpower' => 'TDEVS manpower is not available for this facility.',
+            ]);
+        }
+
+        $settings = SystemSetting::current();
+
+        $bookingDate = Carbon::parse($validated['date'])->startOfDay();
+        $today = Carbon::today();
+
+        if ($bookingDate->lt($today)) {
+            return back()->withErrors([
+                'date' => 'The booking date cannot be in the past.',
+            ]);
+        }
+
+        $maxDays = (int) ($settings->max_advance_days ?? 30);
+
+        if ($bookingDate->gt($today->copy()->addDays($maxDays))) {
+            return back()->withErrors([
+                'date' => "You can only book facilities up to {$maxDays} days in advance.",
+            ]);
+        }
+
+        $buffer = max(0, (int) ($settings->cleanup_buffer_minutes ?? 30));
+
+        $start = Carbon::createFromFormat('!H:i', $validated['start_time']);
+        $end = Carbon::createFromFormat('!H:i', $validated['end_time']);
+
+        $conflictingBookings = Booking::where(
+            'facility_id',
+            $booking->facility_id
+        )
             ->whereDate('date', $validated['date'])
             ->whereIn('status', ['pending', 'approved'])
             ->where('id', '!=', $booking->id)
             ->get(['start_time', 'end_time']);
 
         foreach ($conflictingBookings as $existing) {
-            $existingStart = Carbon::parse($existing->start_time)->subMinutes($buffer);
-            $existingEnd = Carbon::parse($existing->end_time)->addMinutes($buffer);
-            if ($start->lt($existingEnd) && $end->gt($existingStart)) {
-                return back()->withErrors(['start_time' => "This room requires a {$buffer}-minute cleanup buffer from neighboring bookings."])->withInput();
+            $existingStart = Carbon::parse($existing->start_time)
+                ->subMinutes($buffer);
+
+            $existingEnd = Carbon::parse($existing->end_time)
+                ->addMinutes($buffer);
+
+            if (
+                $start->lt($existingEnd) &&
+                $end->gt($existingStart)
+            ) {
+                return back()->withErrors([
+                    'start_time' => "This facility requires a {$buffer}-minute cleanup buffer between bookings.",
+                ]);
             }
         }
 
-        $validated['booking_date'] = $validated['date'];
-        $booking->update($validated);
+        // Update only the intended database columns.
+        // Event, department, designation, purpose, and facilitator
+        // remain combined in the existing notes column.
+        $booking->update([
+            'date' => $validated['date'],
+            'booking_date' => $validated['date'],
+            'start_time' => $start->format('H:i'),
+            'end_time' => $end->format('H:i'),
+            'attendees' => (int) $validated['attendees'],
+            'needs_manpower' => $needsManpower,
+            'notes' => $validated['notes'] ?? null,
+        ]);
 
-        return redirect()->back()->with('success', 'Booking updated successfully.');
+        return back()->with('success', 'Booking updated successfully.');
     }
 
+    /**
+     * Cancel a booking owned by the authenticated user.
+     */
     public function cancel(string $id)
     {
         $booking = Booking::where('id', $id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        if (! in_array($booking->status, ['pending', 'approved'])) {
-            return redirect()->back()->with('toast', [
+        if (!in_array($booking->status, ['pending', 'approved'])) {
+            return back()->with('toast', [
                 'type' => 'error',
                 'message' => 'This booking can no longer be cancelled.',
             ]);
@@ -151,70 +239,111 @@ class BookingController extends Controller
             'status' => 'cancelled',
         ]);
 
-        return redirect()->back()->with('toast', [
+        return back()->with('toast', [
             'type' => 'success',
             'message' => 'Booking cancelled.',
         ]);
     }
 
+    /**
+     * Create a new facility booking.
+     */
     public function store(Request $request)
     {
         $settings = SystemSetting::current();
 
         $consentRule = ($settings->require_consent_letter ?? false)
-            ? 'required|file|mimes:pdf,doc,docx|max:5120'
-            : 'nullable|file|mimes:pdf,doc,docx|max:5120';
+            ? ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120']
+            : ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'];
 
         $validated = $request->validate([
-            'facility_id'    => 'required|string|exists:facilities,id',
-            'date'           => 'required|date',
-            'start_time'     => 'required|string',
-            'end_time'       => 'required|string',
-            'notes'          => 'nullable|string',
-            'attendees'      => 'nullable|integer|min:1',
-            'guest_name'     => 'nullable|string',
-            'guest_email'    => 'nullable|email',
-            'guest_phone'    => 'nullable|string',
-            'needs_manpower' => 'nullable|boolean',
+            'facility_id' => ['required', 'string', 'exists:facilities,id'],
+            'date' => ['required', 'date', 'after_or_equal:today'],
+            'start_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'notes' => ['nullable', 'string', 'max:10000'],
+            'attendees' => ['nullable', 'integer', 'min:1'],
+            'guest_name' => ['nullable', 'string', 'max:255'],
+            'guest_email' => ['nullable', 'email', 'max:255'],
+            'guest_phone' => ['nullable', 'string', 'max:50'],
+            'needs_manpower' => ['nullable', 'boolean'],
             'consent_letter' => $consentRule,
         ]);
 
-        $start = Carbon::parse($validated['start_time']);
-        $end = Carbon::parse($validated['end_time']);
-        $bookingDate = Carbon::parse($validated['date']);
+        $facility = Facility::findOrFail($validated['facility_id']);
 
-        if ($end->lessThanOrEqualTo($start)) {
-            return back()->withErrors(['end_time' => 'End time must be after start time.'])->withInput();
+        $attendeeCount = (int) ($validated['attendees'] ?? 1);
+
+        if (
+            $facility->capacity !== null &&
+            $attendeeCount > (int) $facility->capacity
+        ) {
+            return back()->withErrors([
+                'attendees' => "This facility allows a maximum of {$facility->capacity} attendees.",
+            ]);
         }
 
-        $maxDays = $settings->max_advance_days ?? 30;
-        if ($bookingDate->gt(now()->addDays($maxDays))) {
-            return back()->withErrors(['date' => "You can only book facilities up to {$maxDays} days in advance."])->withInput();
+        $needsManpower = (bool) ($validated['needs_manpower'] ?? false);
+
+        if ($needsManpower && !$facility->allowTdevsManpower) {
+            throw ValidationException::withMessages([
+                'needs_manpower' => 'TDEVS manpower is not available for this facility.',
+            ]);
         }
 
-        $buffer = $settings->cleanup_buffer_minutes ?? 30;
-        
-        $existingBookings = Booking::where('facility_id', $validated['facility_id'])
-            ->whereDate('booking_date', $validated['date'])
+        $bookingDate = Carbon::parse($validated['date'])->startOfDay();
+        $today = Carbon::today();
+
+        $maxDays = (int) ($settings->max_advance_days ?? 30);
+
+        if ($bookingDate->gt($today->copy()->addDays($maxDays))) {
+            return back()->withErrors([
+                'date' => "You can only book facilities up to {$maxDays} days in advance.",
+            ]);
+        }
+
+        $buffer = max(0, (int) ($settings->cleanup_buffer_minutes ?? 30));
+
+        $start = Carbon::createFromFormat('!H:i', $validated['start_time']);
+        $end = Carbon::createFromFormat('!H:i', $validated['end_time']);
+
+        $existingBookings = Booking::where(
+            'facility_id',
+            $validated['facility_id']
+        )
+            ->whereDate('date', $validated['date'])
             ->whereIn('status', ['pending', 'approved'])
             ->get(['start_time', 'end_time']);
 
         foreach ($existingBookings as $existing) {
-            $existingStartWithBuffer = Carbon::parse($existing->start_time)->subMinutes($buffer);
-            $existingEndWithBuffer = Carbon::parse($existing->end_time)->addMinutes($buffer);
+            $existingStart = Carbon::parse($existing->start_time)
+                ->subMinutes($buffer);
 
-            if ($start->lt($existingEndWithBuffer) && $end->gt($existingStartWithBuffer)) {
-                return back()->withErrors(['start_time' => "This room requires a {$buffer}-minute cleanup buffer from neighboring bookings."])->withInput();
+            $existingEnd = Carbon::parse($existing->end_time)
+                ->addMinutes($buffer);
+
+            if (
+                $start->lt($existingEnd) &&
+                $end->gt($existingStart)
+            ) {
+                return back()->withErrors([
+                    'start_time' => "This facility requires a {$buffer}-minute cleanup buffer between bookings.",
+                ]);
             }
         }
 
-        $isSuperAdmin = Auth::check() && Auth::user()->role === 'super_admin';
-        $approvalScope = $settings->auto_approve_scope ?? 'disabled';
+        $isSuperAdmin = Auth::check()
+            && Auth::user()->role === 'super_admin';
 
+        $approvalScope = $settings->auto_approve_scope ?? 'disabled';
         $autoApprove = false;
+
         if ($approvalScope === 'everyone') {
             $autoApprove = true;
-        } elseif ($approvalScope === 'superadmin_only' && $isSuperAdmin) {
+        } elseif (
+            $approvalScope === 'superadmin_only' &&
+            $isSuperAdmin
+        ) {
             $autoApprove = true;
         }
 
@@ -222,51 +351,73 @@ class BookingController extends Controller
         $originalName = null;
 
         if ($request->hasFile('consent_letter')) {
-            $path = $request->file('consent_letter')->store('consent-letters', 'local');
-            $originalName = $request->file('consent_letter')->getClientOriginalName();
+            $path = $request->file('consent_letter')
+                ->store('consent-letters', 'local');
+
+            $originalName = $request->file('consent_letter')
+                ->getClientOriginalName();
         }
 
         $booking = Booking::create([
-            'facility_id'           => $validated['facility_id'],
-            'user_id'               => Auth::id(), 
-            'guest_name'            => $validated['guest_name'] ?? null,
-            'guest_email'           => $validated['guest_email'] ?? null,
-            'guest_phone'           => $validated['guest_phone'] ?? null,
-            'date'                  => $validated['date'],
-            'booking_date'          => $validated['date'],
-            'start_time'            => $start->format('H:i'),
-            'end_time'              => $end->format('H:i'),
-            'notes'                 => $validated['notes'] ?? null,
-            'attendees'             => $validated['attendees'] ?? 1,
-            'needs_manpower'        => $validated['needs_manpower'] ?? false,
+            'facility_id' => $validated['facility_id'],
+            'user_id' => Auth::id(),
+            'guest_name' => $validated['guest_name'] ?? null,
+            'guest_email' => $validated['guest_email'] ?? null,
+            'guest_phone' => $validated['guest_phone'] ?? null,
+            'date' => $validated['date'],
+            'booking_date' => $validated['date'],
+            'start_time' => $start->format('H:i'),
+            'end_time' => $end->format('H:i'),
+            'notes' => $validated['notes'] ?? null,
+            'attendees' => $attendeeCount,
+            'needs_manpower' => $needsManpower,
             'consent_file_uploaded' => $path !== null,
-            'consent_file_name'     => $originalName,
-            'consent_file_path'     => $path,
-            'status'                => $autoApprove ? 'approved' : 'pending',
-            'approved_at'           => $autoApprove ? now() : null,
-            'approved_by'           => $autoApprove ? ($isSuperAdmin ? 'Superadmin Instant Pass' : 'System Auto-Approval Policies') : null,
+            'consent_file_name' => $originalName,
+            'consent_file_path' => $path,
+            'status' => $autoApprove ? 'approved' : 'pending',
+            'approved_at' => $autoApprove ? now() : null,
+            'approved_by' => $autoApprove
+                ? (
+                    $isSuperAdmin
+                        ? 'Superadmin Instant Pass'
+                        : 'System Auto-Approval Policies'
+                )
+                : null,
         ]);
 
         try {
-            if (class_exists('\App\Events\BookingCreatedEvent')) {
-                broadcast(new \App\Events\BookingCreatedEvent($booking))->toOthers();
+            if (class_exists(\App\Events\BookingCreatedEvent::class)) {
+                broadcast(
+                    new \App\Events\BookingCreatedEvent($booking)
+                )->toOthers();
             }
-        } catch (\Exception $e) {
-            Log::warning("WebSocket Broadcast failed: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::warning(
+                'WebSocket broadcast failed: ' . $e->getMessage()
+            );
         }
 
-        return redirect()->back()->with('toast', [
+        return back()->with('toast', [
             'type' => 'success',
             'message' => 'Booking submitted successfully.',
         ]);
     }
 
     /**
-     * Approve a pending booking reservation.
+     * Approve a booking.
+     *
+     * IMPORTANT: Protect this route with administrator middleware/policies.
      */
     public function approve(Request $request, string $id)
     {
         $booking = Booking::findOrFail($id);
+
+        if ($booking->status !== 'pending') {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Only pending bookings can be approved.',
+            ]);
+        }
 
         $booking->update([
             'status' => 'approved',
@@ -275,43 +426,59 @@ class BookingController extends Controller
             'rejection_reason' => null,
         ]);
 
-        if (class_exists('\App\Models\ActivityLog')) {
+        if (class_exists(\App\Models\ActivityLog::class)) {
             \App\Models\ActivityLog::create([
                 'booking_id' => $booking->id,
                 'user_id' => Auth::id(),
                 'action' => 'approved',
-                'notes' => 'Booking was approved by ' . (Auth::user()->name ?? 'Admin'),
+                'notes' => 'Booking was approved by ' .
+                    (Auth::user()->name ?? 'Admin'),
             ]);
         }
 
-        return redirect()->back()->with('toast', [
+        return back()->with('toast', [
             'type' => 'success',
             'message' => 'Booking approved successfully.',
         ]);
     }
 
     /**
-     * Decline a pending booking reservation.
+     * Decline a booking.
+     *
+     * IMPORTANT: Protect this route with administrator middleware/policies.
      */
     public function decline(Request $request, string $id)
     {
         $booking = Booking::findOrFail($id);
 
-        $booking->update([
-            'status' => 'declined',
-            'rejection_reason' => $request->input('reason', 'Declined by administrator'),
+        if ($booking->status !== 'pending') {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Only pending bookings can be declined.',
+            ]);
+        }
+
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        if (class_exists('\App\Models\ActivityLog')) {
+        $reason = $validated['reason'] ?? 'Declined by administrator';
+
+        $booking->update([
+            'status' => 'declined',
+            'rejection_reason' => $reason,
+        ]);
+
+        if (class_exists(\App\Models\ActivityLog::class)) {
             \App\Models\ActivityLog::create([
                 'booking_id' => $booking->id,
                 'user_id' => Auth::id(),
                 'action' => 'declined',
-                'notes' => 'Booking was declined: ' . $request->input('reason', 'No reason specified'),
+                'notes' => 'Booking was declined: ' . $reason,
             ]);
         }
 
-        return redirect()->back()->with('toast', [
+        return back()->with('toast', [
             'type' => 'success',
             'message' => 'Booking declined successfully.',
         ]);

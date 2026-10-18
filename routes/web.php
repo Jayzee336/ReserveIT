@@ -335,11 +335,19 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     // User Tickets
     Route::get('/my-tickets', [UserConcernController::class, 'myTickets'])
         ->name('concerns.my-tickets');
+    
+    Route::patch('/my-tickets/{concern}', [UserConcernController::class,'updateMyTicket',])
+        ->name('concerns.my-tickets.update');
 
     // Admin Reply to Concerns
     Route::post('/admin/concerns/{concern}/reply', [UserConcernController::class, 'reply'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.concerns.reply');
+
+    // Super Admin — Edit an Existing Concern Reply
+    Route::patch('/admin/concerns/{concern}/reply', [UserConcernController::class, 'updateReply'])
+        ->middleware('role:super_admin')
+        ->name('admin.concerns.updateReply');
 
     // Notification: Mark All as Read
     Route::post('/notifications/clear', function () {

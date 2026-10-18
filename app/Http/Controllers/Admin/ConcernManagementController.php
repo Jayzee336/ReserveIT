@@ -12,7 +12,10 @@ class ConcernManagementController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = UserConcern::with('user:id,name,email');
+        $query = UserConcern::with([
+            'user:id,name,email',
+            'replyHistories.editor:id,name',
+        ]);
 
         // Search by description or user name
         if ($search = $request->input('search')) {
