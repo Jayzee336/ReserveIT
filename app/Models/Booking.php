@@ -10,11 +10,12 @@ class Booking extends Model
 {
     use HasUuids;
 
-    // Tell Laravel the primary key is a string (UUID), not an auto-incrementing number
+    // Tell Laravel the primary key is a string (UUID), not an auto-incrementing number.
     protected $keyType = 'string';
+
     public $incrementing = false;
 
-    // Fields that are allowed to be mass-assigned via Booking::create([...])
+    // Fields that are allowed to be mass-assigned.
     protected $fillable = [
         'facility_id',
         'user_id',
@@ -39,9 +40,17 @@ class Booking extends Model
         'checked_in_at',
         'checked_out_at',
         'overtime_notified_at',
+
+        // Overtime billing and payment tracking.
+        'overtime_minutes',
+        'overtime_fee_amount',
+        'overtime_fee_rate',
+        'overtime_payment_status',
+        'overtime_paid_at',
+        'overtime_paid_by',
     ];
 
-    // Automatically converts these fields to the right PHP type when you read them
+    // Automatically converts fields to their appropriate PHP types.
     protected $casts = [
         'date' => 'date:Y-m-d',
         'booking_date' => 'date:Y-m-d',
@@ -51,20 +60,28 @@ class Booking extends Model
         'checked_in_at' => 'datetime',
         'checked_out_at' => 'datetime',
         'overtime_notified_at' => 'datetime',
+
+        // Overtime billing fields.
+        'overtime_minutes' => 'integer',
+        'overtime_fee_amount' => 'decimal:2',
+        'overtime_fee_rate' => 'decimal:2',
+        'overtime_paid_at' => 'datetime',
     ];
 
-    // Relationship: a booking belongs to one facility
+    // A booking belongs to one facility.
     public function facility()
     {
         return $this->belongsTo(Facility::class);
     }
 
-    // Relationship: a booking belongs to one user (nullable for guests)
+    // A booking belongs to one user.
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    // Restrict facility administrators to bookings for their assigned facilities.
+    // Super administrators can access all bookings.
     public function scopeForUser(Builder $query, User $user): Builder
     {
         if ($user->role === 'super_admin') {

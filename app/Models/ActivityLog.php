@@ -13,5 +13,6 @@ class ActivityLog extends Model
         'booking_id',
         'action',
         'performed_by',
+        'reason',
     ];
 }

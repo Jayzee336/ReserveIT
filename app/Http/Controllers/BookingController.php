@@ -8,7 +8,10 @@ use App\Models\SystemSetting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -19,8 +22,6 @@ class BookingController extends Controller
      */
     private function getMaxBookingSpanHours($settings): float
     {
-        // Support common setting-column names in case the model uses
-        // a slightly different name for the same setting.
         $possibleColumns = [
             'max_booking_span_hours',
             'max_booking_hours',
@@ -36,12 +37,12 @@ class BookingController extends Controller
             }
         }
 
-        // Match the configured four-hour limit if no value is found.
         return 4.0;
     }
 
     /**
-     * Validate the duration against the configured maximum.
+     * Validate that the end time follows the start time and
+     * the duration is within the configured limit.
      */
     private function validateBookingSpan(
         string $startTime,
@@ -50,6 +51,12 @@ class BookingController extends Controller
     ): void {
         $start = Carbon::createFromFormat('!H:i', $startTime);
         $end = Carbon::createFromFormat('!H:i', $endTime);
+
+        if (!$start || !$end || !$end->gt($start)) {
+            throw ValidationException::withMessages([
+                'end_time' => 'The end time must be later than the start time.',
+            ]);
+        }
 
         $durationMinutes = $start->diffInMinutes($end);
         $maxHours = $this->getMaxBookingSpanHours($settings);
@@ -68,13 +75,120 @@ class BookingController extends Controller
     }
 
     /**
+     * Reject approval actions from users who are not administrators.
+     * Facility admins must also be assigned to the booking's facility.
+     */
+    private function authorizeBookingAdministration(Booking $booking): void
+    {
+        $user = Auth::user();
+
+        abort_unless($user, 401);
+
+        if ($user->role === 'super_admin') {
+            return;
+        }
+
+        abort_unless($user->role === 'facility_admin', 403);
+
+        $facility = $booking->facility;
+
+        abort_unless($facility, 404);
+
+        $isAssigned = $facility->facilityAdmins()
+            ->where('users.id', $user->id)
+            ->exists();
+
+        abort_unless($isAssigned, 403);
+    }
+
+    /**
+     * Check booking time conflicts.
+     *
+     * Call this while the corresponding facility row is locked
+     * inside a database transaction.
+     */
+    private function hasBookingConflict(
+        string $facilityId,
+        string $date,
+        string $startTime,
+        string $endTime,
+        int $bufferMinutes,
+        ?string $excludeBookingId = null
+    ): bool {
+        $query = Booking::query()
+            ->where('facility_id', $facilityId)
+            ->where(function ($query) use ($date) {
+                $query->whereDate('date', $date)
+                    ->orWhereDate('booking_date', $date);
+            })
+            ->whereIn('status', ['pending', 'approved']);
+
+        if ($excludeBookingId !== null) {
+            $query->where('id', '!=', $excludeBookingId);
+        }
+
+        $existingBookings = $query->get([
+            'start_time',
+            'end_time',
+        ]);
+
+        $requestedStart = Carbon::createFromFormat('!H:i', $startTime);
+        $requestedEnd = Carbon::createFromFormat('!H:i', $endTime);
+
+        foreach ($existingBookings as $existing) {
+            $existingStart = Carbon::parse($existing->start_time);
+            $existingEnd = Carbon::parse($existing->end_time);
+
+            $bufferedStart = $existingStart->copy()
+                ->subMinutes($bufferMinutes);
+
+            $bufferedEnd = $existingEnd->copy()
+                ->addMinutes($bufferMinutes);
+
+            if (
+                $requestedStart->lt($bufferedEnd) &&
+                $requestedEnd->gt($bufferedStart)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Return the standard time-slot conflict message.
+     */
+    private function conflictMessage(int $bufferMinutes): string
+    {
+        return $bufferMinutes > 0
+            ? "Time slot overlaps with an existing booking ({$bufferMinutes}-minute buffer included)."
+            : 'Time slot overlaps with an existing booking.';
+    }
+
+    /**
      * Display the authenticated user's bookings.
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
-        $status = $request->input('status');
-        $openBookingId = $request->input('booking');
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'status' => [
+                'nullable',
+                'string',
+                Rule::in([
+                    'pending',
+                    'approved',
+                    'declined',
+                    'cancelled',
+                ]),
+            ],
+            'booking' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $search = $validated['search'] ?? null;
+        $status = $validated['status'] ?? null;
+        $openBookingId = $validated['booking'] ?? null;
 
         $query = Booking::with('facility')
             ->where('user_id', Auth::id());
@@ -95,7 +209,7 @@ class BookingController extends Controller
 
         $upcomingBookings = $bookings
             ->filter(fn ($booking) =>
-                in_array($booking->status, ['pending', 'approved']) &&
+                in_array($booking->status, ['pending', 'approved'], true) &&
                 Carbon::parse($booking->date)->gte($today)
             )
             ->values();
@@ -171,9 +285,17 @@ class BookingController extends Controller
         }
 
         $validated = $request->validate([
-            'date' => ['required', 'date', 'after_or_equal:today'],
+            'date' => [
+                'required',
+                'date_format:Y-m-d',
+                'after_or_equal:today',
+            ],
             'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'end_time' => [
+                'required',
+                'date_format:H:i',
+                'after:start_time',
+            ],
             'attendees' => ['required', 'integer', 'min:1'],
             'needs_manpower' => ['required', 'boolean'],
             'notes' => ['nullable', 'string', 'max:10000'],
@@ -205,15 +327,8 @@ class BookingController extends Controller
         }
 
         $settings = SystemSetting::current();
-
-        $bookingDate = Carbon::parse($validated['date'])->startOfDay();
+        $bookingDate = Carbon::createFromFormat('!Y-m-d', $validated['date']);
         $today = Carbon::today();
-
-        if ($bookingDate->lt($today)) {
-            return back()->withErrors([
-                'date' => 'The booking date cannot be in the past.',
-            ]);
-        }
 
         $maxDays = max(0, (int) ($settings->max_advance_days ?? 30));
 
@@ -223,7 +338,6 @@ class BookingController extends Controller
             ]);
         }
 
-        // Enforce the configured maximum booking duration.
         $this->validateBookingSpan(
             $validated['start_time'],
             $validated['end_time'],
@@ -235,79 +349,87 @@ class BookingController extends Controller
             (int) ($settings->cleanup_buffer_minutes ?? 30)
         );
 
-        $start = Carbon::createFromFormat(
-            '!H:i',
-            $validated['start_time']
-        );
+        DB::transaction(function () use (
+            $booking,
+            $facility,
+            $validated,
+            $needsManpower,
+            $buffer
+        ) {
+            Facility::whereKey($facility->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $end = Carbon::createFromFormat(
-            '!H:i',
-            $validated['end_time']
-        );
-
-        $conflictingBookings = Booking::where(
-            'facility_id',
-            $booking->facility_id
-        )
-            ->whereDate('date', $validated['date'])
-            ->whereIn('status', ['pending', 'approved'])
-            ->where('id', '!=', $booking->id)
-            ->get(['start_time', 'end_time']);
-
-        foreach ($conflictingBookings as $existing) {
-            $existingStart = Carbon::parse($existing->start_time);
-            $existingEnd = Carbon::parse($existing->end_time);
-
-            $bufferedStart = $existingStart->copy()
-                ->subMinutes($buffer);
-
-            $bufferedEnd = $existingEnd->copy()
-                ->addMinutes($buffer);
+            $lockedBooking = Booking::whereKey($booking->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
             if (
-                $start->lt($bufferedEnd) &&
-                $end->gt($bufferedStart)
+                $lockedBooking->user_id != Auth::id() ||
+                $lockedBooking->status !== 'pending'
             ) {
-                return back()->withErrors([
-                    'start_time' => $buffer > 0
-                        ? "Time slot overlaps with an existing booking ({$buffer}-minute buffer included)."
-                        : 'Time slot overlaps with an existing booking.',
+                throw ValidationException::withMessages([
+                    'status' => 'This booking can no longer be edited.',
                 ]);
             }
-        }
 
-        $booking->update([
-            'date' => $validated['date'],
-            'booking_date' => $validated['date'],
-            'start_time' => $start->format('H:i'),
-            'end_time' => $end->format('H:i'),
-            'attendees' => (int) $validated['attendees'],
-            'needs_manpower' => $needsManpower,
-            'notes' => $validated['notes'] ?? null,
-        ]);
+            $conflict = $this->hasBookingConflict(
+                (string) $lockedBooking->facility_id,
+                $validated['date'],
+                $validated['start_time'],
+                $validated['end_time'],
+                $buffer,
+                (string) $lockedBooking->id
+            );
+
+            if ($conflict) {
+                throw ValidationException::withMessages([
+                    'start_time' => $this->conflictMessage($buffer),
+                ]);
+            }
+
+            $lockedBooking->update([
+                'date' => $validated['date'],
+                'booking_date' => $validated['date'],
+                'start_time' => $validated['start_time'],
+                'end_time' => $validated['end_time'],
+                'attendees' => (int) $validated['attendees'],
+                'needs_manpower' => $needsManpower,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+        });
 
         return back()->with('success', 'Booking updated successfully.');
     }
 
     /**
      * Cancel a booking owned by the authenticated user.
+     *
+     * The conditional update ensures the status changes only when
+     * the booking is still pending or approved at update time.
      */
     public function cancel(string $id)
     {
-        $booking = Booking::where('id', $id)
+        $booking = Booking::query()
+            ->whereKey($id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        if (!in_array($booking->status, ['pending', 'approved'])) {
+        $updated = Booking::query()
+            ->whereKey($booking->getKey())
+            ->where('user_id', Auth::id())
+            ->whereIn('status', ['pending', 'approved'])
+            ->update([
+                'status' => 'cancelled',
+                'updated_at' => now(),
+            ]);
+
+        if ($updated !== 1) {
             return back()->with('toast', [
                 'type' => 'error',
                 'message' => 'This booking can no longer be cancelled.',
             ]);
         }
-
-        $booking->update([
-            'status' => 'cancelled',
-        ]);
 
         return back()->with('toast', [
             'type' => 'success',
@@ -324,9 +446,17 @@ class BookingController extends Controller
 
         $validated = $request->validate([
             'facility_id' => ['required', 'string', 'exists:facilities,id'],
-            'date' => ['required', 'date', 'after_or_equal:today'],
+            'date' => [
+                'required',
+                'date_format:Y-m-d',
+                'after_or_equal:today',
+            ],
             'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'end_time' => [
+                'required',
+                'date_format:H:i',
+                'after:start_time',
+            ],
             'notes' => ['nullable', 'string', 'max:10000'],
             'attendees' => ['nullable', 'integer', 'min:1'],
             'guest_name' => ['nullable', 'string', 'max:255'],
@@ -337,9 +467,8 @@ class BookingController extends Controller
 
         $facility = Facility::findOrFail($validated['facility_id']);
 
-        $bookingDate = Carbon::parse($validated['date'])->startOfDay();
+        $bookingDate = Carbon::createFromFormat('!Y-m-d', $validated['date']);
 
-        // Global consent overrides facility-specific rules.
         $isConsentRequired =
             (bool) $settings->require_consent_letter
             || $facility->requirement === 'CONSENT_REQUIRED'
@@ -374,7 +503,6 @@ class BookingController extends Controller
         }
 
         $today = Carbon::today();
-
         $maxDays = max(0, (int) ($settings->max_advance_days ?? 30));
 
         if ($bookingDate->gt($today->copy()->addDays($maxDays))) {
@@ -383,7 +511,6 @@ class BookingController extends Controller
             ]);
         }
 
-        // Enforce the configured maximum booking duration.
         $this->validateBookingSpan(
             $validated['start_time'],
             $validated['end_time'],
@@ -395,98 +522,103 @@ class BookingController extends Controller
             (int) ($settings->cleanup_buffer_minutes ?? 30)
         );
 
-        $start = Carbon::createFromFormat(
-            '!H:i',
-            $validated['start_time']
-        );
-
-        $end = Carbon::createFromFormat(
-            '!H:i',
-            $validated['end_time']
-        );
-
-        $existingBookings = Booking::where(
-            'facility_id',
-            $validated['facility_id']
-        )
-            ->whereDate('date', $validated['date'])
-            ->whereIn('status', ['pending', 'approved'])
-            ->get(['start_time', 'end_time']);
-
-        foreach ($existingBookings as $existing) {
-            $existingStart = Carbon::parse($existing->start_time);
-            $existingEnd = Carbon::parse($existing->end_time);
-
-            $bufferedStart = $existingStart->copy()
-                ->subMinutes($buffer);
-
-            $bufferedEnd = $existingEnd->copy()
-                ->addMinutes($buffer);
-
-            if (
-                $start->lt($bufferedEnd) &&
-                $end->gt($bufferedStart)
-            ) {
-                return back()->withErrors([
-                    'start_time' => $buffer > 0
-                        ? "Time slot overlaps with an existing booking ({$buffer}-minute buffer included)."
-                        : 'Time slot overlaps with an existing booking.',
-                ]);
-            }
-        }
-
-        $isSuperAdmin = Auth::check()
-            && Auth::user()->role === 'super_admin';
-
+        $isSuperAdmin = Auth::user()->role === 'super_admin';
         $approvalScope = $settings->auto_approve_scope ?? 'disabled';
-        $autoApprove = false;
 
-        if ($approvalScope === 'everyone') {
-            $autoApprove = true;
-        } elseif (
-            $approvalScope === 'superadmin_only' &&
-            $isSuperAdmin
-        ) {
-            $autoApprove = true;
-        }
+        $autoApprove = $approvalScope === 'everyone'
+            || (
+                $approvalScope === 'superadmin_only'
+                && $isSuperAdmin
+            );
 
         $path = null;
         $originalName = null;
+        $booking = null;
 
-        if ($request->hasFile('consent_letter')) {
-            $path = $request->file('consent_letter')
-                ->store('consent-letters', 'local');
+        try {
+            if ($request->hasFile('consent_letter')) {
+                $file = $request->file('consent_letter');
+                $extension = strtolower($file->getClientOriginalExtension());
 
-            $originalName = $request->file('consent_letter')
-                ->getClientOriginalName();
+                $path = $file->storeAs(
+                    'consent-letters',
+                    bin2hex(random_bytes(24)) . '.' . $extension,
+                    'local'
+                );
+
+                $originalName = basename($file->getClientOriginalName());
+            }
+
+            $booking = DB::transaction(function () use (
+                $facility,
+                $validated,
+                $attendeeCount,
+                $needsManpower,
+                $path,
+                $originalName,
+                $autoApprove,
+                $isSuperAdmin,
+                $buffer
+            ) {
+                Facility::whereKey($facility->getKey())
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $conflict = $this->hasBookingConflict(
+                    (string) $facility->getKey(),
+                    $validated['date'],
+                    $validated['start_time'],
+                    $validated['end_time'],
+                    $buffer
+                );
+
+                if ($conflict) {
+                    throw ValidationException::withMessages([
+                        'start_time' => $this->conflictMessage($buffer),
+                    ]);
+                }
+
+                return Booking::create([
+                    'facility_id' => $facility->getKey(),
+                    'user_id' => Auth::id(),
+                    'guest_name' => $validated['guest_name'] ?? null,
+                    'guest_email' => $validated['guest_email'] ?? null,
+                    'guest_phone' => $validated['guest_phone'] ?? null,
+                    'date' => $validated['date'],
+                    'booking_date' => $validated['date'],
+                    'start_time' => $validated['start_time'],
+                    'end_time' => $validated['end_time'],
+                    'notes' => $validated['notes'] ?? null,
+                    'attendees' => $attendeeCount,
+                    'needs_manpower' => $needsManpower,
+                    'consent_file_uploaded' => $path !== null,
+                    'consent_file_name' => $originalName,
+                    'consent_file_path' => $path,
+                    'status' => $autoApprove ? 'approved' : 'pending',
+                    'approved_at' => $autoApprove ? now() : null,
+                    'approved_by' => $autoApprove
+                        ? (
+                            $isSuperAdmin
+                                ? 'Superadmin Instant Pass'
+                                : 'System Auto-Approval Policies'
+                        )
+                        : null,
+                ]);
+            });
+        } catch (\Throwable $e) {
+            if ($path !== null) {
+                try {
+                    Storage::disk('local')->delete($path);
+                } catch (\Throwable $cleanupException) {
+                    Log::error('Failed to clean up consent upload.', [
+                        'path' => $path,
+                        'error' => $cleanupException->getMessage(),
+                    ]);
+                }
+            }
+
+            throw $e;
         }
-
-        $booking = Booking::create([
-            'facility_id' => $validated['facility_id'],
-            'user_id' => Auth::id(),
-            'guest_name' => $validated['guest_name'] ?? null,
-            'guest_email' => $validated['guest_email'] ?? null,
-            'guest_phone' => $validated['guest_phone'] ?? null,
-            'date' => $validated['date'],
-            'booking_date' => $validated['date'],
-            'start_time' => $start->format('H:i'),
-            'end_time' => $end->format('H:i'),
-            'notes' => $validated['notes'] ?? null,
-            'attendees' => $attendeeCount,
-            'needs_manpower' => $needsManpower,
-            'consent_file_uploaded' => $path !== null,
-            'consent_file_name' => $originalName,
-            'consent_file_path' => $path,
-            'status' => $autoApprove ? 'approved' : 'pending',
-            'approved_at' => $autoApprove ? now() : null,
-            'approved_by' => $autoApprove
-                ? (
-                    $isSuperAdmin
-                        ? 'Superadmin Instant Pass'
-                        : 'System Auto-Approval Policies'
-                )
-                : null,
-        ]);
 
         try {
             if (class_exists(\App\Events\BookingCreatedEvent::class)) {
@@ -495,9 +627,10 @@ class BookingController extends Controller
                 )->toOthers();
             }
         } catch (\Throwable $e) {
-            Log::warning(
-                'WebSocket broadcast failed: ' . $e->getMessage()
-            );
+            Log::warning('WebSocket broadcast failed.', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return back()->with('toast', [
@@ -509,33 +642,48 @@ class BookingController extends Controller
     /**
      * Approve a booking.
      *
-     * Protect this route with administrator middleware/policies.
+     * Kept for compatibility, but explicitly enforces authorization
+     * even if a route is accidentally registered without role middleware.
      */
     public function approve(Request $request, string $id)
     {
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::with('facility')->findOrFail($id);
 
-        if ($booking->status !== 'pending') {
+        $this->authorizeBookingAdministration($booking);
+
+        $updated = DB::transaction(function () use ($booking) {
+            $lockedBooking = Booking::whereKey($booking->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedBooking->status !== 'pending') {
+                return false;
+            }
+
+            $lockedBooking->update([
+                'status' => 'approved',
+                'approved_at' => now(),
+                'approved_by' => Auth::user()->name ?? 'Administrator',
+                'rejection_reason' => null,
+            ]);
+
+            if (class_exists(\App\Models\ActivityLog::class)) {
+                \App\Models\ActivityLog::create([
+                    'booking_id' => $lockedBooking->id,
+                    'user_id' => Auth::id(),
+                    'action' => 'approved',
+                    'notes' => 'Booking was approved by ' .
+                        (Auth::user()->name ?? 'Admin'),
+                ]);
+            }
+
+            return true;
+        });
+
+        if (!$updated) {
             return back()->with('toast', [
                 'type' => 'error',
                 'message' => 'Only pending bookings can be approved.',
-            ]);
-        }
-
-        $booking->update([
-            'status' => 'approved',
-            'approved_at' => now(),
-            'approved_by' => Auth::user()->name ?? 'Administrator',
-            'rejection_reason' => null,
-        ]);
-
-        if (class_exists(\App\Models\ActivityLog::class)) {
-            \App\Models\ActivityLog::create([
-                'booking_id' => $booking->id,
-                'user_id' => Auth::id(),
-                'action' => 'approved',
-                'notes' => 'Booking was approved by ' .
-                    (Auth::user()->name ?? 'Admin'),
             ]);
         }
 
@@ -548,18 +696,14 @@ class BookingController extends Controller
     /**
      * Decline a booking.
      *
-     * Protect this route with administrator middleware/policies.
+     * Kept for compatibility, but explicitly enforces authorization
+     * even if a route is accidentally registered without role middleware.
      */
     public function decline(Request $request, string $id)
     {
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::with('facility')->findOrFail($id);
 
-        if ($booking->status !== 'pending') {
-            return back()->with('toast', [
-                'type' => 'error',
-                'message' => 'Only pending bookings can be declined.',
-            ]);
-        }
+        $this->authorizeBookingAdministration($booking);
 
         $validated = $request->validate([
             'reason' => ['nullable', 'string', 'max:2000'],
@@ -567,17 +711,36 @@ class BookingController extends Controller
 
         $reason = $validated['reason'] ?? 'Declined by administrator';
 
-        $booking->update([
-            'status' => 'declined',
-            'rejection_reason' => $reason,
-        ]);
+        $updated = DB::transaction(function () use ($booking, $reason) {
+            $lockedBooking = Booking::whereKey($booking->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        if (class_exists(\App\Models\ActivityLog::class)) {
-            \App\Models\ActivityLog::create([
-                'booking_id' => $booking->id,
-                'user_id' => Auth::id(),
-                'action' => 'declined',
-                'notes' => 'Booking was declined: ' . $reason,
+            if ($lockedBooking->status !== 'pending') {
+                return false;
+            }
+
+            $lockedBooking->update([
+                'status' => 'declined',
+                'rejection_reason' => $reason,
+            ]);
+
+            if (class_exists(\App\Models\ActivityLog::class)) {
+                \App\Models\ActivityLog::create([
+                    'booking_id' => $lockedBooking->id,
+                    'user_id' => Auth::id(),
+                    'action' => 'declined',
+                    'notes' => 'Booking was declined: ' . $reason,
+                ]);
+            }
+
+            return true;
+        });
+
+        if (!$updated) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Only pending bookings can be declined.',
             ]);
         }
 

@@ -29,7 +29,9 @@ class BookingUpdateTest extends TestCase
         ]);
 
         $response->assertSessionHasNoErrors();
+
         $booking->refresh();
+
         $this->assertSame('pending', $booking->status);
         $this->assertSame($newDate, $booking->date->format('Y-m-d'));
         $this->assertSame('13:00', substr($booking->start_time, 0, 5));
@@ -49,10 +51,39 @@ class BookingUpdateTest extends TestCase
         $this->actingAs($user)
             ->put("/bookings/{$pendingBooking->id}/cancel")
             ->assertSessionHasNoErrors();
-        $this->put("/bookings/{$declinedBooking->id}/cancel")->assertSessionHasNoErrors();
+
+        $this->put("/bookings/{$declinedBooking->id}/cancel")
+            ->assertSessionHasNoErrors();
 
         $this->assertSame('cancelled', $pendingBooking->refresh()->status);
         $this->assertSame('declined', $declinedBooking->refresh()->status);
+    }
+
+    public function test_user_cannot_cancel_another_users_booking(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $facility = $this->createFacility();
+        $booking = $this->createBooking($owner, $facility, 'pending');
+
+        $this->actingAs($otherUser)
+            ->put("/bookings/{$booking->id}/cancel")
+            ->assertNotFound();
+
+        $this->assertSame('pending', $booking->refresh()->status);
+    }
+
+    public function test_user_can_cancel_an_approved_booking(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $booking = $this->createBooking($user, $facility, 'approved');
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}/cancel")
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('cancelled', $booking->refresh()->status);
     }
 
     private function createFacility(): Facility
@@ -71,8 +102,11 @@ class BookingUpdateTest extends TestCase
         ]);
     }
 
-    private function createBooking(User $user, Facility $facility, string $status): Booking
-    {
+    private function createBooking(
+        User $user,
+        Facility $facility,
+        string $status
+    ): Booking {
         return Booking::create([
             'facility_id' => $facility->id,
             'user_id' => $user->id,

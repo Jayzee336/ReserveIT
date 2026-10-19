@@ -242,29 +242,35 @@ export default function AuthenticatedLayout({ header, action, children }) {
         );
     };
 
-    // Logout through Inertia and Laravel's POST logout route
+    // Perform a standard browser POST to Laravel's logout route.
     const handleLogout = () => {
         if (isLoggingOut) return;
 
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
+
+        if (!csrfToken) {
+            toast.error(
+                'Unable to log out because the security token is missing. Refresh the page and try again.',
+            );
+            return;
+        }
+
         setIsLoggingOut(true);
 
-        router.post(
-            route('logout'),
-            {},
-            {
-                onSuccess: () => {
-                    // Force the browser to leave the authenticated page.
-                    window.location.replace(route('login'));
-                },
-                onError: (errors) => {
-                    console.error('Logout validation errors:', errors);
-                    toast.error('Logout failed. Please try again.');
-                },
-                onFinish: () => {
-                    setIsLoggingOut(false);
-                },
-            },
-        );
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = route('logout');
+
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = csrfToken;
+
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
     };
 
     return (
@@ -293,15 +299,9 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                         <button
                             type="button"
-                            onClick={() =>
-                                setCollapsed((current) => !current)
-                            }
-                            title={
-                                collapsed ? 'Expand sidebar' : 'Collapse sidebar'
-                            }
-                            aria-label={
-                                collapsed ? 'Expand sidebar' : 'Collapse sidebar'
-                            }
+                            onClick={() => setCollapsed((current) => !current)}
+                            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                             className="rounded-lg p-1.5 text-purple-100 transition-colors hover:bg-[#543F48] hover:text-white"
                         >
                             {collapsed ? (
@@ -366,9 +366,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             <>
                                 <NavLink
                                     href={route('facilitator.bookings.index')}
-                                    active={route().current(
-                                        'facilitator.bookings.index',
-                                    )}
+                                    active={route().current('facilitator.bookings.index')}
                                     icon={ClipboardCheck}
                                     collapsed={collapsed}
                                 >
@@ -376,12 +374,8 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 </NavLink>
 
                                 <NavLink
-                                    href={route(
-                                        'facilitator.managed-facilities.index',
-                                    )}
-                                    active={route().current(
-                                        'facilitator.managed-facilities.index',
-                                    )}
+                                    href={route('facilitator.managed-facilities.index')}
+                                    active={route().current('facilitator.managed-facilities.index')}
                                     icon={Building2}
                                     collapsed={collapsed}
                                 >
@@ -399,9 +393,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                                 <NavLink
                                     href={route('concerns.my-tickets')}
-                                    active={route().current(
-                                        'concerns.my-tickets',
-                                    )}
+                                    active={route().current('concerns.my-tickets')}
                                     icon={Ticket}
                                     collapsed={collapsed}
                                 >
@@ -420,9 +412,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                                 <NavLink
                                     href={route('admin.bookings.index')}
-                                    active={route().current(
-                                        'admin.bookings.index',
-                                    )}
+                                    active={route().current('admin.bookings.index')}
                                     icon={ClipboardCheck}
                                     collapsed={collapsed}
                                 >
@@ -431,9 +421,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                                 <NavLink
                                     href={route('admin.facilities.index')}
-                                    active={route().current(
-                                        'admin.facilities.index',
-                                    )}
+                                    active={route().current('admin.facilities.index')}
                                     icon={Building2}
                                     collapsed={collapsed}
                                 >
@@ -451,9 +439,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                                 <NavLink
                                     href={route('admin.concerns.index')}
-                                    active={route().current(
-                                        'admin.concerns.index',
-                                    )}
+                                    active={route().current('admin.concerns.index')}
                                     icon={MessageSquareText}
                                     collapsed={collapsed}
                                 >
@@ -462,9 +448,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                                 <NavLink
                                     href={route('admin.settings.edit')}
-                                    active={route().current(
-                                        'admin.settings.edit',
-                                    )}
+                                    active={route().current('admin.settings.edit')}
                                     icon={Settings}
                                     collapsed={collapsed}
                                 >
@@ -548,16 +532,12 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         <div className="relative flex items-center">
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setNotificationsOpen((open) => !open)
-                                }
+                                onClick={() => setNotificationsOpen((open) => !open)}
                                 aria-label="View notifications"
                                 aria-expanded={notificationsOpen}
                                 className="relative rounded-xl p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none"
                             >
-                                <span className="sr-only">
-                                    View notifications
-                                </span>
+                                <span className="sr-only">View notifications</span>
                                 <Bell className="h-5 w-5" />
 
                                 {unreadCount > 0 && (
@@ -569,9 +549,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 <>
                                     <div
                                         className="fixed inset-0 z-30"
-                                        onClick={() =>
-                                            setNotificationsOpen(false)
-                                        }
+                                        onClick={() => setNotificationsOpen(false)}
                                     />
 
                                     <div className="absolute right-0 top-full z-40 mt-2 w-80 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl ring-1 ring-black/5">
@@ -594,9 +572,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                         disabled={isClearingNotifications}
                                                         className="text-[10px] font-semibold text-indigo-600 transition hover:text-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
-                                                        {isClearingNotifications
-                                                            ? 'Clearing…'
-                                                            : 'Clear all'}
+                                                        {isClearingNotifications ? 'Clearing…' : 'Clear all'}
                                                     </button>
                                                 )}
                                             </div>
@@ -608,51 +584,46 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                     All caught up! No new notifications.
                                                 </div>
                                             ) : (
-                                                realtimeNotifications.map(
-                                                    (notification, index) => (
-                                                        <button
-                                                            key={notification.id ?? index}
-                                                            type="button"
-                                                            onClick={() => {
-                                                                if (!notification.read) {
-                                                                    router.post(
-                                                                        route(
-                                                                            'notifications.read',
-                                                                            notification.id,
-                                                                        ),
-                                                                        {},
-                                                                        {
-                                                                            preserveScroll: true,
-                                                                            preserveState: true,
-                                                                        },
-                                                                    );
-                                                                }
+                                                realtimeNotifications.map((notification, index) => (
+                                                    <button
+                                                        key={notification.id ?? index}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (!notification.read) {
+                                                                router.post(
+                                                                    route('notifications.read', notification.id),
+                                                                    {},
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                        preserveState: true,
+                                                                    },
+                                                                );
+                                                            }
 
-                                                                setViewingNotification(notification);
-                                                                setNotificationsOpen(false);
-                                                            }}
-                                                            className={`w-full rounded-xl p-2.5 text-left text-xs transition hover:bg-gray-50 ${
+                                                            setViewingNotification(notification);
+                                                            setNotificationsOpen(false);
+                                                        }}
+                                                        className={`w-full rounded-xl p-2.5 text-left text-xs transition hover:bg-gray-50 ${
+                                                            notification.read
+                                                                ? 'text-gray-500'
+                                                                : 'bg-purple-50/60 text-gray-600'
+                                                        }`}
+                                                    >
+                                                        <p
+                                                            className={`font-semibold ${
                                                                 notification.read
-                                                                    ? 'text-gray-500'
-                                                                    : 'bg-purple-50/60 text-gray-600'
+                                                                    ? 'text-gray-600'
+                                                                    : 'text-gray-900'
                                                             }`}
                                                         >
-                                                            <p
-                                                                className={`font-semibold ${
-                                                                    notification.read
-                                                                        ? 'text-gray-600'
-                                                                        : 'text-gray-900'
-                                                                }`}
-                                                            >
-                                                                {notification.title ?? 'System Notification'}
-                                                            </p>
+                                                            {notification.title ?? 'System Notification'}
+                                                        </p>
 
-                                                            <p className="mt-0.5 text-gray-500">
-                                                                {notification.message ?? 'Update details received.'}
-                                                            </p>
-                                                        </button>
-                                                    ),
-                                                )
+                                                        <p className="mt-0.5 text-gray-500">
+                                                            {notification.message ?? 'Update details received.'}
+                                                        </p>
+                                                    </button>
+                                                ))
                                             )}
                                         </div>
                                     </div>
@@ -819,10 +790,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     onChange={(event) => {
                                         const nextValue = event.target.value;
 
-                                        if (
-                                            nextValue.length <=
-                                            TICKET_DESCRIPTION_MAX_LENGTH
-                                        ) {
+                                        if (nextValue.length <= TICKET_DESCRIPTION_MAX_LENGTH) {
                                             setTicketDetailedInfo(nextValue);
                                             setTicketFormError('');
                                         }
@@ -848,8 +816,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     <p
                                         id="ticket-description-counter"
                                         className={`ml-auto shrink-0 text-xs ${
-                                            ticketDetailedInfo.length >=
-                                            TICKET_DESCRIPTION_MAX_LENGTH
+                                            ticketDetailedInfo.length >= TICKET_DESCRIPTION_MAX_LENGTH
                                                 ? 'font-semibold text-rose-600'
                                                 : 'text-gray-500'
                                         }`}
@@ -875,8 +842,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                         isSubmittingTicket ||
                                         !ticketCategory ||
                                         ticketDetailedInfo.trim().length === 0 ||
-                                        ticketDetailedInfo.trim().length >
-                                            TICKET_DESCRIPTION_MAX_LENGTH
+                                        ticketDetailedInfo.trim().length > TICKET_DESCRIPTION_MAX_LENGTH
                                     }
                                     className="rounded-xl bg-[#6A535C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
                                 >

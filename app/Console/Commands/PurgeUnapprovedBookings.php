@@ -9,36 +9,67 @@ use Illuminate\Console\Command;
 
 class PurgeUnapprovedBookings extends Command
 {
-    protected $signature = 'bookings:purge-unapproved';
-    protected $description = 'Automatically purge unapproved (pending) bookings whose scheduled date has passed the configured retention period.';
+    protected $signature = 'bookings:purge-unapproved
+                            {--dry-run : Preview eligible bookings without deleting them}';
 
-    public function handle()
+    protected $description = 'Purge expired pending bookings using the configured retention period.';
+
+    public function handle(): int
     {
         $retentionDays = (int) SystemSetting::current()->auto_purge_unapproved_days;
 
-        // If the feature is disabled (0), do nothing
         if ($retentionDays <= 0) {
-            $this->info('Auto-purge is disabled. Set auto_purge_unapproved_days to 7 or 14 in Booking System Settings.');
+            $this->info(
+                'Auto-purge is disabled. Set the retention period to 7 or 14 days in Booking System Settings.'
+            );
+
             return Command::SUCCESS;
         }
 
-        $cutoff = Carbon::now()->subDays($retentionDays)->toDateString();
+        $cutoff = Carbon::today()->subDays($retentionDays)->toDateString();
 
-        $expiredUnapproved = Booking::where('status', 'pending')
-            ->where(function ($q) use ($cutoff) {
-                $q->whereDate('booking_date', '<', $cutoff)
-                  ->orWhereDate('date', '<', $cutoff);
+        $expiredUnapproved = Booking::query()
+            ->where('status', 'pending')
+            ->where(function ($query) use ($cutoff) {
+                $query->whereDate('date', '<', $cutoff)
+                    ->orWhere(function ($subquery) use ($cutoff) {
+                        $subquery->whereNull('date')
+                            ->whereDate('booking_date', '<', $cutoff);
+                    });
             });
 
         $count = (clone $expiredUnapproved)->count();
 
-        if ($count > 0) {
-            // Hard delete to prevent DB bloat
-            (clone $expiredUnapproved)->delete();
-            $this->info("Purged {$count} expired unapproved booking(s) older than {$retentionDays} day(s).");
-        } else {
-            $this->info('No expired unapproved bookings found to purge.');
+        if ($count === 0) {
+            $this->info('No expired pending bookings found.');
+
+            return Command::SUCCESS;
         }
+
+        if ($this->option('dry-run')) {
+            $this->warn("DRY RUN: {$count} pending booking(s) qualify for deletion.");
+
+            (clone $expiredUnapproved)
+                ->orderBy('id')
+                ->get(['id', 'date', 'booking_date', 'status'])
+                ->each(function (Booking $booking) {
+                    $this->line(
+                        "ID: {$booking->id} | Date: "
+                        . ($booking->date ?? $booking->booking_date ?? 'Unknown')
+                        . " | Status: {$booking->status}"
+                    );
+                });
+
+            $this->comment('No records were deleted.');
+
+            return Command::SUCCESS;
+        }
+
+        $deletedCount = (clone $expiredUnapproved)->delete();
+
+        $this->info(
+            "Purged {$deletedCount} expired pending booking(s) older than {$retentionDays} day(s)."
+        );
 
         return Command::SUCCESS;
     }

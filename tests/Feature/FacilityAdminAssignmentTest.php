@@ -15,7 +15,10 @@ class FacilityAdminAssignmentTest extends TestCase
 
     public function test_facility_admin_only_sees_bookings_for_assigned_facility(): void
     {
-        $facilityAdmin = User::factory()->create(['role' => 'facility_admin']);
+        $facilityAdmin = User::factory()->create([
+            'role' => 'facility_admin',
+        ]);
+
         $assignedFacility = Facility::create([
             'id' => 'assigned-facility',
             'name' => 'Assigned Facility',
@@ -28,6 +31,7 @@ class FacilityAdminAssignmentTest extends TestCase
             'requiresWeekendConsent' => false,
             'allowTdevsManpower' => false,
         ]);
+
         $otherFacility = Facility::create([
             'id' => 'other-facility',
             'name' => 'Other Facility',
@@ -71,16 +75,27 @@ class FacilityAdminAssignmentTest extends TestCase
 
         $this->actingAs($facilityAdmin);
 
-        $query = (new BookingApprovalController())->getVisibleBookingsQuery($facilityAdmin);
-        $pendingBookings = (clone $query)->where('status', 'pending')->orderBy('date')->get();
+        $query = (new BookingApprovalController())
+            ->getVisibleBookingsQuery($facilityAdmin);
+
+        $pendingBookings = (clone $query)
+            ->where('status', 'pending')
+            ->orderBy('date')
+            ->get();
 
         $this->assertCount(1, $pendingBookings);
-        $this->assertSame('Assigned Facility', $pendingBookings->first()->facility->name);
+        $this->assertSame(
+            'Assigned Facility',
+            $pendingBookings->first()->facility->name
+        );
     }
 
     public function test_facility_admin_cannot_select_an_unassigned_facility_scope(): void
     {
-        $facilityAdmin = User::factory()->create(['role' => 'facility_admin']);
+        $facilityAdmin = User::factory()->create([
+            'role' => 'facility_admin',
+        ]);
+
         $assignedFacility = Facility::create([
             'id' => 'assigned-scope-facility',
             'name' => 'Assigned Scope Facility',
@@ -93,6 +108,7 @@ class FacilityAdminAssignmentTest extends TestCase
             'requiresWeekendConsent' => false,
             'allowTdevsManpower' => false,
         ]);
+
         $otherFacility = Facility::create([
             'id' => 'unassigned-scope-facility',
             'name' => 'Unassigned Scope Facility',
@@ -108,15 +124,26 @@ class FacilityAdminAssignmentTest extends TestCase
 
         $facilityAdmin->managedFacilities()->attach($assignedFacility);
 
-        $response = $this->actingAs($facilityAdmin)->get(route('facilitator.dashboard', ['facility_id' => $otherFacility->id]));
+        $response = $this->actingAs($facilityAdmin)->get(
+            route('facilitator.dashboard', [
+                'facility_id' => $otherFacility->id,
+            ])
+        );
 
         $response->assertForbidden();
     }
 
     public function test_super_admin_can_assign_facility_admins_to_a_facility(): void
     {
-        $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $facilityAdmin = User::factory()->create(['role' => 'facility_admin']);
+        $superAdmin = User::factory()->create([
+            'role' => 'super_admin',
+        ]);
+
+        $facilityAdmin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+
         $facility = Facility::create([
             'id' => 'assignable-facility',
             'name' => 'Assignable Facility',
@@ -130,21 +157,129 @@ class FacilityAdminAssignmentTest extends TestCase
             'allowTdevsManpower' => false,
         ]);
 
-        $response = $this->actingAs($superAdmin)->patch(route('admin.facilities.update', $facility), [
-            'name' => 'Assignable Facility',
+        $response = $this->actingAs($superAdmin)->patch(
+            route('admin.facilities.update', $facility),
+            [
+                'name' => 'Assignable Facility',
+                'type' => 'Venue',
+                'capacity' => 40,
+                'description' => 'Assignable facility',
+                'imageUrl' => 'https://example.com/assignable.jpg',
+                'requirement' => 'STANDARD',
+                'location' => 'Building C',
+                'requiresWeekendConsent' => false,
+                'allowTdevsManpower' => false,
+                'assigned_admin_ids' => [$facilityAdmin->id],
+            ]
+        );
+
+        $response->assertRedirect();
+
+        $this->assertTrue(
+            $facility->fresh()
+                ->facilityAdmins()
+                ->where('users.id', $facilityAdmin->id)
+                ->exists()
+        );
+    }
+
+    public function test_super_admin_cannot_assign_an_ordinary_user_as_facility_admin(): void
+    {
+        $superAdmin = User::factory()->create([
+            'role' => 'super_admin',
+        ]);
+
+        $ordinaryUser = User::factory()->create([
+            'role' => 'user',
+            'is_active' => true,
+        ]);
+
+        $facility = Facility::create([
+            'id' => 'ordinary-user-assignment-test',
+            'name' => 'Ordinary User Assignment Test',
             'type' => 'Venue',
             'capacity' => 40,
-            'description' => 'Assignable facility',
-            'imageUrl' => 'https://example.com/assignable.jpg',
+            'description' => 'Testing invalid administrator assignments.',
+            'imageUrl' => 'https://example.com/facility.jpg',
             'requirement' => 'STANDARD',
             'location' => 'Building C',
             'requiresWeekendConsent' => false,
             'allowTdevsManpower' => false,
-            'assigned_admin_ids' => [$facilityAdmin->id],
         ]);
 
-        $response->assertRedirect();
-        $facility->refresh();
-        $this->assertTrue($facility->facilityAdmins()->whereKey($facilityAdmin->id)->exists());
+        $response = $this->actingAs($superAdmin)->patch(
+            route('admin.facilities.update', $facility),
+            [
+                'name' => $facility->name,
+                'type' => $facility->type,
+                'capacity' => $facility->capacity,
+                'description' => $facility->description,
+                'imageUrl' => $facility->imageUrl,
+                'requirement' => $facility->requirement,
+                'location' => $facility->location,
+                'requiresWeekendConsent' => false,
+                'allowTdevsManpower' => false,
+                'assigned_admin_ids' => [$ordinaryUser->id],
+            ]
+        );
+
+        $response->assertSessionHasErrors('assigned_admin_ids.0');
+
+        $this->assertFalse(
+            $facility->fresh()
+                ->facilityAdmins()
+                ->where('users.id', $ordinaryUser->id)
+                ->exists()
+        );
+    }
+
+    public function test_super_admin_cannot_assign_an_inactive_facility_admin(): void
+    {
+        $superAdmin = User::factory()->create([
+            'role' => 'super_admin',
+        ]);
+
+        $inactiveAdmin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => false,
+        ]);
+
+        $facility = Facility::create([
+            'id' => 'inactive-admin-assignment-test',
+            'name' => 'Inactive Admin Assignment Test',
+            'type' => 'Venue',
+            'capacity' => 40,
+            'description' => 'Testing inactive administrator assignments.',
+            'imageUrl' => 'https://example.com/facility.jpg',
+            'requirement' => 'STANDARD',
+            'location' => 'Building C',
+            'requiresWeekendConsent' => false,
+            'allowTdevsManpower' => false,
+        ]);
+
+        $response = $this->actingAs($superAdmin)->patch(
+            route('admin.facilities.update', $facility),
+            [
+                'name' => $facility->name,
+                'type' => $facility->type,
+                'capacity' => $facility->capacity,
+                'description' => $facility->description,
+                'imageUrl' => $facility->imageUrl,
+                'requirement' => $facility->requirement,
+                'location' => $facility->location,
+                'requiresWeekendConsent' => false,
+                'allowTdevsManpower' => false,
+                'assigned_admin_ids' => [$inactiveAdmin->id],
+            ]
+        );
+
+        $response->assertSessionHasErrors('assigned_admin_ids.0');
+
+        $this->assertFalse(
+            $facility->fresh()
+                ->facilityAdmins()
+                ->where('users.id', $inactiveAdmin->id)
+                ->exists()
+        );
     }
 }

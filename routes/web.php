@@ -21,27 +21,34 @@ use App\Http\Controllers\Auth\SetPasswordController;
 
 use App\Models\Facility;
 use App\Models\Booking;
-use App\Models\UserConcern;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Notifications\DatabaseNotification;
 
 // 1. Welcome Page
-// Connected to the database with live records.
 Route::get('/', function () {
     $dbFacilities = Facility::latest()
         ->take(6)
         ->get();
 
-    $dbSchedules = Booking::with(['facility:id,name', 'user:id,name'])
+    // Only approved bookings are displayed publicly.
+    $dbSchedules = Booking::with(['facility:id,name'])
         ->whereDate('booking_date', today()->toDateString())
-        ->whereNotIn('status', ['declined', 'cancelled'])
+        ->where('status', 'approved')
         ->orderBy('start_time', 'asc')
         ->take(8)
-        ->get();
+        ->get([
+            'id',
+            'facility_id',
+            'booking_date',
+            'start_time',
+            'end_time',
+            'status',
+        ]);
 
     return Inertia::render('Welcome', [
         'canLogin'       => Route::has('login'),
@@ -75,7 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return 'You are a super admin! This page is protected.';
     })->middleware('role:super_admin')->name('admin.test');
 
-    // Central dashboard redirect — sends each role to the correct dashboard.
+    // Central dashboard redirect
     Route::get('/dashboard', function () {
         return match (Auth::user()->role) {
             'super_admin'    => redirect()->route('admin.dashboard'),
@@ -84,17 +91,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         };
     })->name('dashboard');
 
-    // Super Admin Dashboard
+    // Admin Dashboard
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.dashboard');
 
-    // Super Admin Bookings Management
+    // Admin Bookings Management
     Route::get('/admin/bookings', [BookingApprovalController::class, 'index'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.bookings.index');
 
-    // Booking Approval / Decline
+    // Policy-protected Booking Approval / Decline
     Route::match(['patch', 'post'], '/admin/bookings/{booking}/approve', [BookingApprovalController::class, 'approve'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.bookings.approve');
@@ -127,7 +134,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Active Bookings Monitor Page
     Route::get('/admin/active-bookings-monitor', function () {
         return Inertia::render('Admin/ActiveBookings');
-    })->middleware('role:super_admin,facility_admin')->name('admin.active-bookings.page');
+    })->middleware('role:super_admin,facility_admin')
+        ->name('admin.active-bookings.page');
 
     // Super Admin Concerns
     Route::get('/admin/concerns', [ConcernManagementController::class, 'index'])
@@ -230,7 +238,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ],
             ],
         ]);
-    })->middleware('role:user,super_admin,facility_admin')->name('user.dashboard');
+    })->middleware('role:user,super_admin,facility_admin')
+        ->name('user.dashboard');
 
     // Schedule Grid
     Route::get('/schedule', function (\Illuminate\Http\Request $request) {
@@ -269,14 +278,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Facility Details
     Route::get('/facility/{id}', function ($id) {
-        $facility = Facility::with('facilityAdmins:id,name,email')->findOrFail($id);
+        $facility = Facility::with('facilityAdmins:id,name,email')
+            ->findOrFail($id);
 
         return Inertia::render('FacilityDetails', [
             'facility' => $facility,
             'blackoutDates' => [],
             'bookings' => Booking::where('facility_id', $facility->id)
                 ->whereNotIn('status', ['declined', 'cancelled'])
-                ->get(['id', 'facility_id', 'date', 'start_time', 'end_time', 'status']),
+                ->get([
+                    'id',
+                    'facility_id',
+                    'date',
+                    'start_time',
+                    'end_time',
+                    'status',
+                ]),
             'availablePersonnel' => [],
         ]);
     })->name('facility.show');
@@ -297,14 +314,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/bookings/{id}', [BookingController::class, 'update'])
         ->name('bookings.update');
 
-    // Direct Booking Controller Endpoints
-    Route::match(['patch', 'post'], '/bookings/{id}/approve', [BookingController::class, 'approve'])
-        ->middleware('role:super_admin,facility_admin')
-        ->name('bookings.approve');
-
-    Route::match(['patch', 'post'], '/bookings/{id}/decline', [BookingController::class, 'decline'])
-        ->middleware('role:super_admin,facility_admin')
-        ->name('bookings.decline');
+    // Direct BookingController approval/decline routes intentionally removed.
+    // Use the policy-protected admin.* or facilitator.* routes above.
 
     // Overtime Check-In / Check-Out
     Route::post('/bookings/{booking}/check-in', [BookingCheckInOutController::class, 'checkIn'])
@@ -315,10 +326,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:facility_admin,super_admin')
         ->name('bookings.check-out');
 
+    // Record an overtime payment separately from checkout.
+    Route::post('/bookings/{booking}/overtime-payment', [
+        BookingCheckInOutController::class,
+        'recordOvertimePayment',
+    ])
+        ->middleware('role:facility_admin,super_admin')
+        ->name('bookings.overtime-payment');
+
     // Active Bookings Monitor JSON Endpoint
-    Route::get('/admin/active-bookings', [BookingCheckInOutController::class, 'activeBookings'])
+    Route::get('/admin/active-bookings', [
+        BookingCheckInOutController::class,
+        'activeBookings',
+    ])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.active-bookings');
+
+    // Finalized Overtime Billing JSON Endpoint
+    Route::get('/admin/overtime-billing', [
+        BookingCheckInOutController::class,
+        'overtimeBilling',
+    ])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('admin.overtime-billing');
 
     // Profile Settings
     Route::get('/profile', [ProfileController::class, 'edit'])
@@ -350,10 +380,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Notification: Mark All as Read
     Route::post('/notifications/clear', function () {
         $user = Auth::user();
-
-        if ($user) {
-            $user->unreadNotifications->markAsRead();
-        }
+        $user->unreadNotifications->markAsRead();
 
         return redirect()->back()->with('toast', [
             'type' => 'success',
@@ -364,8 +391,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Notification: Mark Single Notification as Read
     Route::post('/notifications/{notification}/read', function ($notificationId) {
         $user = Auth::user();
-
-        abort_unless($user, 401);
 
         $notification = DatabaseNotification::query()
             ->where('notifiable_type', \App\Models\User::class)
@@ -379,12 +404,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('notifications.read');
 
     // Serve Consent Files
-    Route::get('/bookings/{booking}/consent', function (\App\Models\Booking $booking) {
+    Route::get('/bookings/{booking}/consent', function (Booking $booking) {
         $user = Auth::user();
 
+        // A facility admin may only access consent files for assigned facilities.
         if ($user->role === 'facility_admin') {
-            $isAssigned = $booking->facility->facilityAdmins()
-                ->whereKey($user->id)
+            $facility = $booking->facility;
+
+            abort_unless($facility, 404);
+
+            $isAssigned = $facility->facilityAdmins()
+                ->where('users.id', $user->id)
                 ->exists();
 
             abort_unless($isAssigned, 403);
@@ -397,12 +427,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
             404
         );
 
-        return response()->streamDownload(function () use ($booking) {
-            echo \Illuminate\Support\Facades\Storage::disk('local')
-                ->get($booking->consent_file_path);
-        }, $booking->consent_file_name ?? 'consent-letter.pdf', [
-            'Content-Type' => 'application/pdf',
-        ]);
+        $disk = Storage::disk('local');
+        $path = $booking->consent_file_path;
+
+        // Only allow files inside the designated consent-letter directory.
+        abort_unless(
+            is_string($path)
+                && str_starts_with($path, 'consent-letters/')
+                && ! str_contains($path, '..')
+                && $disk->exists($path),
+            404
+        );
+
+        $downloadName = basename(
+            $booking->consent_file_name ?: 'consent-letter.pdf'
+        );
+
+        return response()->streamDownload(
+            function () use ($disk, $path) {
+                echo $disk->get($path);
+            },
+            $downloadName,
+            ['Content-Type' => 'application/octet-stream']
+        );
     })->name('bookings.consent');
 });
 
