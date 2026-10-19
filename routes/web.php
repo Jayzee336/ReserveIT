@@ -32,12 +32,10 @@ use Illuminate\Notifications\DatabaseNotification;
 // 1. Welcome Page
 // Connected to the database with live records.
 Route::get('/', function () {
-    // Fetch the latest 6 facilities.
     $dbFacilities = Facility::latest()
         ->take(6)
         ->get();
 
-    // Fetch today's approved/pending bookings for the schedule preview.
     $dbSchedules = Booking::with(['facility:id,name', 'user:id,name'])
         ->whereDate('booking_date', today()->toDateString())
         ->whereNotIn('status', ['declined', 'cancelled'])
@@ -56,7 +54,7 @@ Route::get('/', function () {
 });
 
 // 2. Authenticated Dashboard & Application Space
-Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
 
     // Force Password Change
     Route::get('/force-password-change', [ForcePasswordChangeController::class, 'edit'])
@@ -80,9 +78,9 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     // Central dashboard redirect — sends each role to the correct dashboard.
     Route::get('/dashboard', function () {
         return match (Auth::user()->role) {
-            'super_admin'   => redirect()->route('admin.dashboard'),
+            'super_admin'    => redirect()->route('admin.dashboard'),
             'facility_admin' => redirect()->route('facilitator.dashboard'),
-            default         => redirect()->route('user.dashboard'),
+            default          => redirect()->route('user.dashboard'),
         };
     })->name('dashboard');
 
@@ -335,8 +333,8 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
     // User Tickets
     Route::get('/my-tickets', [UserConcernController::class, 'myTickets'])
         ->name('concerns.my-tickets');
-    
-    Route::patch('/my-tickets/{concern}', [UserConcernController::class,'updateMyTicket',])
+
+    Route::patch('/my-tickets/{concern}', [UserConcernController::class, 'updateMyTicket'])
         ->name('concerns.my-tickets.update');
 
     // Admin Reply to Concerns
@@ -363,22 +361,22 @@ Route::middleware(['auth', 'verified', 'prevent-back-history'])->group(function 
         ]);
     })->name('notifications.clear');
 
-            // Notification: Mark Single Notification as Read
-Route::post('/notifications/{notification}/read', function ($notificationId) {
-    $user = Auth::user();
+    // Notification: Mark Single Notification as Read
+    Route::post('/notifications/{notification}/read', function ($notificationId) {
+        $user = Auth::user();
 
-    abort_unless($user, 401);
+        abort_unless($user, 401);
 
-    $notification = DatabaseNotification::query()
-        ->where('notifiable_type', \App\Models\User::class)
-        ->where('notifiable_id', $user->id)
-        ->where('id', $notificationId)
-        ->firstOrFail();
+        $notification = DatabaseNotification::query()
+            ->where('notifiable_type', \App\Models\User::class)
+            ->where('notifiable_id', $user->id)
+            ->where('id', $notificationId)
+            ->firstOrFail();
 
-    $notification->markAsRead();
+        $notification->markAsRead();
 
-    return redirect()->back();
-})->name('notifications.read');
+        return redirect()->back();
+    })->name('notifications.read');
 
     // Serve Consent Files
     Route::get('/bookings/{booking}/consent', function (\App\Models\Booking $booking) {

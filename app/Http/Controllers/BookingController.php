@@ -15,6 +15,59 @@ use Inertia\Inertia;
 class BookingController extends Controller
 {
     /**
+     * Get the configured maximum booking duration in hours.
+     */
+    private function getMaxBookingSpanHours($settings): float
+    {
+        // Support common setting-column names in case the model uses
+        // a slightly different name for the same setting.
+        $possibleColumns = [
+            'max_booking_span_hours',
+            'max_booking_hours',
+            'max_booking_duration_hours',
+            'max_duration_hours',
+        ];
+
+        foreach ($possibleColumns as $column) {
+            $value = $settings->getAttribute($column);
+
+            if ($value !== null && is_numeric($value)) {
+                return max(0, (float) $value);
+            }
+        }
+
+        // Match the configured four-hour limit if no value is found.
+        return 4.0;
+    }
+
+    /**
+     * Validate the duration against the configured maximum.
+     */
+    private function validateBookingSpan(
+        string $startTime,
+        string $endTime,
+        $settings
+    ): void {
+        $start = Carbon::createFromFormat('!H:i', $startTime);
+        $end = Carbon::createFromFormat('!H:i', $endTime);
+
+        $durationMinutes = $start->diffInMinutes($end);
+        $maxHours = $this->getMaxBookingSpanHours($settings);
+        $maxMinutes = $maxHours * 60;
+
+        if ($durationMinutes > $maxMinutes) {
+            $formattedMax = rtrim(
+                rtrim(number_format($maxHours, 2, '.', ''), '0'),
+                '.'
+            );
+
+            throw ValidationException::withMessages([
+                'end_time' => "A booking cannot exceed {$formattedMax} hours. Please select an earlier end time.",
+            ]);
+        }
+    }
+
+    /**
      * Display the authenticated user's bookings.
      */
     public function index(Request $request)
@@ -134,7 +187,6 @@ class BookingController extends Controller
             ]);
         }
 
-        // Enforce the facility's capacity server-side.
         if (
             $facility->capacity !== null &&
             (int) $validated['attendees'] > (int) $facility->capacity
@@ -144,7 +196,6 @@ class BookingController extends Controller
             ]);
         }
 
-        // Do not accept manpower requests for unsupported facilities.
         $needsManpower = (bool) $validated['needs_manpower'];
 
         if ($needsManpower && !$facility->allowTdevsManpower) {
@@ -164,7 +215,7 @@ class BookingController extends Controller
             ]);
         }
 
-        $maxDays = (int) ($settings->max_advance_days ?? 30);
+        $maxDays = max(0, (int) ($settings->max_advance_days ?? 30));
 
         if ($bookingDate->gt($today->copy()->addDays($maxDays))) {
             return back()->withErrors([
@@ -172,10 +223,27 @@ class BookingController extends Controller
             ]);
         }
 
-        $buffer = max(0, (int) ($settings->cleanup_buffer_minutes ?? 30));
+        // Enforce the configured maximum booking duration.
+        $this->validateBookingSpan(
+            $validated['start_time'],
+            $validated['end_time'],
+            $settings
+        );
 
-        $start = Carbon::createFromFormat('!H:i', $validated['start_time']);
-        $end = Carbon::createFromFormat('!H:i', $validated['end_time']);
+        $buffer = max(
+            0,
+            (int) ($settings->cleanup_buffer_minutes ?? 30)
+        );
+
+        $start = Carbon::createFromFormat(
+            '!H:i',
+            $validated['start_time']
+        );
+
+        $end = Carbon::createFromFormat(
+            '!H:i',
+            $validated['end_time']
+        );
 
         $conflictingBookings = Booking::where(
             'facility_id',
@@ -187,25 +255,27 @@ class BookingController extends Controller
             ->get(['start_time', 'end_time']);
 
         foreach ($conflictingBookings as $existing) {
-            $existingStart = Carbon::parse($existing->start_time)
+            $existingStart = Carbon::parse($existing->start_time);
+            $existingEnd = Carbon::parse($existing->end_time);
+
+            $bufferedStart = $existingStart->copy()
                 ->subMinutes($buffer);
 
-            $existingEnd = Carbon::parse($existing->end_time)
+            $bufferedEnd = $existingEnd->copy()
                 ->addMinutes($buffer);
 
             if (
-                $start->lt($existingEnd) &&
-                $end->gt($existingStart)
+                $start->lt($bufferedEnd) &&
+                $end->gt($bufferedStart)
             ) {
                 return back()->withErrors([
-                    'start_time' => "This facility requires a {$buffer}-minute cleanup buffer between bookings.",
+                    'start_time' => $buffer > 0
+                        ? "Time slot overlaps with an existing booking ({$buffer}-minute buffer included)."
+                        : 'Time slot overlaps with an existing booking.',
                 ]);
             }
         }
 
-        // Update only the intended database columns.
-        // Event, department, designation, purpose, and facilitator
-        // remain combined in the existing notes column.
         $booking->update([
             'date' => $validated['date'],
             'booking_date' => $validated['date'],
@@ -252,10 +322,6 @@ class BookingController extends Controller
     {
         $settings = SystemSetting::current();
 
-        $consentRule = ($settings->require_consent_letter ?? false)
-            ? ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120']
-            : ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'];
-
         $validated = $request->validate([
             'facility_id' => ['required', 'string', 'exists:facilities,id'],
             'date' => ['required', 'date', 'after_or_equal:today'],
@@ -267,10 +333,26 @@ class BookingController extends Controller
             'guest_email' => ['nullable', 'email', 'max:255'],
             'guest_phone' => ['nullable', 'string', 'max:50'],
             'needs_manpower' => ['nullable', 'boolean'],
-            'consent_letter' => $consentRule,
         ]);
 
         $facility = Facility::findOrFail($validated['facility_id']);
+
+        $bookingDate = Carbon::parse($validated['date'])->startOfDay();
+
+        // Global consent overrides facility-specific rules.
+        $isConsentRequired =
+            (bool) $settings->require_consent_letter
+            || $facility->requirement === 'CONSENT_REQUIRED'
+            || (
+                (bool) $facility->requiresWeekendConsent
+                && $bookingDate->isWeekend()
+            );
+
+        $request->validate([
+            'consent_letter' => $isConsentRequired
+                ? ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120']
+                : ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+        ]);
 
         $attendeeCount = (int) ($validated['attendees'] ?? 1);
 
@@ -291,10 +373,9 @@ class BookingController extends Controller
             ]);
         }
 
-        $bookingDate = Carbon::parse($validated['date'])->startOfDay();
         $today = Carbon::today();
 
-        $maxDays = (int) ($settings->max_advance_days ?? 30);
+        $maxDays = max(0, (int) ($settings->max_advance_days ?? 30));
 
         if ($bookingDate->gt($today->copy()->addDays($maxDays))) {
             return back()->withErrors([
@@ -302,10 +383,27 @@ class BookingController extends Controller
             ]);
         }
 
-        $buffer = max(0, (int) ($settings->cleanup_buffer_minutes ?? 30));
+        // Enforce the configured maximum booking duration.
+        $this->validateBookingSpan(
+            $validated['start_time'],
+            $validated['end_time'],
+            $settings
+        );
 
-        $start = Carbon::createFromFormat('!H:i', $validated['start_time']);
-        $end = Carbon::createFromFormat('!H:i', $validated['end_time']);
+        $buffer = max(
+            0,
+            (int) ($settings->cleanup_buffer_minutes ?? 30)
+        );
+
+        $start = Carbon::createFromFormat(
+            '!H:i',
+            $validated['start_time']
+        );
+
+        $end = Carbon::createFromFormat(
+            '!H:i',
+            $validated['end_time']
+        );
 
         $existingBookings = Booking::where(
             'facility_id',
@@ -316,18 +414,23 @@ class BookingController extends Controller
             ->get(['start_time', 'end_time']);
 
         foreach ($existingBookings as $existing) {
-            $existingStart = Carbon::parse($existing->start_time)
+            $existingStart = Carbon::parse($existing->start_time);
+            $existingEnd = Carbon::parse($existing->end_time);
+
+            $bufferedStart = $existingStart->copy()
                 ->subMinutes($buffer);
 
-            $existingEnd = Carbon::parse($existing->end_time)
+            $bufferedEnd = $existingEnd->copy()
                 ->addMinutes($buffer);
 
             if (
-                $start->lt($existingEnd) &&
-                $end->gt($existingStart)
+                $start->lt($bufferedEnd) &&
+                $end->gt($bufferedStart)
             ) {
                 return back()->withErrors([
-                    'start_time' => "This facility requires a {$buffer}-minute cleanup buffer between bookings.",
+                    'start_time' => $buffer > 0
+                        ? "Time slot overlaps with an existing booking ({$buffer}-minute buffer included)."
+                        : 'Time slot overlaps with an existing booking.',
                 ]);
             }
         }
@@ -406,7 +509,7 @@ class BookingController extends Controller
     /**
      * Approve a booking.
      *
-     * IMPORTANT: Protect this route with administrator middleware/policies.
+     * Protect this route with administrator middleware/policies.
      */
     public function approve(Request $request, string $id)
     {
@@ -445,7 +548,7 @@ class BookingController extends Controller
     /**
      * Decline a booking.
      *
-     * IMPORTANT: Protect this route with administrator middleware/policies.
+     * Protect this route with administrator middleware/policies.
      */
     public function decline(Request $request, string $id)
     {

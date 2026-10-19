@@ -62,20 +62,8 @@ export default function AuthenticatedLayout({ header, action, children }) {
         localStorage.setItem('sidebar_collapsed', String(collapsed));
     }, [collapsed]);
 
-    // Force reload if restored from Chrome BF Cache
-    useEffect(() => {
-        const handlePageShow = (event) => {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        };
-
-        window.addEventListener('pageshow', handlePageShow);
-
-        return () => {
-            window.removeEventListener('pageshow', handlePageShow);
-        };
-    }, []);
+    // Logout state
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     // Defensive user check
     const user = page.props.auth?.user;
@@ -85,7 +73,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
     const isFacilityAdmin = role === 'facility_admin';
     const isUser = role === 'user';
 
-    // Notification state and dropdown toggle
+    // Notification state
     const [realtimeNotifications, setRealtimeNotifications] = useState(
         page.props.notifications ?? [],
     );
@@ -95,8 +83,9 @@ export default function AuthenticatedLayout({ header, action, children }) {
     const [viewingNotification, setViewingNotification] = useState(null);
 
     const prevCountRef = useRef(
-        (page.props.notifications ?? []).filter((notification) => !notification.read)
-            .length,
+        (page.props.notifications ?? []).filter(
+            (notification) => !notification.read,
+        ).length,
     );
 
     const unreadCount = realtimeNotifications.filter(
@@ -116,7 +105,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
     // Inertia polling: every 30 seconds
     useEffect(() => {
-        if (!user) return;
+        if (!user || isLoggingOut) return;
 
         const interval = setInterval(() => {
             router.reload({
@@ -155,7 +144,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
         }, 30000);
 
         return () => clearInterval(interval);
-    }, [user]);
+    }, [user, isLoggingOut]);
 
     // Clear all notifications
     const clearAllNotifications = () => {
@@ -253,6 +242,31 @@ export default function AuthenticatedLayout({ header, action, children }) {
         );
     };
 
+    // Logout through Inertia and Laravel's POST logout route
+    const handleLogout = () => {
+        if (isLoggingOut) return;
+
+        setIsLoggingOut(true);
+
+        router.post(
+            route('logout'),
+            {},
+            {
+                onSuccess: () => {
+                    // Force the browser to leave the authenticated page.
+                    window.location.replace(route('login'));
+                },
+                onError: (errors) => {
+                    console.error('Logout validation errors:', errors);
+                    toast.error('Logout failed. Please try again.');
+                },
+                onFinish: () => {
+                    setIsLoggingOut(false);
+                },
+            },
+        );
+    };
+
     return (
         <div className="flex min-h-screen bg-[#FDF6F0]">
             {/* Sidebar Navigation */}
@@ -274,12 +288,14 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             <span className="mr-0.5 rounded border-2 border-white px-1.5 shadow-sm">
                                 R
                             </span>
-                            {!collapsed && <span>eservedIT</span>}
+                            {!collapsed && <span>ReservedIT</span>}
                         </div>
 
                         <button
                             type="button"
-                            onClick={() => setCollapsed((current) => !current)}
+                            onClick={() =>
+                                setCollapsed((current) => !current)
+                            }
                             title={
                                 collapsed ? 'Expand sidebar' : 'Collapse sidebar'
                             }
@@ -499,26 +515,21 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                     <button
                         type="button"
-                        onClick={() => {
-                            router.post(
-                                route('logout'),
-                                {},
-                                {
-                                    onSuccess: () => {
-                                        window.location.replace('/login');
-                                    },
-                                },
-                            );
-                        }}
+                        onClick={handleLogout}
+                        disabled={isLoggingOut}
                         title={collapsed ? 'Logout' : undefined}
-                        className={`flex w-full items-center rounded-xl text-left text-sm font-medium text-rose-200 transition-colors hover:bg-rose-900/30 hover:text-white ${
+                        className={`flex w-full items-center rounded-xl text-left text-sm font-medium text-rose-200 transition-colors hover:bg-rose-900/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-60 ${
                             collapsed
                                 ? 'justify-center px-0 py-2.5'
                                 : 'gap-3 px-4 py-2.5'
                         }`}
                     >
                         <LogOut className="h-4 w-4 shrink-0 opacity-70" />
-                        {!collapsed && <span>Logout</span>}
+                        {!collapsed && (
+                            <span>
+                                {isLoggingOut ? 'Logging out…' : 'Logout'}
+                            </span>
+                        )}
                     </button>
                 </div>
             </aside>
@@ -579,12 +590,8 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                 {unreadCount > 0 && (
                                                     <button
                                                         type="button"
-                                                        onClick={
-                                                            clearAllNotifications
-                                                        }
-                                                        disabled={
-                                                            isClearingNotifications
-                                                        }
+                                                        onClick={clearAllNotifications}
+                                                        disabled={isClearingNotifications}
                                                         className="text-[10px] font-semibold text-indigo-600 transition hover:text-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
                                                         {isClearingNotifications
@@ -596,25 +603,18 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                         </div>
 
                                         <div className="max-h-64 space-y-1 overflow-y-auto">
-                                            {realtimeNotifications.length ===
-                                            0 ? (
+                                            {realtimeNotifications.length === 0 ? (
                                                 <div className="py-6 text-center text-xs text-gray-400">
-                                                    All caught up! No new
-                                                    notifications.
+                                                    All caught up! No new notifications.
                                                 </div>
                                             ) : (
                                                 realtimeNotifications.map(
                                                     (notification, index) => (
                                                         <button
-                                                            key={
-                                                                notification.id ??
-                                                                index
-                                                            }
+                                                            key={notification.id ?? index}
                                                             type="button"
                                                             onClick={() => {
-                                                                if (
-                                                                    !notification.read
-                                                                ) {
+                                                                if (!notification.read) {
                                                                     router.post(
                                                                         route(
                                                                             'notifications.read',
@@ -628,12 +628,8 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                                     );
                                                                 }
 
-                                                                setViewingNotification(
-                                                                    notification,
-                                                                );
-                                                                setNotificationsOpen(
-                                                                    false,
-                                                                );
+                                                                setViewingNotification(notification);
+                                                                setNotificationsOpen(false);
                                                             }}
                                                             className={`w-full rounded-xl p-2.5 text-left text-xs transition hover:bg-gray-50 ${
                                                                 notification.read
@@ -648,13 +644,11 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                                         : 'text-gray-900'
                                                                 }`}
                                                             >
-                                                                {notification.title ??
-                                                                    'System Notification'}
+                                                                {notification.title ?? 'System Notification'}
                                                             </p>
 
                                                             <p className="mt-0.5 text-gray-500">
-                                                                {notification.message ??
-                                                                    'Update details received.'}
+                                                                {notification.message ?? 'Update details received.'}
                                                             </p>
                                                         </button>
                                                     ),
@@ -674,9 +668,10 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     </div>
                 </header>
 
-                <main className="flex-1 p-4 sm:p-8">
+                <main className="min-w-0 flex-1 p-3 sm:p-5 lg:p-6">
                     <motion.div
                         key={page.url}
+                        className="w-full min-w-0"
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.22, ease: 'easeOut' }}
@@ -702,8 +697,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     Notification
                                 </p>
                                 <h3 className="mt-1 text-xl font-semibold text-gray-900">
-                                    {viewingNotification.title ??
-                                        'System Notification'}
+                                    {viewingNotification.title ?? 'System Notification'}
                                 </h3>
                             </div>
 
@@ -718,8 +712,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         </div>
 
                         <p className="whitespace-pre-wrap text-sm text-gray-700">
-                            {viewingNotification.message ??
-                                'No additional details.'}
+                            {viewingNotification.message ?? 'No additional details.'}
                         </p>
 
                         <div className="mt-6 flex justify-end">
@@ -785,8 +778,6 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         </div>
 
                         <form onSubmit={submitTicket} className="space-y-4">
-                            {/* Appeal Date removed: the server should record created_at automatically. */}
-
                             <div>
                                 <label
                                     htmlFor="ticket-category"
@@ -805,13 +796,9 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     }}
                                     className="block w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
                                 >
-                                    <option value="">
-                                        Select a category…
-                                    </option>
+                                    <option value="">Select a category…</option>
                                     <option value="Facility">Facility</option>
-                                    <option value="UI Improvements">
-                                        UI Improvements
-                                    </option>
+                                    <option value="UI Improvements">UI Improvements</option>
                                     <option value="Account">Account</option>
                                     <option value="Bug">Bug</option>
                                     <option value="Others">Others</option>
@@ -867,9 +854,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                 : 'text-gray-500'
                                         }`}
                                     >
-                                        {ticketDetailedInfo.length} /{' '}
-                                        {TICKET_DESCRIPTION_MAX_LENGTH}{' '}
-                                        characters
+                                        {ticketDetailedInfo.length} / {TICKET_DESCRIPTION_MAX_LENGTH} characters
                                     </p>
                                 </div>
                             </div>

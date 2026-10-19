@@ -19,10 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
-            ForcePasswordChange::class,
-        ]);
+    		HandleInertiaRequests::class,
+    		AddLinkHeadersForPreloadedAssets::class,
+    		ForcePasswordChange::class,
+    		PreventBackHistory::class,
+	]);
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
