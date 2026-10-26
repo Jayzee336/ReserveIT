@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -7,6 +6,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ForcePasswordChange;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\PreventBackHistory;
+use App\Http\Middleware\PreventAuthenticatedPageCache;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -18,11 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-    		HandleInertiaRequests::class,
-    		AddLinkHeadersForPreloadedAssets::class,
-    		ForcePasswordChange::class,
-    		PreventBackHistory::class,
-	]);
+            HandleInertiaRequests::class,
+            AddLinkHeadersForPreloadedAssets::class,
+            ForcePasswordChange::class,
+            PreventBackHistory::class,
+            PreventAuthenticatedPageCache::class,
+        ]);
 
         $middleware->alias([
             'role' => EnsureUserHasRole::class,

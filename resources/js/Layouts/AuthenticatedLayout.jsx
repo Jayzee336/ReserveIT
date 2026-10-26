@@ -52,20 +52,46 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
 export default function AuthenticatedLayout({ header, action, children }) {
     const page = usePage();
 
-    // Collapsible sidebar state (persisted)
+    // Collapsible sidebar state (persisted locally).
     const [collapsed, setCollapsed] = useState(() => {
         if (typeof window === 'undefined') return false;
-        return localStorage.getItem('sidebar_collapsed') === 'true';
+
+        try {
+            return window.localStorage.getItem('sidebar_collapsed') === 'true';
+        } catch {
+            return false;
+        }
     });
 
     useEffect(() => {
-        localStorage.setItem('sidebar_collapsed', String(collapsed));
+        try {
+            window.localStorage.setItem('sidebar_collapsed', String(collapsed));
+        } catch {
+            // The layout still works if browser storage is unavailable.
+        }
     }, [collapsed]);
 
-    // Logout state
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    // Detect browser back-forward cache restoration.
+    // A full reload lets Laravel validate the current session.
+    useEffect(() => {
+        const handlePageShow = (event) => {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        };
 
-    // Defensive user check
+        window.addEventListener('pageshow', handlePageShow);
+
+        return () => {
+            window.removeEventListener('pageshow', handlePageShow);
+        };
+    }, []);
+
+    // Logout state and duplicate-submission protection.
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const logoutStartedRef = useRef(false);
+
+    // Defensive user check.
     const user = page.props.auth?.user;
     const role = user?.role;
 
@@ -73,7 +99,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
     const isFacilityAdmin = role === 'facility_admin';
     const isUser = role === 'user';
 
-    // Notification state
+    // Notification state.
     const [realtimeNotifications, setRealtimeNotifications] = useState(
         page.props.notifications ?? [],
     );
@@ -92,7 +118,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
         (notification) => !notification.read,
     ).length;
 
-    // Sync when Inertia re-shares notification props
+    // Synchronize notifications when Inertia shares fresh props.
     useEffect(() => {
         const freshNotifications = page.props.notifications ?? [];
 
@@ -103,11 +129,11 @@ export default function AuthenticatedLayout({ header, action, children }) {
         ).length;
     }, [page.props.notifications]);
 
-    // Inertia polling: every 30 seconds
+    // Inertia notification polling: every 30 seconds.
     useEffect(() => {
-        if (!user || isLoggingOut) return;
+        if (!user || isLoggingOut) return undefined;
 
-        const interval = setInterval(() => {
+        const interval = window.setInterval(() => {
             router.reload({
                 only: ['notifications'],
                 preserveScroll: true,
@@ -143,11 +169,13 @@ export default function AuthenticatedLayout({ header, action, children }) {
             });
         }, 30000);
 
-        return () => clearInterval(interval);
+        return () => window.clearInterval(interval);
     }, [user, isLoggingOut]);
 
-    // Clear all notifications
+    // Clear all notifications.
     const clearAllNotifications = () => {
+        if (isClearingNotifications || isLoggingOut) return;
+
         setIsClearingNotifications(true);
 
         router.post(
@@ -161,7 +189,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
         );
     };
 
-    // Support ticket modal state
+    // Support ticket modal state.
     const [helpOpen, setHelpOpen] = useState(false);
     const [ticketCategory, setTicketCategory] = useState('');
     const [ticketDetailedInfo, setTicketDetailedInfo] = useState('');
@@ -186,12 +214,12 @@ export default function AuthenticatedLayout({ header, action, children }) {
     const submitTicket = (event) => {
         event.preventDefault();
 
+        if (isSubmittingTicket || isLoggingOut) return;
+
         const trimmedDescription = ticketDetailedInfo.trim();
 
         if (!trimmedDescription) {
-            setTicketFormError(
-                'Please enter details about your concern.',
-            );
+            setTicketFormError('Please enter details about your concern.');
             return;
         }
 
@@ -242,35 +270,31 @@ export default function AuthenticatedLayout({ header, action, children }) {
         );
     };
 
-    // Perform a standard browser POST to Laravel's logout route.
+    // Log out through Laravel's Inertia endpoint.
     const handleLogout = () => {
-        if (isLoggingOut) return;
+        if (logoutStartedRef.current || isLoggingOut) return;
 
-        const csrfToken = document
-            .querySelector('meta[name="csrf-token"]')
-            ?.getAttribute('content');
-
-        if (!csrfToken) {
-            toast.error(
-                'Unable to log out because the security token is missing. Refresh the page and try again.',
-            );
-            return;
-        }
-
+        logoutStartedRef.current = true;
         setIsLoggingOut(true);
+        setNotificationsOpen(false);
+        setHelpOpen(false);
+        setViewingNotification(null);
 
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = route('logout');
-
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = '_token';
-        csrfInput.value = csrfToken;
-
-        form.appendChild(csrfInput);
-        document.body.appendChild(form);
-        form.submit();
+        router.post(
+            route('logout'),
+            {},
+            {
+                onError: () => {
+                    toast.error(
+                        'Unable to log out. Please refresh the page and try again.',
+                    );
+                },
+                onFinish: () => {
+                    logoutStartedRef.current = false;
+                    setIsLoggingOut(false);
+                },
+            },
+        );
     };
 
     return (
@@ -569,7 +593,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                     <button
                                                         type="button"
                                                         onClick={clearAllNotifications}
-                                                        disabled={isClearingNotifications}
+                                                        disabled={isClearingNotifications || isLoggingOut}
                                                         className="text-[10px] font-semibold text-indigo-600 transition hover:text-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
                                                         {isClearingNotifications ? 'Clearing…' : 'Clear all'}
@@ -589,6 +613,8 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                         key={notification.id ?? index}
                                                         type="button"
                                                         onClick={() => {
+                                                            if (isLoggingOut) return;
+
                                                             if (!notification.read) {
                                                                 router.post(
                                                                     route('notifications.read', notification.id),
@@ -703,10 +729,13 @@ export default function AuthenticatedLayout({ header, action, children }) {
             <button
                 type="button"
                 onClick={() => {
+                    if (isLoggingOut) return;
+
                     setTicketFormError('');
                     setHelpOpen(true);
                 }}
-                className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#6A535C] text-xl font-semibold text-white shadow-lg transition hover:bg-[#533e45]"
+                disabled={isLoggingOut}
+                className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#6A535C] text-xl font-semibold text-white shadow-lg transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
                 aria-label="Submit a ticket"
                 title="Submit a ticket"
             >
@@ -840,6 +869,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     type="submit"
                                     disabled={
                                         isSubmittingTicket ||
+                                        isLoggingOut ||
                                         !ticketCategory ||
                                         ticketDetailedInfo.trim().length === 0 ||
                                         ticketDetailedInfo.trim().length > TICKET_DESCRIPTION_MAX_LENGTH

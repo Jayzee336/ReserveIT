@@ -33,7 +33,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended(
+            route('dashboard', absolute: false)
+        );
     }
 
     /**
@@ -46,6 +48,16 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        // Clear Inertia's browser history after invalidating the old session.
+        Inertia::clearHistory();
+
+        return redirect()
+            ->route('login')
+            ->header(
+                'Cache-Control',
+                'no-store, no-cache, must-revalidate, private, max-age=0'
+            )
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 }
