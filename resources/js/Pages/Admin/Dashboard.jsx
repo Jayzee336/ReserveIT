@@ -392,7 +392,7 @@ export default function AdminDashboard({
                             ['Returning clients', operationalAnalytics.returningClients ?? 0, 'Clients with more than one booking'],
                             ['Approval rate', `${operationalAnalytics.approvalRate ?? 0}%`, 'Approved out of approved/declined decisions'],
                             ['Cancellation rate', `${operationalAnalytics.cancellationRate ?? 0}%`, 'Cancelled out of all requests'],
-                            ['Average review time', operationalAnalytics.averageReviewHours === null || operationalAnalytics.averageReviewHours === undefined ? 'No data' : `${operationalAnalytics.averageReviewHours} hrs`, 'From request creation to approval/decision'],
+                            ['Average approval time', operationalAnalytics.averageApprovalHours === null || operationalAnalytics.averageApprovalHours === undefined ? 'No data' : `${operationalAnalytics.averageApprovalHours} hrs`, 'From request creation to approval'],
                             ['Peak booking hour', operationalAnalytics.peakHour ?? 'No data', `${operationalAnalytics.peakHourBookings ?? 0} bookings started in this hour`],
                             ['Overtime bookings', operationalAnalytics.overtimeBookings ?? 0, `${operationalAnalytics.overtimeMinutes ?? 0} total overtime minutes`],
                             ['Overtime fees', `₱${Number(operationalAnalytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Recorded overtime charges in the period'],
