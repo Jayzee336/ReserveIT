@@ -41,6 +41,30 @@ class BookingUpdateTest extends TestCase
         $this->assertTrue($booking->needs_manpower);
     }
 
+    public function test_user_cannot_edit_booking_into_a_consent_required_date_without_a_consent_letter(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $facility->update(['requirement' => 'CONSENT_REQUIRED']);
+        $booking = $this->createBooking($user, $facility, 'pending');
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}", [
+                'date' => now()->addDays(2)->toDateString(),
+                'start_time' => '13:00',
+                'end_time' => '14:00',
+                'attendees' => 10,
+                'notes' => 'Updated booking',
+                'needs_manpower' => false,
+            ])
+            ->assertSessionHasErrors('consent_letter');
+
+        $this->assertSame(
+            now()->addDay()->toDateString(),
+            $booking->fresh()->date->format('Y-m-d')
+        );
+    }
+
     public function test_user_can_cancel_pending_booking_and_declined_booking_cannot_be_cancelled(): void
     {
         $user = User::factory()->create();
