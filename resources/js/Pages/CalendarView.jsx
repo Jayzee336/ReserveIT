@@ -158,27 +158,15 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                 } else {
                                     cells.push(
                                         <td key={slot} className="border-b border-r p-1.5">
-                                            {availabilityOnly ? (
-                                                <button
-                                                    type="button"
-                                                    aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
-                                                    title={`Available · request ${facility.name} at ${formatTime(slot)}`}
-                                                    onClick={() => setCreate({ facility, startTime: slot })}
-                                                    className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 text-xs font-semibold text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                                >
-                                                    + Book
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    type="button"
-                                                    aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
-                                                    title={`Book ${facility.name} at ${formatTime(slot)}`}
-                                                    onClick={() => setCreate({ facility, startTime: slot })}
-                                                    className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-[var(--ri-border-strong)] text-lg text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]"
-                                                >
-                                                    +
-                                                </button>
-                                            )}
+                                            <button
+                                                type="button"
+                                                aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
+                                                title={`Book ${facility.name} at ${formatTime(slot)}`}
+                                                onClick={() => setCreate({ facility, startTime: slot })}
+                                                className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-[var(--ri-border-strong)] text-lg text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]"
+                                            >
+                                                +
+                                            </button>
                                         </td>
                                     );
                                 }
