@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Facilitator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Facility;
+use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\BookingOperationsNotification;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -117,7 +121,7 @@ class BookingApprovalController extends Controller
 
         $existingBookings = Booking::query()
             ->where('facility_id', $booking->facility_id)
-            ->whereKeyNot($booking->getKey())
+            ->where('id', '!=', $booking->getKey())
             ->whereIn('status', ['pending', 'approved'])
             ->where(function ($query) use ($candidateDate) {
                 $query->whereDate('date', $candidateDate)
