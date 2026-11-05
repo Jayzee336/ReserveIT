@@ -125,6 +125,13 @@ class AdminDashboardAnalyticsTest extends TestCase
                 ->where('operationalAnalytics.overtimeMinutes', 30)
                 ->where('operationalAnalytics.overtimeFees', 7.5)
                 ->where('operationalAnalytics.averageApprovalHours', 0.5)
+                ->has('analyticsDetails.clients', 1)
+                ->has('analyticsDetails.returningClients', 1)
+                ->has('analyticsDetails.overtime', 1)
+                ->where('analyticsDetails.overtime.0.overtime_minutes', 30)
+                ->where('statusBreakdown.0.status', 'pending')
+                ->where('statusBreakdown.1.status', 'approved')
+                ->where('statusBreakdown.1.count', 1)
             );
     }
 
@@ -163,6 +170,10 @@ class AdminDashboardAnalyticsTest extends TestCase
                 ->has('mostUsedFacilities', 1)
                 ->where('mostUsedFacilities.0.name', 'Analytics Filter A')
                 ->where('usageOverTime.0.bookings', 1)
+                ->has('analyticsDetails.clients', 1)
+                ->where('analyticsDetails.clients.0.name', $clientA->name)
+                ->has('analyticsDetails.approvalRate', 1)
+                ->where('statusBreakdown.1.count', 1)
             );
     }
 }
