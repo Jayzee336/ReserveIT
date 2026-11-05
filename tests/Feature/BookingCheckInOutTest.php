@@ -245,6 +245,58 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
         }
     }
 
+    public function test_booking_owner_checkout_calculates_overtime_but_owner_cannot_record_payment(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-20 09:00:00'));
+
+        try {
+            $user = User::factory()->create([
+                'role' => 'user',
+                'is_active' => true,
+            ]);
+
+            $facility = $this->createFacility(
+                'user-overtime-checkout',
+                'User Overtime Checkout Facility'
+            );
+
+            SystemSetting::current()->update([
+                'overtime_fee_per_hour' => 10.00,
+            ]);
+
+            $booking = $this->createBooking($facility, [
+                'user_id' => $user->id,
+                'date' => '2026-10-20',
+                'start_time' => '09:00:00',
+                'end_time' => '10:00:00',
+            ]);
+
+            $this->actingAs($user)
+                ->post(route('bookings.check-in', $booking))
+                ->assertSessionHasNoErrors();
+
+            Carbon::setTestNow(Carbon::parse('2026-10-20 10:30:00'));
+
+            $this->post(route('bookings.check-out', $booking))
+                ->assertSessionHasNoErrors();
+
+            $finalized = $booking->fresh();
+
+            $this->assertSame(30, $finalized->overtime_minutes);
+            $this->assertEquals(5.00, (float) $finalized->overtime_fee_amount);
+            $this->assertEquals(10.00, (float) $finalized->overtime_fee_rate);
+            $this->assertSame('unpaid', $finalized->overtime_payment_status);
+
+            $this->post(route('bookings.overtime-payment', $booking))
+                ->assertForbidden();
+
+            $this->assertSame('unpaid', $booking->fresh()->overtime_payment_status);
+            $this->assertNull($booking->fresh()->overtime_paid_at);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
     public function test_regular_user_cannot_check_in_or_check_out_another_users_booking(): void
     {
         $user = User::factory()->create([
