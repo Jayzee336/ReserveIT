@@ -1,3 +1,222 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+|--------------------------------------------------------------------------
+| ReserveIT design foundation
+|--------------------------------------------------------------------------
+| Shared tokens keep the public, student, facilitator, and administrator
+| experiences visually consistent while allowing each page to evolve safely.
+*/
+
+:root {
+    color-scheme: light;
+    --ri-ink: #20212b;
+    --ri-ink-soft: #454653;
+    --ri-muted: #777783;
+    --ri-brand: #745363;
+    --ri-brand-strong: #5d4050;
+    --ri-brand-soft: #f1eaf0;
+    --ri-accent: #b88d59;
+    --ri-accent-soft: #f6efe5;
+    --ri-canvas: #f7f6f4;
+    --ri-surface: #ffffff;
+    --ri-surface-subtle: #fbfaf9;
+    --ri-border: #e9e5e2;
+    --ri-border-strong: #d9d1cc;
+    --ri-success: #287a59;
+    --ri-warning: #9b681d;
+    --ri-danger: #b44949;
+    --ri-shadow-sm: 0 2px 8px rgb(32 33 43 / 5%);
+    --ri-shadow-md: 0 12px 32px rgb(32 33 43 / 8%);
+    --ri-shadow-lg: 0 24px 64px rgb(32 33 43 / 12%);
+    --ri-radius-sm: 0.625rem;
+    --ri-radius-md: 1rem;
+    --ri-radius-lg: 1.5rem;
+    --ri-focus-ring: 0 0 0 3px rgb(116 83 99 / 22%);
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+        min-width: 320px;
+        background: var(--ri-canvas);
+        color: var(--ri-ink);
+        font-feature-settings: "ss01" on;
+    }
+
+    ::selection {
+        background: rgb(116 83 99 / 18%);
+        color: var(--ri-ink);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--ri-brand);
+        outline-offset: 3px;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        font: inherit;
+    }
+
+    button:disabled {
+        cursor: not-allowed;
+    }
+}
+
+@layer components {
+    .ri-page-shell {
+        width: 100%;
+        max-width: 90rem;
+        margin-inline: auto;
+        padding: clamp(1rem, 2.5vw, 2rem);
+    }
+
+    .ri-page-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--ri-brand);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .ri-page-title {
+        color: var(--ri-ink);
+        font-size: clamp(1.5rem, 2.4vw, 2.125rem);
+        font-weight: 750;
+        letter-spacing: -0.04em;
+        line-height: 1.15;
+    }
+
+    .ri-page-description {
+        max-width: 46rem;
+        color: var(--ri-muted);
+        font-size: 0.925rem;
+        line-height: 1.7;
+    }
+
+    .ri-panel {
+        border: 1px solid var(--ri-border);
+        border-radius: var(--ri-radius-lg);
+        background: var(--ri-surface);
+        box-shadow: var(--ri-shadow-sm);
+    }
+
+    .ri-panel-interactive {
+        transition:
+            border-color 180ms ease,
+            box-shadow 180ms ease,
+            transform 180ms ease;
+    }
+
+    .ri-panel-interactive:hover {
+        border-color: var(--ri-border-strong);
+        box-shadow: var(--ri-shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .ri-field {
+        width: 100%;
+        min-height: 2.75rem;
+        border: 1px solid var(--ri-border-strong);
+        border-radius: var(--ri-radius-sm);
+        background: var(--ri-surface);
+        color: var(--ri-ink);
+        transition:
+            border-color 160ms ease,
+            box-shadow 160ms ease;
+    }
+
+    .ri-field::placeholder {
+        color: #a09da3;
+    }
+
+    .ri-field:focus {
+        border-color: var(--ri-brand);
+        box-shadow: var(--ri-focus-ring);
+        outline: none;
+    }
+
+    .ri-btn-primary {
+        display: inline-flex;
+        min-height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border: 1px solid var(--ri-brand);
+        border-radius: 0.75rem;
+        background: var(--ri-brand);
+        padding: 0.625rem 1rem;
+        color: #fff;
+        font-size: 0.875rem;
+        font-weight: 650;
+        transition:
+            background-color 160ms ease,
+            border-color 160ms ease,
+            box-shadow 160ms ease,
+            transform 160ms ease;
+    }
+
+    .ri-btn-primary:hover:not(:disabled) {
+        border-color: var(--ri-brand-strong);
+        background: var(--ri-brand-strong);
+        box-shadow: 0 6px 16px rgb(93 64 80 / 20%);
+        transform: translateY(-1px);
+    }
+
+    .ri-btn-primary:active:not(:disabled) {
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Keep long admin tables usable without adding a visible scrollbar. */
+* {
+    scrollbar-color: #c9bec5 transparent;
+    scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #c9bec5;
+    background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #a99aa3;
+    background-clip: padding-box;
+}
