@@ -122,7 +122,13 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                 } else {
                                     cells.push(
                                         <td key={slot} colSpan={1} className="border-b border-r p-1.5">
-                                            <button type="button" onClick={() => setCreate({ facility, startTime: slot })} className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-[var(--ri-border-strong)] text-lg text-stone-400 hover:border-[var(--ri-brand)] hover:text-[var(--ri-brand)]">
+                                            <button
+                                                type="button"
+                                                aria-label={`Create a booking for ${facility.name} at ${slot}`}
+                                                title={`Book ${facility.name} at ${slot}`}
+                                                onClick={() => setCreate({ facility, startTime: slot })}
+                                                className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-[var(--ri-border-strong)] text-lg text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]"
+                                            >
                                                 +
                                             </button>
                                         </td>
