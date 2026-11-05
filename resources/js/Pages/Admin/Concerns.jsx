@@ -298,7 +298,7 @@ export default function Concerns({ concerns, filters = {} }) {
                             onChange={(e) => handleSearch(e.target.value)}
                             placeholder="Search by description or user name..."
                             aria-label="Search concerns"
-                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none transition focus:border-[#A9869C] focus:ring-2 focus:ring-[#EDE3EA]"
                         />
                     </div>
 
@@ -311,7 +311,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 handleCategoryFilter(e.target.value)
                             }
                             aria-label="Filter concerns by category"
-                            className="w-full appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                            className="w-full appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-700 outline-none transition focus:border-[#A9869C] focus:ring-2 focus:ring-[#EDE3EA]"
                         >
                             <option value="">All Categories</option>
                             <option value="Facility">Facility</option>
@@ -562,7 +562,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                         </div>
 
                                                         {histories.length > 0 && (
-                                                            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-indigo-700 ring-1 ring-indigo-100">
+                                                            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-[#5D4050] ring-1 ring-[#EDE3EA]">
                                                                 <Pencil className="h-3 w-3" />
                                                                 Edited
                                                             </span>
@@ -603,7 +603,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                                     concern,
                                                                 )
                                                             }
-                                                            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                                            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#F8F4F7] px-3 py-2.5 text-sm font-semibold text-[#5D4050] transition hover:bg-[#EDE3EA] focus:outline-none focus:ring-2 focus:ring-[#D9C6D3]"
                                                         >
                                                             <MessageCircle className="h-4 w-4" />
                                                             Reply
@@ -616,7 +616,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                                     concern,
                                                                 )
                                                             }
-                                                            className="inline-flex items-center justify-center rounded-xl bg-[#6A535C] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45] focus:outline-none focus:ring-2 focus:ring-[#6A535C]/30"
+                                                            className="inline-flex items-center justify-center rounded-xl bg-[#20212B] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45] focus:outline-none focus:ring-2 focus:ring-[#20212B]/30"
                                                         >
                                                             Mark resolved
                                                         </button>
@@ -632,7 +632,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                                 concern,
                                                             )
                                                         }
-                                                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-3 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                                                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#D9C6D3] bg-white px-3 py-2.5 text-sm font-semibold text-[#5D4050] transition hover:bg-[#F8F4F7] focus:outline-none focus:ring-2 focus:ring-[#EDE3EA]"
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                         Edit Reply
@@ -754,7 +754,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 disabled={!link.url || link.active}
                                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                                     link.active
-                                        ? 'bg-[#6A535C] text-white'
+                                        ? 'bg-[#20212B] text-white'
                                         : link.url
                                           ? 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
                                           : 'cursor-not-allowed bg-slate-50 text-slate-300'
@@ -778,7 +778,7 @@ export default function Concerns({ concerns, filters = {} }) {
                         className="my-auto w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl"
                     >
                         <div className="mb-5">
-                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#745363]">
                                 Support response
                             </p>
 
@@ -814,7 +814,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 }
                                 rows={5}
                                 maxLength={5000}
-                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-[#A9869C] focus:ring-2 focus:ring-[#EDE3EA]"
                                 placeholder="Write a clear and helpful response..."
                                 required
                             />
@@ -838,7 +838,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                     disabled={
                                         isReplying || !replyText.trim()
                                     }
-                                    className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-xl bg-[#745363] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5D4050] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isReplying ? 'Sending...' : 'Send Reply'}
                                 </button>
@@ -858,7 +858,7 @@ export default function Concerns({ concerns, filters = {} }) {
                         className="my-auto w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl"
                     >
                         <div className="mb-5">
-                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">
+                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#745363]">
                                 <Pencil className="h-4 w-4" />
                                 Reply management
                             </p>
@@ -893,7 +893,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 onChange={(e) => setEditText(e.target.value)}
                                 rows={6}
                                 maxLength={5000}
-                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-[#A9869C] focus:ring-2 focus:ring-[#EDE3EA]"
                                 placeholder="Update the admin reply..."
                                 required
                             />
@@ -920,7 +920,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 <button
                                     type="submit"
                                     disabled={isEditing || !editText.trim()}
-                                    className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-xl bg-[#745363] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#5D4050] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isEditing
                                         ? 'Saving...'
