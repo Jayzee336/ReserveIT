@@ -21,17 +21,39 @@ const toMinutes = (time) => { const [hour, minute] = String(time).split(':').map
 const statusClass = (status) => status === 'approved' ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500';
 
 function bookingCluster(bookings, slotMinute) {
-    let cluster = bookings.filter((booking) => toMinutes(booking.start_time) <= slotMinute && toMinutes(booking.end_time) > slotMinute);
-    let clusterEnd = Math.max(...cluster.map((booking) => toMinutes(booking.end_time)));
+    const slotEnd = slotMinute + 60;
+    let cluster = bookings.filter((booking) => (
+        toMinutes(booking.start_time) < slotEnd &&
+        toMinutes(booking.end_time) > slotMinute
+    ));
+
+    let clusterStart = cluster.length
+        ? Math.min(...cluster.map((booking) => toMinutes(booking.start_time)))
+        : slotMinute;
+    let clusterEnd = cluster.length
+        ? Math.max(...cluster.map((booking) => toMinutes(booking.end_time)))
+        : slotEnd;
+
     let changed = true;
-    while (changed) {
+    while (changed && cluster.length) {
         changed = false;
         bookings.forEach((booking) => {
-            const start = toMinutes(booking.start_time); const end = toMinutes(booking.end_time);
-            if (start < clusterEnd && end > slotMinute && !cluster.some((item) => item.id === booking.id)) { cluster.push(booking); clusterEnd = Math.max(clusterEnd, end); changed = true; }
+            const start = toMinutes(booking.start_time);
+            const end = toMinutes(booking.end_time);
+            if (
+                start < clusterEnd &&
+                end > clusterStart &&
+                !cluster.some((item) => item.id === booking.id)
+            ) {
+                cluster.push(booking);
+                clusterStart = Math.min(clusterStart, start);
+                clusterEnd = Math.max(clusterEnd, end);
+                changed = true;
+            }
         });
     }
-    return { cluster, clusterEnd };
+
+    return { cluster, clusterStart, clusterEnd };
 }
 
 export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate }) {
@@ -143,8 +165,8 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                         <td key={slot} colSpan={1} className="border-b border-r p-1.5">
                                             <button
                                                 type="button"
-                                                aria-label={`Create a booking for ${facility.name} at ${slot}`}
-                                                title={`Book ${facility.name} at ${slot}`}
+                                                aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
+                                                title={`Book ${facility.name} at ${formatTime(slot)}`}
                                                 onClick={() => setCreate({ facility, startTime: slot })}
                                                 className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-[var(--ri-border-strong)] text-lg text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]"
                                             >
