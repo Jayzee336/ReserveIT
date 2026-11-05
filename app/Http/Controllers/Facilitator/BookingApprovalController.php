@@ -42,7 +42,7 @@ class BookingApprovalController extends Controller
 
         // Previously reviewed bookings.
         $reviewedQuery = (clone $query)
-            ->whereIn('status', ['approved', 'declined']);
+            ->whereIn('status', ['approved', 'declined', 'cancelled']);
 
         // Pending bookings whose scheduled date has passed.
         $pastUnapprovedQuery = (clone $query)
