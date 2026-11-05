@@ -40,7 +40,11 @@ class FacilitatorDashboardController extends Controller
             $activeFacilityIds = $managedFacilityIds;
         }
 
-        $bookingsQuery = Booking::query()->forUser($user);
+        // Cancelled and declined reservations must not appear in the
+        // facilitator's live schedule or inflate weekly facility utilization.
+        $bookingsQuery = Booking::query()
+            ->forUser($user)
+            ->whereNotIn('status', ['declined', 'cancelled']);
 
         if (! empty($activeFacilityIds)) {
             $bookingsQuery->whereIn('facility_id', $activeFacilityIds);
