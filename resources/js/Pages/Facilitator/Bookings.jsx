@@ -34,7 +34,7 @@ function StatusBadge({ status }) {
                 STATUS_STYLES[normalized] ?? STATUS_STYLES.pending
             }`}
         >
-            {String(status || '').toUpperCase()}
+            {normalized === 'pending' ? 'PENDING · SLOT HELD' : normalized === 'approved' ? 'APPROVED · CONFIRMED' : String(status || '').toUpperCase()}
         </span>
     );
 }
@@ -411,8 +411,11 @@ function BookingDetailModal({
 
                     {isApproved && (
                         <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 sm:col-span-2">
-                            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-600">
-                                Facility Check-In / Check-Out
+                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                                Check-In / Check-Out
+                            </p>
+                            <p className="mb-3 text-xs text-gray-500">
+                                Assigned Facility Admins and Super Admins can manage this here. Booking owners can also check themselves in and out from My Bookings.
                             </p>
 
                             <div className="mb-4">
