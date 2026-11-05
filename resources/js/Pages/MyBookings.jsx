@@ -386,6 +386,8 @@ export default function MyBookings({
     const [isEditing, setIsEditing] = useState(false);
     const [showSaveConfirm, setShowSaveConfirm] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
+    const [cancellationReason, setCancellationReason] = useState('');
+    const [isCheckInOutProcessing, setIsCheckInOutProcessing] = useState(false);
 
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
@@ -655,19 +657,51 @@ export default function MyBookings({
 
     const handleCancel = (id) => {
         if (isCancelling) return;
+        const reason = cancellationReason.trim();
+        if (reason.length < 5) {
+            toast.error('Please provide a cancellation reason of at least 5 characters.');
+            return;
+        }
 
         setIsCancelling(true);
         router.put(
             `/bookings/${id}/cancel`,
-            {},
+            { cancellation_reason: reason },
             {
                 preserveScroll: true,
                 onSuccess: () => {
                     setCancelModalId(null);
-                    toast.success('Booking cancelled.');
+                    setCancellationReason('');
+                    toast.success('Booking cancelled. The administrators have been notified.');
                 },
-                onError: () => toast.error('Failed to cancel booking.'),
+                onError: (validationErrors) => toast.error(
+                    validationErrors.cancellation_reason ||
+                    validationErrors.status ||
+                    'Failed to cancel booking.'
+                ),
                 onFinish: () => setIsCancelling(false),
+            }
+        );
+    };
+
+    const handleUserCheckInOut = (action, bookingId) => {
+        if (isCheckInOutProcessing || !bookingId) return;
+        setIsCheckInOutProcessing(true);
+        router.post(
+            route(`bookings.check-${action}`, { booking: bookingId }),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success(action === 'in'
+                    ? 'You have checked in successfully.'
+                    : 'You have checked out successfully. Any applicable overtime charge has been calculated.'),
+                onError: (validationErrors) => toast.error(
+                    validationErrors.check_in ||
+                    validationErrors.check_out ||
+                    Object.values(validationErrors).flat().find((value) => typeof value === 'string') ||
+                    `Unable to check ${action === 'in' ? 'in' : 'out'} this booking.`
+                ),
+                onFinish: () => setIsCheckInOutProcessing(false),
             }
         );
     };
@@ -789,7 +823,7 @@ export default function MyBookings({
                                                 </div>
                                                 <span className={`inline-flex flex-shrink-0 items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${getStatusBadgeClass(status)}`}>
                                                     <StatusIcon status={status} />
-                                                    <span className="capitalize">{status}</span>
+                                                    <span className="capitalize">{status === 'pending' ? 'Pending approval' : status === 'approved' ? 'Approved · confirmed' : status}</span>
                                                 </span>
                                             </div>
 
@@ -827,7 +861,7 @@ export default function MyBookings({
                                                 )}
                                             </div>
                                             {isCancelable && (
-                                                <button type="button" onClick={() => setCancelModalId(booking.id)} className="inline-flex items-center justify-center rounded-md px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50">
+                                                <button type="button" onClick={() => { setCancellationReason(''); setCancelModalId(booking.id); }} className="inline-flex items-center justify-center rounded-md px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50">
                                                     <X className="mr-1.5 h-4 w-4" /> Cancel
                                                 </button>
                                             )}
@@ -844,9 +878,27 @@ export default function MyBookings({
                                                             <p className="mt-1 text-sm text-gray-600">Cancel your reservation for <strong>{facility.name}</strong> on {formatDate(booking.date)}?</p>
                                                         </div>
                                                     </div>
+                                                    <div className="mt-4">
+                                                        <label htmlFor={`cancellation-reason-${booking.id}`} className="mb-1.5 block text-xs font-semibold text-gray-700">
+                                                            Reason for cancellation <span className="text-red-600">*</span>
+                                                        </label>
+                                                        <textarea
+                                                            id={`cancellation-reason-${booking.id}`}
+                                                            value={cancellationReason}
+                                                            onChange={(event) => setCancellationReason(event.target.value)}
+                                                            rows={3}
+                                                            minLength={5}
+                                                            maxLength={1000}
+                                                            required
+                                                            disabled={isCancelling}
+                                                            placeholder="Tell the administrators why you need to cancel this reservation..."
+                                                            className="w-full resize-y rounded-lg border border-gray-300 p-3 text-sm text-gray-700 shadow-sm focus:border-red-400 focus:ring-2 focus:ring-red-100 disabled:opacity-60"
+                                                        />
+                                                        <p className="mt-1 text-xs text-gray-500">At least 5 characters. The assigned facility administrators and Super Admins will be notified.</p>
+                                                    </div>
                                                     <div className="mt-5 flex justify-end gap-2">
-                                                        <button type="button" onClick={() => setCancelModalId(null)} disabled={isCancelling} className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Keep Booking</button>
-                                                        <button type="button" onClick={() => handleCancel(booking.id)} disabled={isCancelling} className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">{isCancelling ? 'Cancelling...' : 'Confirm Cancel'}</button>
+                                                        <button type="button" onClick={() => { setCancelModalId(null); setCancellationReason(''); }} disabled={isCancelling} className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">Keep Booking</button>
+                                                        <button type="button" onClick={() => handleCancel(booking.id)} disabled={isCancelling || cancellationReason.trim().length < 5} className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50">{isCancelling ? 'Cancelling...' : 'Confirm Cancel'}</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -873,6 +925,16 @@ export default function MyBookings({
                                             <span className="capitalize">{getStatus(selectedDetailBooking.status)}</span>
                                         </span>
                                     </div>
+                                    {getStatus(selectedDetailBooking.status) === 'pending' && (
+                                        <p className="mt-2 max-w-xl text-xs leading-5 text-amber-800">
+                                            Pending approval: this time slot is temporarily held for your request. It is not a confirmed reservation until an administrator approves it.
+                                        </p>
+                                    )}
+                                    {getStatus(selectedDetailBooking.status) === 'approved' && (
+                                        <p className="mt-2 max-w-xl text-xs leading-5 text-emerald-700">
+                                            Approved: your reservation is confirmed.
+                                        </p>
+                                    )}
                                     <h2 id="booking-detail-title" className="break-words text-lg font-bold text-gray-900">{selectedFacility.name}</h2>
                                     <p className="mt-0.5 break-all text-[10px] text-gray-400">Booking ID: {selectedDetailBooking.id}</p>
                                 </div>
@@ -938,6 +1000,73 @@ export default function MyBookings({
                                         )}
                                     </div>
                                 </section>
+
+                                {selectedDetailBooking.approved_by && (
+                                    <section className="rounded-lg border border-emerald-100 bg-emerald-50 p-3">
+                                        <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Approved by</p>
+                                        <p className="mt-1 text-sm font-semibold text-emerald-900">{selectedDetailBooking.approved_by}</p>
+                                        {selectedDetailBooking.approved_at && (
+                                            <p className="mt-0.5 text-xs text-emerald-800">
+                                                {new Date(selectedDetailBooking.approved_at).toLocaleString('en-PH', {
+                                                    year: 'numeric', month: 'short', day: 'numeric',
+                                                    hour: 'numeric', minute: '2-digit', hour12: true,
+                                                })}
+                                            </p>
+                                        )}
+                                    </section>
+                                )}
+
+                                {selectedDetailBooking.cancellation_reason && (
+                                    <section className="rounded-lg border border-red-100 bg-red-50 p-3">
+                                        <p className="text-xs font-bold uppercase tracking-wide text-red-700">Cancellation reason</p>
+                                        <p className="mt-1 whitespace-pre-wrap text-sm text-red-900">{selectedDetailBooking.cancellation_reason}</p>
+                                    </section>
+                                )}
+
+                                {getStatus(selectedDetailBooking.status) === 'approved' && (
+                                    <section className="rounded-lg border border-blue-100 bg-blue-50/50 p-3">
+                                        <h3 className="mb-2 text-sm font-bold text-gray-800">Your check-in / check-out</h3>
+                                        <div className="mb-3 grid gap-2 text-xs text-gray-600 sm:grid-cols-2">
+                                            <p>
+                                                <span className="font-semibold text-gray-800">Check-in: </span>
+                                                {selectedDetailBooking.checked_in_at
+                                                    ? new Date(selectedDetailBooking.checked_in_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+                                                    : 'Not checked in'}
+                                            </p>
+                                            <p>
+                                                <span className="font-semibold text-gray-800">Check-out: </span>
+                                                {selectedDetailBooking.checked_out_at
+                                                    ? new Date(selectedDetailBooking.checked_out_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+                                                    : 'Not checked out'}
+                                            </p>
+                                        </div>
+                                        {!selectedDetailBooking.checked_out_at && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleUserCheckInOut(
+                                                    selectedDetailBooking.checked_in_at ? 'out' : 'in',
+                                                    selectedDetailBooking.id
+                                                )}
+                                                disabled={isCheckInOutProcessing}
+                                                className={`inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 ${selectedDetailBooking.checked_in_at ? 'bg-blue-700 hover:bg-blue-800' : 'bg-emerald-700 hover:bg-emerald-800'}`}
+                                            >
+                                                {isCheckInOutProcessing
+                                                    ? 'Processing...'
+                                                    : selectedDetailBooking.checked_in_at
+                                                        ? 'Check Out'
+                                                        : 'Check In'}
+                                            </button>
+                                        )}
+                                        <p className="mt-2 text-xs text-gray-500">
+                                            Check-in is available from 15 minutes before your scheduled start. Checking out records the actual end time and calculates any applicable overtime charge.
+                                        </p>
+                                        {selectedDetailBooking.checked_out_at && Number(selectedDetailBooking.overtime_fee_amount ?? 0) > 0 && (
+                                            <p className="mt-2 text-xs font-semibold text-amber-800">
+                                                Final overtime charge: ₱{Number(selectedDetailBooking.overtime_fee_amount).toFixed(2)} · {selectedDetailBooking.overtime_payment_status === 'paid' ? 'Paid' : 'Unpaid'}
+                                            </p>
+                                        )}
+                                    </section>
+                                )}
 
                                 <section>
                                     <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><Users className="h-4 w-4 text-[text-indigo-600]" /> Attendance and Manpower</h3>
