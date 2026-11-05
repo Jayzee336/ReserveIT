@@ -497,4 +497,50 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
         $this->assertNull($booking->fresh()->overtime_paid_at);
     }
 
+
+    public function test_overtime_billing_only_returns_records_for_assigned_facilities(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+
+        $assignedFacility = $this->createFacility(
+            'billing-assigned',
+            'Assigned Billing Facility'
+        );
+        $otherFacility = $this->createFacility(
+            'billing-unassigned',
+            'Unassigned Billing Facility'
+        );
+        $assignedFacility->facilityAdmins()->attach($admin);
+
+        $assignedBooking = $this->createBooking($assignedFacility, [
+            'checked_out_at' => now(),
+            'overtime_minutes' => 30,
+            'overtime_fee_amount' => 5.00,
+            'overtime_fee_rate' => 10.00,
+            'overtime_payment_status' => 'unpaid',
+        ]);
+        $unassignedBooking = $this->createBooking($otherFacility, [
+            'checked_out_at' => now(),
+            'overtime_minutes' => 60,
+            'overtime_fee_amount' => 10.00,
+            'overtime_fee_rate' => 10.00,
+            'overtime_payment_status' => 'unpaid',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->getJson(route('admin.overtime-billing'));
+
+        $response->assertOk();
+
+        $ids = collect($response->json('billingRecords'))
+            ->pluck('id')
+            ->all();
+
+        $this->assertContains($assignedBooking->id, $ids);
+        $this->assertNotContains($unassignedBooking->id, $ids);
+    }
+
 }
