@@ -37,6 +37,7 @@ class Booking extends Model
         'approved_at',
         'decline_reason',
         'rejection_reason',
+        'cancellation_reason',
         'checked_in_at',
         'checked_out_at',
         'overtime_notified_at',
