@@ -188,14 +188,14 @@ function FacilityDetailsModal({
                 <div className="p-6 overflow-y-auto space-y-5">
                     <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 border-b border-gray-100 pb-4">
                         <div className="flex items-center gap-1.5">
-                            <MapPin className="h-4 w-4 text-[text-indigo-600]" />
+                            <MapPin className="h-4 w-4 text-indigo-600" />
                             <span className="font-medium text-gray-900">
                                 {facility.location}
                             </span>
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                            <Users className="h-4 w-4 text-[text-indigo-600]" />
+                            <Users className="h-4 w-4 text-indigo-600" />
                             <span>
                                 Capacity:{' '}
                                 <strong className="text-gray-900">
@@ -222,7 +222,7 @@ function FacilityDetailsModal({
                         <div className="text-xs text-gray-600 flex items-center gap-2">
                             <Check className={`h-4 w-4 ${
                                 facility.requiresWeekendConsent
-                                    ? 'text-[text-indigo-600]'
+                                    ? 'text-indigo-600'
                                     : 'text-gray-300'
                             }`} />
                             Weekend Consent Letter Required:{' '}
@@ -234,7 +234,7 @@ function FacilityDetailsModal({
                         <div className="text-xs text-gray-600 flex items-center gap-2">
                             <Check className={`h-4 w-4 ${
                                 facility.allowTdevsManpower
-                                    ? 'text-[text-indigo-600]'
+                                    ? 'text-indigo-600'
                                     : 'text-gray-300'
                             }`} />
                             TDEVS Manpower Support Allowed:{' '}
@@ -254,7 +254,7 @@ function FacilityDetailsModal({
                                 {facility.facility_admins.map((admin) => (
                                     <span
                                         key={admin.id}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[bg-indigo-50] text-[text-indigo-700] text-xs font-semibold"
+                                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold"
                                     >
                                         <Users className="h-3.5 w-3.5" />
                                         {admin.name} ({admin.email})
@@ -291,7 +291,7 @@ function FacilityDetailsModal({
                                     onClose();
                                     onEdit(facility);
                                 }}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[bg-indigo-600] hover:bg-[bg-indigo-700] text-white text-sm font-semibold transition"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition"
                             >
                                 <Pencil className="h-4 w-4" />
                                 Edit Settings
@@ -484,7 +484,7 @@ function FacilityFormModal({
         `block w-full rounded-xl p-2.5 text-sm focus:ring-2 ${
             errors[field]
                 ? 'border-red-400 focus:ring-red-300'
-                : 'border-gray-200 focus:ring-[ring-indigo-400]'
+                : 'border-gray-200 focus:ring-indigo-400'
         }`;
 
     return (
@@ -497,7 +497,7 @@ function FacilityFormModal({
             />
 
             <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[92vh]">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-[from-indigo-50] to-white">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white">
                     <h2 className="font-bold text-gray-900">
                         {isEditing ? 'Edit Facility' : 'Add Facility'}
                     </h2>
@@ -637,7 +637,7 @@ function FacilityFormModal({
                                         updateField('imageUrl', '');
                                     }
                                 }}
-                                className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-full file:border-0 file:bg-[bg-indigo-50] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[text-indigo-700]"
+                                className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-full file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-indigo-700"
                             />
 
                             <input
@@ -650,7 +650,7 @@ function FacilityFormModal({
                                         updateField('imageFile', null);
                                     }
                                 }}
-                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                                 placeholder="/storage/facilities/example.jpg"
                             />
                         </div>
@@ -687,7 +687,7 @@ function FacilityFormModal({
                                     onChange={(e) =>
                                         updateField('requiresWeekendConsent', e.target.checked)
                                     }
-                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[text-indigo-600] focus:ring-[ring-indigo-400]"
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-400"
                                 />
                                 <span>
                                     Requires consent letter for weekend bookings
@@ -704,7 +704,7 @@ function FacilityFormModal({
                                     onChange={(e) =>
                                         updateField('allowTdevsManpower', e.target.checked)
                                     }
-                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[text-indigo-600] focus:ring-[ring-indigo-400]"
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-400"
                                 />
                                 <span>
                                     Allow requesting TDEVS manpower
@@ -726,7 +726,7 @@ function FacilityFormModal({
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search admins by name or email"
-                                    className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                                    className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                                 />
 
                                 <div className="mt-3 max-h-48 overflow-y-auto border border-gray-200 rounded-2xl bg-white">
@@ -751,7 +751,7 @@ function FacilityFormModal({
                                                     onClick={() => toggleAssignedAdmin(admin.id)}
                                                     className={`w-full text-left px-4 py-3 transition ${
                                                         selected
-                                                            ? 'bg-[bg-indigo-50] text-[text-indigo-900]'
+                                                            ? 'bg-indigo-50 text-indigo-900'
                                                             : 'hover:bg-gray-50 text-gray-700'
                                                     }`}
                                                 >
@@ -768,7 +768,7 @@ function FacilityFormModal({
                                                         <span
                                                             className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                                                                 selected
-                                                                    ? 'bg-[bg-indigo-600] text-white'
+                                                                    ? 'bg-indigo-600 text-white'
                                                                     : 'bg-gray-100 text-gray-600'
                                                             }`}
                                                         >
@@ -797,7 +797,7 @@ function FacilityFormModal({
                                             .map((admin) => (
                                                 <span
                                                     key={admin.id}
-                                                    className="inline-flex items-center gap-2 rounded-full bg-[bg-indigo-50] px-3 py-1.5 text-xs font-semibold text-[text-indigo-700]"
+                                                    className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700"
                                                 >
                                                     {admin.name}
                                                 </span>
@@ -816,7 +816,7 @@ function FacilityFormModal({
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-3 bg-[bg-indigo-600] hover:bg-[bg-indigo-700] text-white rounded-xl text-sm font-semibold disabled:bg-[bg-indigo-300]"
+                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold disabled:bg-indigo-300"
                         >
                             {isSubmitting
                                 ? 'Saving…'
@@ -964,7 +964,7 @@ export default function Facilities({
                             <button
                                 type="button"
                                 onClick={() => setFormModalState('create')}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[bg-indigo-600] hover:bg-[bg-indigo-700] text-white text-sm font-semibold shadow-sm transition-colors self-start sm:self-auto"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition-colors self-start sm:self-auto"
                             >
                                 <Plus className="h-4 w-4" />
                                 Add Facility
@@ -978,7 +978,7 @@ export default function Facilities({
                             <input
                                 type="text"
                                 placeholder="Search facilities..."
-                                className="w-full pl-10 pr-6 py-2.5 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-[ring-indigo-400] focus:border-[border-indigo-400] text-sm bg-white"
+                                className="w-full pl-10 pr-6 py-2.5 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 text-sm bg-white"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -986,12 +986,12 @@ export default function Facilities({
 
                         <div className="flex flex-wrap items-center gap-2">
                             {filterType !== 'All' && (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[bg-indigo-50] text-[text-indigo-700] border border-[border-indigo-100]">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
                                     {filterType}
                                     <button
                                         type="button"
                                         onClick={() => setFilterType('All')}
-                                        className="ml-0.5 hover:text-[text-indigo-900]"
+                                        className="ml-0.5 hover:text-indigo-900"
                                         aria-label="Remove type filter"
                                     >
                                         <X className="h-3 w-3" />
@@ -1019,14 +1019,14 @@ export default function Facilities({
                             onClick={openFilterModal}
                             className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
                                 activeFilterCount > 0
-                                    ? 'bg-[bg-indigo-50] border-[border-indigo-300] text-[text-indigo-700] hover:bg-[bg-indigo-100]'
+                                    ? 'bg-indigo-50 border-indigo-300 text-indigo-700 hover:bg-indigo-100'
                                     : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm'
                             }`}
                         >
                             <Filter className="h-4 w-4" />
                             <span>Filters</span>
                             {activeFilterCount > 0 && (
-                                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[bg-indigo-600] text-white text-[10px] font-bold">
+                                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] font-bold">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -1077,7 +1077,7 @@ export default function Facilities({
                                                     e.stopPropagation();
                                                     setFormModalState(facility);
                                                 }}
-                                                className="p-1.5 rounded-full bg-white/90 text-gray-700 hover:text-[text-indigo-600] hover:bg-white backdrop-blur-sm shadow-sm transition-colors"
+                                                className="p-1.5 rounded-full bg-white/90 text-gray-700 hover:text-indigo-600 hover:bg-white backdrop-blur-sm shadow-sm transition-colors"
                                                 title="Edit Facility"
                                                 aria-label={`Edit ${facility.name}`}
                                             >
@@ -1104,7 +1104,7 @@ export default function Facilities({
                                 <div className="p-4 flex flex-col flex-grow">
                                     <h3
                                         onClick={() => setViewingFacility(facility)}
-                                        className="text-base font-bold text-gray-900 mb-0.5 group-hover:text-[text-indigo-600] transition-colors line-clamp-1 cursor-pointer"
+                                        className="text-base font-bold text-gray-900 mb-0.5 group-hover:text-indigo-600 transition-colors line-clamp-1 cursor-pointer"
                                     >
                                         {facility.name}
                                     </h3>
@@ -1129,7 +1129,7 @@ export default function Facilities({
                                         <button
                                             type="button"
                                             onClick={() => setViewingFacility(facility)}
-                                            className="text-[text-indigo-600] font-semibold flex items-center gap-1 hover:text-[text-indigo-800] transition-colors"
+                                            className="text-indigo-600 font-semibold flex items-center gap-1 hover:text-indigo-800 transition-colors"
                                         >
                                             <Eye className="h-3.5 w-3.5" />
                                             Manage &amp; Details
@@ -1164,7 +1164,7 @@ export default function Facilities({
                     <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
                             <div className="flex items-center gap-2">
-                                <Filter className="h-4 w-4 text-[text-indigo-600]" />
+                                <Filter className="h-4 w-4 text-indigo-600" />
                                 <h3 className="font-bold text-gray-900">
                                     Filter &amp; Sort
                                 </h3>
@@ -1197,8 +1197,8 @@ export default function Facilities({
                                             onClick={() => setPendingType(type)}
                                             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
                                                 pendingType === type
-                                                    ? 'bg-[bg-indigo-600] text-white border-[border-indigo-600] shadow-sm'
-                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[border-indigo-300] hover:text-[text-indigo-600]'
+                                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
                                             }`}
                                         >
                                             {pendingType === type && (
@@ -1226,13 +1226,13 @@ export default function Facilities({
                                             onClick={() => setPendingSort(value)}
                                             className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm font-medium transition-all text-left ${
                                                 pendingSort === value
-                                                    ? 'bg-[bg-indigo-50] text-[text-indigo-700] border-[border-indigo-300]'
+                                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-300'
                                                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                                             }`}
                                         >
                                             <span>{label}</span>
                                             {pendingSort === value && (
-                                                <span className="w-4 h-4 rounded-full bg-[bg-indigo-600] flex items-center justify-center flex-shrink-0">
+                                                <span className="w-4 h-4 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
                                                     <Check className="h-2.5 w-2.5 text-white" />
                                                 </span>
                                             )}
@@ -1254,7 +1254,7 @@ export default function Facilities({
                             <button
                                 type="button"
                                 onClick={applyFilters}
-                                className="flex-1 py-2.5 px-4 rounded-xl bg-[bg-indigo-600] text-white text-sm font-semibold hover:bg-[bg-indigo-700] transition-colors shadow-sm"
+                                className="flex-1 py-2.5 px-4 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
                             >
                                 Apply Filters
                             </button>
