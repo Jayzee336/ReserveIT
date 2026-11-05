@@ -135,6 +135,66 @@ class AdminDashboardController extends Controller
         $overtimeMinutes = (int) $overtimeBookings->sum('overtime_minutes');
         $overtimeFees = round((float) $overtimeBookings->sum('overtime_fee_amount'), 2);
 
+        $bookingDetailRows = $bookings
+            ->sortByDesc(fn (Booking $booking) => ($bookingDateFor($booking)?->format('Y-m-d') ?? '') . ' ' . ($booking->start_time ?? ''))
+            ->map(fn (Booking $booking) => [
+                'id' => $booking->getKey(),
+                'facility' => $booking->facility?->name ?? 'Deleted facility',
+                'client' => $booking->user?->name ?? $booking->guest_name ?? 'Guest',
+                'email' => $booking->user?->email ?? $booking->guest_email,
+                'date' => $bookingDateFor($booking)?->format('Y-m-d'),
+                'start_time' => $booking->start_time,
+                'end_time' => $booking->end_time,
+                'status' => $booking->status,
+                'approved_at' => $booking->approved_at?->toDateTimeString(),
+                'overtime_minutes' => (int) ($booking->overtime_minutes ?? 0),
+                'overtime_fee_amount' => (float) ($booking->overtime_fee_amount ?? 0),
+                'overtime_payment_status' => $booking->overtime_payment_status ?? 'not_applicable',
+            ])->values();
+
+        $clientDetails = $clientBookingGroups->map(function ($clientBookings) {
+            $first = $clientBookings->first();
+            $latest = $clientBookings->sortByDesc(
+                fn (Booking $booking) => ($booking->booking_date ?? $booking->date)?->format('Y-m-d') ?? ''
+            )->first();
+
+            return [
+                'name' => $first->user?->name ?? $first->guest_name ?? 'Guest',
+                'email' => $first->user?->email ?? $first->guest_email,
+                'bookings' => $clientBookings->count(),
+                'lastBooking' => ($latest->booking_date ?? $latest->date)?->format('Y-m-d'),
+            ];
+        })->sortByDesc('bookings')->values();
+
+        $statusBreakdown = collect(['pending', 'approved', 'declined', 'cancelled'])
+            ->map(fn (string $status) => [
+                'status' => $status,
+                'count' => $bookings->where('status', $status)->count(),
+                'percentage' => $bookings->isNotEmpty()
+                    ? round(($bookings->where('status', $status)->count() / $bookings->count()) * 100, 1)
+                    : 0,
+            ])->values();
+
+        $peakHourBookingsList = $peakHour === null
+            ? collect()
+            : $bookings->filter(
+                fn (Booking $booking) => ! empty($booking->start_time)
+                    && (int) substr((string) $booking->start_time, 0, 2) === (int) $bookingsByHour->keys()->first()
+            );
+
+        $analyticsDetails = [
+            'clients' => $clientDetails,
+            'returningClients' => $clientDetails->where('bookings', '>', 1)->values(),
+            'approvalRate' => $bookingDetailRows->whereIn('status', ['approved', 'declined'])->values(),
+            'cancellationRate' => $bookingDetailRows->where('status', 'cancelled')->values(),
+            'approvalTime' => $bookingDetailRows->filter(fn (array $booking) => $booking['approved_at'] !== null)->values(),
+            'peakHour' => $bookingDetailRows->filter(
+                fn (array $booking) => $peakHour !== null
+                    && (int) substr((string) ($booking['start_time'] ?? ''), 0, 2) === (int) $bookingsByHour->keys()->first()
+            )->values(),
+            'overtime' => $bookingDetailRows->where('overtime_minutes', '>', 0)->values(),
+        ];
+
         $mostUsedFacilities = $bookings->groupBy('facility_id')->map(function ($facilityBookings) {
             return [
                 'name' => $facilityBookings->first()->facility?->name ?? 'Deleted facility',
@@ -166,6 +226,8 @@ class AdminDashboardController extends Controller
                 'facility_id' => $filterFacilityId,
             ],
             'analyticsFacilities' => $managedFacilities,
+            'statusBreakdown' => $statusBreakdown,
+            'analyticsDetails' => $analyticsDetails,
             'operationalAnalytics' => [
                 'periodLabel' => Carbon::parse($filterFrom)->format('M j, Y')
                     . ' – ' . Carbon::parse($filterTo)->format('M j, Y'),
