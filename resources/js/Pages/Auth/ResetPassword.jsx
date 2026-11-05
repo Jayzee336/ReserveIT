@@ -57,7 +57,7 @@ export default function ResetPassword({ token, email }) {
                             <InputLabel htmlFor="password" value="New Password" />
                             <button
                                 type="button"
-                                className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 transition hover:text-indigo-500"
+                                className="inline-flex items-center gap-1 text-sm font-medium text-[#745363] transition hover:text-[#8C6A80]"
                                 onClick={() => setShowPassword((value) => !value)}
                                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                             >
@@ -115,7 +115,7 @@ export default function ResetPassword({ token, email }) {
                 <div className="mt-6 text-center text-sm text-gray-600">
                     <Link
                         href={route('login')}
-                        className="inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-500"
+                        className="inline-flex items-center gap-1 font-medium text-[#745363] hover:text-[#8C6A80]"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
