@@ -296,6 +296,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'guest_name',
                 'guest_email',
                 'notes',
+                'approved_by',
+                'approved_at',
             ]);
         }
 
