@@ -43,6 +43,38 @@ class BookingController extends Controller
     }
 
     /**
+     * Enforce the booking hours and 15-minute interval used by the booking forms
+     * and Schedule Grid. The closing time is available as an end time only.
+     */
+    private function validateOperatingHours(string $startTime, string $endTime): void
+    {
+        $openingTime = '08:00';
+        $closingTime = '22:00';
+
+        if ($startTime < $openingTime) {
+            throw ValidationException::withMessages([
+                'start_time' => 'Bookings cannot start before 8:00 AM.',
+            ]);
+        }
+
+        if ($endTime > $closingTime) {
+            throw ValidationException::withMessages([
+                'end_time' => 'Bookings must end by 10:00 PM.',
+            ]);
+        }
+
+        foreach (['start_time' => $startTime, 'end_time' => $endTime] as $field => $time) {
+            [$hour, $minute] = array_map('intval', explode(':', $time));
+
+            if (($minute % 15) !== 0) {
+                throw ValidationException::withMessages([
+                    $field => 'Please select a valid 15-minute time interval.',
+                ]);
+            }
+        }
+    }
+
+    /**
      * Validate that the end time follows the start time and
      * the duration is within the configured limit.
      */
@@ -359,6 +391,11 @@ class BookingController extends Controller
             $settings
         );
 
+        $this->validateOperatingHours(
+            $validated['start_time'],
+            $validated['end_time']
+        );
+
         $buffer = max(
             0,
             (int) ($settings->cleanup_buffer_minutes ?? 30)
@@ -591,6 +628,11 @@ class BookingController extends Controller
             $validated['start_time'],
             $validated['end_time'],
             $settings
+        );
+
+        $this->validateOperatingHours(
+            $validated['start_time'],
+            $validated['end_time']
         );
 
         $buffer = max(
