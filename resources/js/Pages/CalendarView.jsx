@@ -2,7 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { X as XIcon } from 'lucide-react';
 import BookingModal from '@/Components/BookingModal';
 
-const HOURS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+const HOURS = Array.from({ length: 14 }, (_, index) => `${String(index + 8).padStart(2, '0')}:00`);
+const formatTime = (value) => {
+    if (!value) return '—';
+    const [hourText, minuteText] = String(value).slice(0, 5).split(':');
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) return String(value);
+    return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
+};
+const formatMinutes = (minutes) => formatTime(`${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`);
+const statusLabel = (status) => status === 'pending'
+    ? 'Pending approval · temporarily held'
+    : status === 'approved'
+      ? 'Approved · confirmed'
+      : String(status || 'Unknown');
 const toMinutes = (time) => { const [hour, minute] = String(time).split(':').map(Number); return hour * 60 + (minute || 0); };
 const statusClass = (status) => status === 'approved' ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500';
 
@@ -88,6 +102,11 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
 
     return (
         <>
+            <div className="mb-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-600">
+                <span><strong className="text-amber-700">Pending approval:</strong> slot temporarily held while awaiting review</span>
+                <span><strong className="text-emerald-700">Approved:</strong> confirmed reservation</span>
+                <span className="text-slate-500">Schedule shown from 8:00 AM to 10:00 PM</span>
+            </div>
             <div className="w-full overflow-x-auto whitespace-nowrap rounded-2xl border border-[var(--ri-border)]">
                 <table className="min-w-[1400px] w-full table-fixed border-collapse">
                     <thead className="bg-[var(--ri-surface-subtle)]">
@@ -114,7 +133,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                         <td key={slot} colSpan={span} className="border-b border-r p-1.5 align-top">
                                             <button type="button" onClick={() => setDetails({ facility, bookings: cluster })} className={`min-h-[64px] w-full rounded-xl bg-gradient-to-r ${statusClass(cluster.some((booking) => booking.status === 'approved') ? 'approved' : 'pending')} px-3 py-2 text-left text-white shadow-sm transition hover:brightness-95`}>
                                                 <span className="block text-xs font-bold uppercase">{cluster.length > 1 ? `${cluster.length} conflicting bookings` : cluster[0].status}</span>
-                                                <span className="mt-1 block text-sm font-semibold">{cluster.length === 1 ? `${cluster[0].start_time}–${cluster[0].end_time}` : `${slot}–${String(Math.floor(clusterEnd / 60)).padStart(2, '0')}:00`}</span>
+                                                <span className="mt-1 block text-sm font-semibold">{cluster.length === 1 ? `${formatTime(cluster[0].start_time)}–${formatTime(cluster[0].end_time)}` : `${formatTime(slot)}–${formatMinutes(clusterEnd)}`}</span>
                                             </button>
                                         </td>
                                     );
@@ -178,7 +197,15 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                             {details.bookings.map((booking) => (
                                 <article key={booking.id} className="rounded-xl border border-[var(--ri-border)] p-4">
                                     <p className="font-bold">{booking.user?.name ?? booking.guest_name ?? 'Guest'}</p>
-                                    <p className="text-sm text-slate-600">{booking.status} · {booking.start_time}–{booking.end_time}</p>
+                                    <p className="text-sm text-slate-600">{statusLabel(booking.status)} · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}</p>
+                                    {booking.approved_by && (
+                                        <p className="mt-1 text-xs text-emerald-700">
+                                            Approved by {booking.approved_by}{booking.approved_at ? ` · ${new Date(booking.approved_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
+                                        </p>
+                                    )}
+                                    {booking.status === 'pending' && (
+                                        <p className="mt-1 text-xs text-amber-700">This time slot is temporarily held and is not yet a confirmed reservation.</p>
+                                    )}
                                     <p className="mt-1 text-sm">Contact: {booking.user?.email ?? booking.guest_email ?? 'Not supplied'}</p>
                                     <p className="mt-1 text-sm">Purpose: {booking.notes || 'Not supplied'}</p>
                                 </article>
