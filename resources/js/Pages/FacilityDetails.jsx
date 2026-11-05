@@ -178,8 +178,8 @@ export default function FacilityDetails({
 
                                 {/* Booking action */}
                                 <div className="flex flex-col gap-3 lg:w-64">
-                                    <div className="rounded-xl border border-[border-indigo-100] bg-[bg-indigo-50]/70 p-4">
-                                        <CalendarIcon className="mb-2 h-5 w-5 text-[text-indigo-600]" />
+                                    <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 shadow-sm">
+                                        <CalendarIcon className="mb-2 h-5 w-5 text-indigo-600" />
 
                                         <h3 className="text-sm font-bold text-gray-900">
                                             Reserve this facility
@@ -192,7 +192,7 @@ export default function FacilityDetails({
                                         <button
                                             type="button"
                                             onClick={() => setBookingOpen(true)}
-                                            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[bg-indigo-600] px-4 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[bg-indigo-700] focus:outline-none focus:ring-2 focus:ring-[ring-indigo-500] focus:ring-offset-2"
+                                            className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                         >
                                             <CalendarIcon className="h-4 w-4" />
                                             Book this facility
