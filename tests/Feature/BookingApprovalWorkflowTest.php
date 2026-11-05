@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\Facility;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -69,6 +70,62 @@ class BookingApprovalWorkflowTest extends TestCase
         ]);
 
         $this->assertNotNull($booking->fresh()->approved_at);
+    }
+
+    public function test_booking_with_overlapping_active_slot_cannot_be_approved(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+
+        $facility = $this->createFacility('approval-conflict', 'Conflict Facility');
+        $facility->facilityAdmins()->attach($admin);
+
+        $candidate = $this->createBooking($facility);
+        $conflicting = $this->createBooking($facility);
+        $conflicting->update([
+            'start_time' => '09:30:00',
+            'end_time' => '10:30:00',
+        ]);
+
+        SystemSetting::current()->update([
+            'cleanup_buffer_minutes' => 0,
+        ]);
+
+        $this->actingAs($admin)->patch(
+            route('facilitator.bookings.approve', $candidate)
+        );
+
+        $this->assertSame('pending', $candidate->fresh()->status);
+    }
+
+    public function test_booking_inside_cleanup_buffer_cannot_be_approved(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+
+        $facility = $this->createFacility('approval-buffer', 'Buffer Facility');
+        $facility->facilityAdmins()->attach($admin);
+
+        $candidate = $this->createBooking($facility);
+        $nearby = $this->createBooking($facility);
+        $nearby->update([
+            'start_time' => '10:15:00',
+            'end_time' => '11:15:00',
+        ]);
+
+        SystemSetting::current()->update([
+            'cleanup_buffer_minutes' => 30,
+        ]);
+
+        $this->actingAs($admin)->patch(
+            route('facilitator.bookings.approve', $candidate)
+        );
+
+        $this->assertSame('pending', $candidate->fresh()->status);
     }
 
     public function test_unassigned_facility_admin_cannot_approve_booking(): void
