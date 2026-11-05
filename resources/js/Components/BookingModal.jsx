@@ -693,7 +693,7 @@ export default function BookingModal({
 
                 <p className="text-xs text-gray-400">
                     Time slots are available every 15 minutes, from 8:00 AM
-                    until the 8:00 PM closing time.
+                    until the 10:00 PM closing time.
                 </p>
 
                 {/* Attendees */}
