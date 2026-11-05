@@ -126,5 +126,43 @@ class AdminDashboardAnalyticsTest extends TestCase
                 ->where('operationalAnalytics.overtimeFees', 7.5)
                 ->where('operationalAnalytics.averageApprovalHours', 0.5)
             );
+
+    public function test_analytics_filters_by_date_range_and_assigned_facility(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+        $clientA = User::factory()->create(['role' => 'user']);
+        $clientB = User::factory()->create(['role' => 'user']);
+
+        $facilityA = $this->createFacility('analytics-filter-a', 'Analytics Filter A');
+        $facilityB = $this->createFacility('analytics-filter-b', 'Analytics Filter B');
+        $facilityA->facilityAdmins()->attach($admin);
+        $facilityB->facilityAdmins()->attach($admin);
+
+        $this->createBooking($facilityA, $clientA, 'approved');
+        $this->createBooking($facilityB, $clientB, 'approved');
+
+        $date = now()->toDateString();
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard', [
+                'from' => $date,
+                'to' => $date,
+                'facility_id' => $facilityA->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('analyticsFilters.from', $date)
+                ->where('analyticsFilters.to', $date)
+                ->where('analyticsFilters.facility_id', $facilityA->id)
+                ->where('operationalAnalytics.uniqueClients', 1)
+                ->where('operationalAnalytics.approvalRate', 100)
+                ->has('mostUsedFacilities', 1)
+                ->where('mostUsedFacilities.0.name', 'Analytics Filter A')
+                ->where('usageOverTime.0.bookings', 1)
+            );
+    }
     }
 }
