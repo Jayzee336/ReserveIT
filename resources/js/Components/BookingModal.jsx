@@ -431,9 +431,9 @@ export default function BookingModal({
                 </h4>
 
                 {isAuthenticated ? (
-                    <div className="flex items-center gap-3 rounded-xl border border-[border-indigo-100] bg-[bg-indigo-50] px-4 py-3">
-                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[bg-indigo-200]">
-                            <span className="text-xs font-bold text-[text-indigo-800]">
+                    <div className="flex items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3">
+                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-indigo-200">
+                            <span className="text-xs font-bold text-indigo-800">
                                 {(user?.name || 'U')
                                     .split(' ')
                                     .map((word) => word[0])
@@ -443,10 +443,10 @@ export default function BookingModal({
                             </span>
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-[text-indigo-900]">
+                            <p className="text-sm font-bold text-indigo-900">
                                 {user?.name}
                             </p>
-                            <p className="text-xs text-[text-indigo-500]">
+                            <p className="text-xs text-indigo-500">
                                 {user?.email}
                             </p>
                         </div>
@@ -463,7 +463,7 @@ export default function BookingModal({
                                 placeholder="Full Name"
                                 value={guestName}
                                 onChange={(e) => setGuestName(e.target.value)}
-                                className="block w-full rounded-xl border border-gray-200 p-2.5 pl-10 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                                className="block w-full rounded-xl border border-gray-200 p-2.5 pl-10 text-sm focus:ring-2 focus:ring-indigo-400"
                             />
                         </div>
 
@@ -473,7 +473,7 @@ export default function BookingModal({
                             placeholder="Email address"
                             value={guestEmail}
                             onChange={(e) => setGuestEmail(e.target.value)}
-                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                         />
 
                         <input
@@ -482,7 +482,7 @@ export default function BookingModal({
                             placeholder="Phone number"
                             value={guestPhone}
                             onChange={(e) => setGuestPhone(e.target.value)}
-                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                         />
                     </div>
                 )}
@@ -500,7 +500,7 @@ export default function BookingModal({
                     placeholder="Event name / title"
                     value={eventName}
                     onChange={(e) => setEventName(e.target.value)}
-                    className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                    className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                 />
 
                 <div className="grid grid-cols-2 gap-3">
@@ -510,7 +510,7 @@ export default function BookingModal({
                         placeholder="Department / Org"
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
-                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                     />
 
                     <input
@@ -519,7 +519,7 @@ export default function BookingModal({
                         placeholder="Designation"
                         value={designation}
                         onChange={(e) => setDesignation(e.target.value)}
-                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                     />
                 </div>
 
@@ -528,7 +528,7 @@ export default function BookingModal({
                     placeholder="Facilitator (optional)"
                     value={facilitator}
                     onChange={(e) => setFacilitator(e.target.value)}
-                    className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                    className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                 />
 
                 <textarea
@@ -537,7 +537,7 @@ export default function BookingModal({
                     placeholder="Purpose of the event…"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="block w-full resize-none rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                    className="block w-full resize-none rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                 />
             </div>
 
@@ -587,7 +587,7 @@ export default function BookingModal({
                             setEndTime('');
                             setConflictError('');
                         }}
-                        className={`block w-full rounded-xl border p-2.5 pl-10 text-sm focus:ring-2 focus:ring-[ring-indigo-400] ${
+                        className={`block w-full rounded-xl border p-2.5 pl-10 text-sm focus:ring-2 focus:ring-indigo-400 ${
                             isDateTooSoon
                                 ? 'border-red-300 bg-red-50'
                                 : 'border-gray-200'
@@ -620,9 +620,9 @@ export default function BookingModal({
                     )}
 
                 {requireConsentGlobally && (
-                    <div className="flex items-start gap-2 rounded-xl border border-[border-indigo-200] bg-[bg-indigo-50] px-3 py-2.5">
-                        <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-[text-indigo-500]" />
-                        <p className="text-xs text-[text-indigo-700]">
+                    <div className="flex items-start gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2.5">
+                        <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-500" />
+                        <p className="text-xs text-indigo-700">
                             A consent letter is required for every booking under the current system settings.
                         </p>
                     </div>
@@ -644,7 +644,7 @@ export default function BookingModal({
                                 setEndTime('');
                                 setConflictError('');
                             }}
-                            className={`block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400] ${
+                            className={`block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-indigo-400 ${
                                 selectedStartTime
                                     ? 'cursor-not-allowed bg-gray-100'
                                     : ''
@@ -678,7 +678,7 @@ export default function BookingModal({
                                 setEndTime(e.target.value);
                                 setConflictError('');
                             }}
-                            className="block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400]"
+                            className="block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
                         >
                             <option value="">Select time</option>
 
@@ -717,7 +717,7 @@ export default function BookingModal({
                                 setAttendees('1');
                             }
                         }}
-                        className={`block w-full rounded-xl border p-2.5 text-sm focus:ring-2 focus:ring-[ring-indigo-400] ${
+                        className={`block w-full rounded-xl border p-2.5 text-sm focus:ring-2 focus:ring-indigo-400 ${
                             isOverCapacity
                                 ? 'border-red-300 bg-red-50'
                                 : 'border-gray-200'
@@ -738,7 +738,7 @@ export default function BookingModal({
                             type="checkbox"
                             checked={needsManpower}
                             onChange={(e) => setNeedsManpower(e.target.checked)}
-                            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-gray-300 text-[text-indigo-600] focus:ring-[ring-indigo-400]"
+                            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-400"
                         />
 
                         <div className="flex-1">
@@ -756,7 +756,7 @@ export default function BookingModal({
             {/* Consent Letter Upload */}
             {isConsentRequired && (
                 <div className="space-y-3 border-b border-gray-100 px-6 py-5">
-                    <div className="relative rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-4 hover:bg-[bg-indigo-50]/40">
+                    <div className="relative rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-4 hover:bg-indigo-50/40">
                         <div className="flex items-center gap-3">
                             <Upload className="h-5 w-5 text-gray-400" />
 
@@ -830,7 +830,7 @@ export default function BookingModal({
                             isOverCapacity ||
                             !!isDateTooSoon
                         }
-                        className="flex-1 rounded-xl bg-[bg-indigo-600] py-3 text-sm font-semibold text-white hover:bg-[bg-indigo-700] disabled:bg-[bg-indigo-300]"
+                        className="flex-1 rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:bg-indigo-300"
                     >
                         {isSubmitting
                             ? 'Submitting…'
