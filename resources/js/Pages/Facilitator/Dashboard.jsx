@@ -91,6 +91,12 @@ function BookingDetailModal({ booking, onClose }) {
                             Status
                         </p>
                         <StatusBadge status={booking.status} />
+                        {String(booking.status).toLowerCase() === 'pending' && (
+                            <p className="mt-2 text-xs leading-5 text-amber-800">This request temporarily holds the selected time slot. It is not a confirmed reservation until approved.</p>
+                        )}
+                        {String(booking.status).toLowerCase() === 'approved' && (
+                            <p className="mt-2 text-xs leading-5 text-emerald-700">This is an approved and confirmed reservation.</p>
+                        )}
                     </div>
 
                     <div className="rounded-xl bg-stone-50 p-4">
