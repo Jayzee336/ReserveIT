@@ -1027,6 +1027,7 @@ export default function Bookings({
                         <option value="pending">Pending</option>
                         <option value="approved">Approved</option>
                         <option value="declined">Declined</option>
+                        <option value="cancelled">Cancelled</option>
                         <option value="past_unapproved">Past Unapproved</option>
                     </select>
                 </div>
