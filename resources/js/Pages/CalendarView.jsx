@@ -96,7 +96,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                 <table className="min-w-[1580px] w-full table-fixed border-collapse">
                     <thead className="bg-[var(--ri-surface-subtle)]">
                         <tr>
-                            <th className="w-64 border-b border-r p-3 text-left text-sm font-semibold text-slate-700">Facility</th>
+                            <th className="sticky left-0 z-20 w-64 border-b border-r bg-[#fbf5ef] p-3 text-left text-sm font-semibold text-slate-700">Facility</th>
                             {HOURS.map((hour) => (
                                 <th key={hour} className="w-[94px] border-b border-r p-3 text-center text-xs font-semibold text-slate-600">
                                     {formatTime(hour)}
