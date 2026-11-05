@@ -73,7 +73,15 @@ class BookingCheckInOutController extends Controller
 
             $now = Carbon::now();
             $today = $now->copy()->startOfDay();
-            $bookingDate = Carbon::parse($lockedBooking->date)->startOfDay();
+            $scheduledBookingDate = $lockedBooking->date ?? $lockedBooking->booking_date;
+
+            if (! $scheduledBookingDate) {
+                throw ValidationException::withMessages([
+                    'check_in' => 'This booking does not have a valid scheduled date.',
+                ]);
+            }
+
+            $bookingDate = Carbon::parse($scheduledBookingDate)->startOfDay();
 
             $isPastBooking = $bookingDate->lt($today);
             $isFutureBooking = $bookingDate->gt($today);
@@ -197,8 +205,16 @@ class BookingCheckInOutController extends Controller
 
             $checkoutTime = Carbon::now();
 
+            $scheduledBookingDate = $lockedBooking->date ?? $lockedBooking->booking_date;
+
+            if (! $scheduledBookingDate) {
+                throw ValidationException::withMessages([
+                    'check_out' => 'This booking does not have a valid scheduled date.',
+                ]);
+            }
+
             $scheduledEnd = Carbon::parse(
-                $lockedBooking->date->format('Y-m-d')
+                Carbon::parse($scheduledBookingDate)->format('Y-m-d')
                 . ' '
                 . $lockedBooking->end_time
             );
