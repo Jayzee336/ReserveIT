@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X as XIcon } from 'lucide-react';
 import BookingModal from '@/Components/BookingModal';
 
@@ -21,16 +21,80 @@ function bookingCluster(bookings, slotMinute) {
 }
 
 export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate }) {
-    const [details, setDetails] = useState(null); const [create, setCreate] = useState(null);
+    const [details, setDetails] = useState(null);
+    const [create, setCreate] = useState(null);
+    const detailsDialogRef = useRef(null);
+    const createDialogRef = useRef(null);
+
+    useEffect(() => {
+        const activeDialog = details
+            ? detailsDialogRef.current
+            : create
+              ? createDialogRef.current
+              : null;
+
+        if (!activeDialog) return undefined;
+
+        const previousFocus = document.activeElement;
+        const firstFocusable = activeDialog.querySelector(
+            'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+
+        firstFocusable?.focus();
+
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setDetails(null);
+                setCreate(null);
+                return;
+            }
+
+            if (event.key !== 'Tab') return;
+
+            const focusable = Array.from(
+                activeDialog.querySelectorAll(
+                    'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                )
+            );
+
+            if (focusable.length === 0) {
+                event.preventDefault();
+                activeDialog.focus();
+                return;
+            }
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+
+            if (previousFocus instanceof HTMLElement) {
+                previousFocus.focus();
+            }
+        };
+    }, [details, create]);
+
     return (
         <>
-            <div className="w-full overflow-x-auto whitespace-nowrap rounded-2xl border border-stone-200">
+            <div className="w-full overflow-x-auto whitespace-nowrap rounded-2xl border border-[var(--ri-border)]">
                 <table className="min-w-[1400px] w-full table-fixed border-collapse">
-                    <thead className="bg-stone-50">
+                    <thead className="bg-[var(--ri-surface-subtle)]">
                         <tr>
-                            <th className="w-64 border-b border-r p-3 text-left text-sm font-semibold text-stone-700">Facility</th>
+                            <th className="w-64 border-b border-r p-3 text-left text-sm font-semibold text-slate-700">Facility</th>
                             {HOURS.map((hour) => (
-                                <th key={hour} className="w-24 border-b border-r p-3 text-center text-xs font-medium text-stone-500">
+                                <th key={hour} className="w-24 border-b border-r p-3 text-center text-xs font-medium text-slate-500">
                                     {hour}
                                 </th>
                             ))}
@@ -58,7 +122,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                 } else {
                                     cells.push(
                                         <td key={slot} colSpan={1} className="border-b border-r p-1.5">
-                                            <button type="button" onClick={() => setCreate({ facility, startTime: slot })} className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-stone-300 text-lg text-stone-400 hover:border-[#846A75] hover:text-[#6A535C]">
+                                            <button type="button" onClick={() => setCreate({ facility, startTime: slot })} className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-[var(--ri-border-strong)] text-lg text-stone-400 hover:border-[var(--ri-brand)] hover:text-[var(--ri-brand)]">
                                                 +
                                             </button>
                                         </td>
@@ -69,7 +133,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                             return (
                                 <tr key={facility.id}>
                                     <th className="border-b border-r bg-white p-3 text-left align-top whitespace-normal">
-                                        <p className="text-sm font-semibold text-stone-800">{facility.name}</p>
+                                        <p className="text-sm font-semibold text-slate-800">{facility.name}</p>
                                         <p className="mt-1 text-xs font-normal text-slate-500">{facility.location}</p>
                                     </th>
                                     {cells}
@@ -81,18 +145,32 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
             </div>
 
             {details && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-                    <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
+                    <div
+                        ref={detailsDialogRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="booking-details-title"
+                        tabIndex={-1}
+                        className="w-full max-w-xl rounded-3xl border border-[var(--ri-border)] bg-white p-6 shadow-[var(--ri-shadow-lg)]"
+                    >
                         <div className="flex justify-between">
                             <div>
-                                <p className="text-sm font-semibold text-[#6A535C]">Booking details</p>
-                                <h3 className="text-xl font-bold">{details.facility.name}</h3>
+                                <p className="ri-page-eyebrow">Reservation information</p>
+                                <h3 id="booking-details-title" className="mt-1 text-xl font-bold tracking-tight text-slate-900">{details.facility.name}</h3>
                             </div>
-                            <button onClick={() => setDetails(null)} className="text-slate-500">Close</button>
+                            <button
+                                type="button"
+                                onClick={() => setDetails(null)}
+                                aria-label="Close booking details"
+                                className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ri-brand)]"
+                            >
+                                Close
+                            </button>
                         </div>
                         <div className="mt-5 space-y-3">
                             {details.bookings.map((booking) => (
-                                <article key={booking.id} className="rounded-xl border border-stone-200 p-4">
+                                <article key={booking.id} className="rounded-xl border border-[var(--ri-border)] p-4">
                                     <p className="font-bold">{booking.user?.name ?? booking.guest_name ?? 'Guest'}</p>
                                     <p className="text-sm text-slate-600">{booking.status} · {booking.start_time}–{booking.end_time}</p>
                                     <p className="mt-1 text-sm">Contact: {booking.user?.email ?? booking.guest_email ?? 'Not supplied'}</p>
@@ -106,13 +184,26 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
 
             {create && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setCreate(null)} />
-                    <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[92vh]">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white">
+                    <button
+                        type="button"
+                        aria-label="Close booking form"
+                        className="absolute inset-0 cursor-default bg-black/55 backdrop-blur-sm"
+                        onClick={() => setCreate(null)}
+                    />
+                    <div
+                        ref={createDialogRef}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="booking-create-title"
+                        tabIndex={-1}
+                        className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-[var(--ri-border)] bg-white shadow-[var(--ri-shadow-lg)]"
+                    >
+                        <div className="flex items-center justify-between border-b border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] px-6 py-4">
                             <div>
-                                <h2 className="font-bold text-gray-900">Book {create.facility.name}</h2>
+                                <p className="ri-page-eyebrow">New reservation</p>
+                                <h2 id="booking-create-title" className="mt-1 font-bold text-slate-900">Book {create.facility.name}</h2>
                             </div>
-                            <button onClick={() => setCreate(null)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg">
+                            <button type="button" aria-label="Close booking form" onClick={() => setCreate(null)} className="rounded-lg p-2 text-slate-400 transition hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand-strong)]">
                                 <XIcon className="h-5 w-5" />
                             </button>
                         </div>
