@@ -14,6 +14,19 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
+const formatTime = (value) => {
+    if (!value) return '—';
+    const [hourText, minuteText] = String(value).slice(0, 5).split(':');
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+
+    if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) {
+        return String(value);
+    }
+
+    return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
+};
+
 const formatCurrency = (amount) =>
     `₱${Number(amount ?? 0).toLocaleString('en-PH', {
         minimumFractionDigits: 2,
@@ -297,7 +310,7 @@ export default function ActiveBookings() {
                                     <div className="space-y-2 text-sm text-gray-600">
                                         <p className="flex items-center gap-2">
                                             <Clock className="h-4 w-4 text-gray-400" />
-                                            {booking.start_time} – {booking.end_time}
+                                            {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
                                         </p>
                                         <p className="flex items-center gap-2">
                                             <MapPin className="h-4 w-4 text-gray-400" />
