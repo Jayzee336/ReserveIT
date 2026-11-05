@@ -37,7 +37,7 @@ class AdminDashboardAnalyticsTest extends TestCase
     ): Booking {
         $date = now()->toDateString();
 
-        return Booking::create(array_merge([
+        $attributes = array_merge([
             'facility_id' => $facility->id,
             'user_id' => $owner->id,
             'date' => $date,
@@ -51,7 +51,18 @@ class AdminDashboardAnalyticsTest extends TestCase
             'approved_at' => $status === 'approved' ? now()->subMinutes(30) : null,
             'created_at' => now()->subHour(),
             'updated_at' => now(),
-        ], $overrides));
+        ], $overrides);
+
+        // created_at is managed by Eloquent and is not mass assignable.
+        // Persist the fixture timestamp explicitly so approval-duration
+        // analytics are tested against the intended 30-minute interval.
+        $createdAt = $attributes['created_at'];
+        unset($attributes['created_at']);
+
+        $booking = Booking::create($attributes);
+        $booking->forceFill(['created_at' => $createdAt])->saveQuietly();
+
+        return $booking;
     }
 
     public function test_facility_admin_analytics_are_scoped_to_assigned_facilities_and_report_client_metrics(): void
