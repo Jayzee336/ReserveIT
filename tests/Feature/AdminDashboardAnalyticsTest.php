@@ -161,12 +161,16 @@ class AdminDashboardAnalyticsTest extends TestCase
                 'from' => $date,
                 'to' => $date,
                 'facility_id' => $facilityA->id,
+                'group_by' => 'day',
             ]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('analyticsFilters.from', $date)
                 ->where('analyticsFilters.to', $date)
                 ->where('analyticsFilters.facility_id', $facilityA->id)
+                ->where('analyticsFilters.group_by', 'day')
+                ->where('periodComparison.currentBookings', 1)
+                ->where('periodComparison.previousBookings', 0)
                 ->where('operationalAnalytics.uniqueClients', 1)
                 ->where('operationalAnalytics.approvalRate', 100)
                 ->has('mostUsedFacilities', 1)
