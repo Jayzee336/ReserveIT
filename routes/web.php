@@ -316,7 +316,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'scheduleView' => $scheduleView,
             'canToggleScheduleView' => $isFacilityAdmin,
             'availabilityOnly' => $availabilityOnly,
-            'serverFacilities' => $facilityQuery->get(),
+            'serverFacilities' => $facilityQuery->get(['id', 'name', 'location', 'type']),
             'serverBookings' => $bookingQuery->get($bookingColumns),
         ]);
     })->name('schedule.index');
