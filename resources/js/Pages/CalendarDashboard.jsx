@@ -7,6 +7,9 @@ export default function CalendarDashboard({
     serverFacilities = [],
     serverBookings = [],
     selectedDate = '',
+    scheduleView = 'all',
+    canToggleScheduleView = false,
+    availabilityOnly = false,
 }) {
     const handleDateChange = (event) => {
         const date = event.target.value;
@@ -15,7 +18,18 @@ export default function CalendarDashboard({
 
         router.get(
             route('schedule.index'),
-            { date },
+            { date, ...(canToggleScheduleView ? { view: scheduleView } : {}) },
+            {
+                preserveState: false,
+                preserveScroll: true,
+            }
+        );
+    };
+
+    const handleScheduleViewChange = (view) => {
+        router.get(
+            route('schedule.index'),
+            { date: selectedDate, view },
             {
                 preserveState: false,
                 preserveScroll: true,
@@ -64,8 +78,9 @@ export default function CalendarDashboard({
                             </div>
 
                             <p className="ml-12 text-sm text-slate-500">
-                                Review facility availability and booking
-                                conflicts by day.
+                                {availabilityOnly
+                                    ? 'Compare availability across every facility to avoid booking conflicts.'
+                                    : 'Review reservations and availability for facilities assigned to you.'}
                             </p>
                         </div>
 
@@ -92,6 +107,35 @@ export default function CalendarDashboard({
                             </div>
                         </div>
                     </div>
+
+                    {canToggleScheduleView && (
+                        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                            <div>
+                                <p className="text-sm font-semibold text-slate-800">Schedule visibility</p>
+                                <p className="mt-0.5 text-xs text-slate-500">
+                                    All Facilities shows occupancy only. Reservation details and management remain limited to your assigned facilities.
+                                </p>
+                            </div>
+                            <div className="inline-flex rounded-lg bg-slate-100 p-1" role="group" aria-label="Schedule visibility">
+                                <button
+                                    type="button"
+                                    onClick={() => handleScheduleViewChange('assigned')}
+                                    aria-pressed={scheduleView === 'assigned'}
+                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'assigned' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                                >
+                                    My Assigned Facilities
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleScheduleViewChange('all')}
+                                    aria-pressed={scheduleView === 'all'}
+                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'all' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                                >
+                                    All Facilities
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Schedule calendar */}
                     <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -122,6 +166,7 @@ export default function CalendarDashboard({
                                         serverFacilities={serverFacilities}
                                         serverBookings={serverBookings}
                                         selectedDate={selectedDate}
+                                        availabilityOnly={availabilityOnly}
                                     />
                                 </div>
                             </div>
@@ -139,7 +184,7 @@ export default function CalendarDashboard({
                                     if (selectedDate) {
                                         router.get(
                                             route('schedule.index'),
-                                            { date: selectedDate },
+                                            { date: selectedDate, ...(canToggleScheduleView ? { view: scheduleView } : {}) },
                                             {
                                                 preserveState: false,
                                                 preserveScroll: true,
