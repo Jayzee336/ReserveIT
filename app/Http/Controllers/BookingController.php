@@ -330,6 +330,19 @@ class BookingController extends Controller
         $bookingDate = Carbon::createFromFormat('!Y-m-d', $validated['date']);
         $today = Carbon::today();
 
+        $consentRequired = (bool) $settings->require_consent_letter
+            || $facility->requirement === 'CONSENT_REQUIRED'
+            || (
+                (bool) $facility->requiresWeekendConsent
+                && $bookingDate->isWeekend()
+            );
+
+        if ($consentRequired && ! $booking->consent_file_uploaded) {
+            throw ValidationException::withMessages([
+                'consent_letter' => 'A consent letter is required for the selected date and facility. Please create a new booking and attach the required document.',
+            ]);
+        }
+
         $maxDays = max(0, (int) ($settings->max_advance_days ?? 30));
 
         if ($bookingDate->gt($today->copy()->addDays($maxDays))) {
