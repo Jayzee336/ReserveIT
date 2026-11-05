@@ -91,13 +91,19 @@ class AdminDashboardAnalyticsTest extends TestCase
             'overtime_payment_status' => 'unpaid',
         ]);
 
+        $futureDate = now()->addMonth()->toDateString();
+        $this->createBooking($assignedFacility, $outsideClient, 'approved', [
+            'date' => $futureDate,
+            'booking_date' => $futureDate,
+        ]);
+
         $this->actingAs($admin)
             ->get(route('admin.dashboard'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard')
                 ->where('stats.totalFacilities', 1)
-                ->where('stats.totalBookings', 2)
+                ->where('stats.totalBookings', 3)
                 ->where('operationalAnalytics.uniqueClients', 1)
                 ->where('operationalAnalytics.returningClients', 1)
                 ->where('operationalAnalytics.approvalRate', 100)
@@ -107,6 +113,7 @@ class AdminDashboardAnalyticsTest extends TestCase
                 ->where('operationalAnalytics.overtimeBookings', 1)
                 ->where('operationalAnalytics.overtimeMinutes', 30)
                 ->where('operationalAnalytics.overtimeFees', 7.5)
+                ->where('operationalAnalytics.averageApprovalHours', 0.5)
             );
     }
 }
