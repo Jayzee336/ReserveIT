@@ -86,6 +86,20 @@ class BookingUpdateTest extends TestCase
         $this->assertSame('cancelled', $booking->refresh()->status);
     }
 
+    public function test_cannot_cancel_after_check_in(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $booking = $this->createBooking($user, $facility, 'approved');
+        $booking->update(['checked_in_at' => now()]);
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}/cancel")
+            ->assertSessionHasErrors('status');
+
+        $this->assertSame('approved', $booking->fresh()->status);
+    }
+
     private function createFacility(): Facility
     {
         return Facility::create([
