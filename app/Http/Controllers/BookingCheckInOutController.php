@@ -169,7 +169,7 @@ class BookingCheckInOutController extends Controller
 
         $user = $request->user();
 
-        $result = DB::transaction(function () use ($booking, $user) {
+        $result = DB::transaction(function () use ($booking, $user, $request) {
             $lockedBooking = Booking::query()
                 ->whereKey($booking->getKey())
                 ->lockForUpdate()
