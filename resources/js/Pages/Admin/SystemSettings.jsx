@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 const inputClass =
-    'mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#20212B] focus:ring-2 focus:ring-[#20212B]/15';
+    'mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#6A535C] focus:ring-2 focus:ring-[#6A535C]/15';
 
 const labelClass = 'block text-sm font-semibold text-slate-800';
 
@@ -20,7 +20,7 @@ function SectionCard({ icon: Icon, title, description, children }) {
     return (
         <section className="min-w-0 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
             <div className="mb-5 flex items-start gap-3 border-b border-slate-100 pb-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#20212B]/10 text-[#20212B]">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#6A535C]/10 text-[#6A535C]">
                     <Icon className="h-5 w-5" />
                 </span>
 
@@ -112,7 +112,7 @@ export default function SystemSettings({ settings }) {
         <AuthenticatedLayout
             header={
                 <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#20212B]/10 text-[#20212B]">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#6A535C]/10 text-[#6A535C]">
                         <Settings2 className="h-5 w-5" />
                     </span>
                     <div>
@@ -387,22 +387,22 @@ export default function SystemSettings({ settings }) {
                                                     auto_purge_unapproved_days: option.days,
                                                 });
                                             }}
-                                            className={`rounded-xl border-2 p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-[#20212B]/30 ${
+                                            className={`rounded-xl border-2 p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-[#6A535C]/30 ${
                                                 selected
-                                                    ? 'border-[#20212B] bg-[#20212B]/5'
-                                                    : 'border-slate-200 bg-white hover:border-[#20212B]/40 hover:bg-slate-50'
+                                                    ? 'border-[#6A535C] bg-[#6A535C]/5'
+                                                    : 'border-slate-200 bg-white hover:border-[#6A535C]/40 hover:bg-slate-50'
                                             }`}
                                         >
                                             <span className="flex items-center justify-between gap-2">
                                                 <span className={`text-sm font-bold ${
                                                     selected
-                                                        ? 'text-[#20212B]'
+                                                        ? 'text-[#6A535C]'
                                                         : 'text-slate-800'
                                                 }`}>
                                                     {option.title}
                                                 </span>
                                                 {selected && (
-                                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#20212B]" />
+                                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#6A535C]" />
                                                 )}
                                             </span>
                                             <span className="mt-2 block text-xs leading-5 text-slate-500">
