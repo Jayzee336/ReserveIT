@@ -93,12 +93,12 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                 <span className="text-slate-500">Schedule shown from 8:00 AM to 10:00 PM</span>
             </div>
             <div className="w-full overflow-x-auto whitespace-nowrap rounded-2xl border border-[var(--ri-border)]">
-                <table className="min-w-[1400px] w-full table-fixed border-collapse">
+                <table className="min-w-[1580px] w-full table-fixed border-collapse">
                     <thead className="bg-[var(--ri-surface-subtle)]">
                         <tr>
                             <th className="w-64 border-b border-r p-3 text-left text-sm font-semibold text-slate-700">Facility</th>
                             {HOURS.map((hour) => (
-                                <th key={hour} className="w-24 border-b border-r p-3 text-center text-xs font-medium text-slate-500">
+                                <th key={hour} className="w-[94px] border-b border-r p-3 text-center text-xs font-semibold text-slate-600">
                                     {formatTime(hour)}
                                 </th>
                             ))}
@@ -135,10 +135,10 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                                         key={booking.id}
                                                         type="button"
                                                         onClick={() => setDetails({ facility, bookings: [booking] })}
-                                                        className={`min-h-[64px] w-full rounded-xl bg-gradient-to-r ${statusClass(booking.status)} px-2.5 py-2 text-left text-white shadow-sm transition hover:brightness-95`}
+                                                        className={`min-h-[64px] w-full rounded-xl bg-gradient-to-r ${statusClass(booking.status)} px-2 py-2 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
                                                     >
-                                                        <span className="block text-[10px] font-bold uppercase leading-4">{statusLabel(booking.status)}</span>
-                                                        <span className="mt-1 block text-xs font-semibold">{formatTime(booking.start_time)}–{formatTime(booking.end_time)}</span>
+                                                        <span className="block text-[10px] font-bold uppercase leading-4">{booking.status === 'approved' ? 'Confirmed' : 'Pending hold'}</span>
+                                                        <span className="mt-1 block whitespace-normal text-[10px] font-semibold leading-4">{formatTime(booking.start_time)} – {formatTime(booking.end_time)}</span>
                                                     </button>
                                                 ))}
                                                 {continuingBookings.map((booking) => (
@@ -148,7 +148,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                                         onClick={() => setDetails({ facility, bookings: [booking] })}
                                                         className={`w-full rounded-lg border border-dashed px-2.5 py-2 text-left text-[10px] font-semibold leading-4 ${booking.status === 'approved' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}
                                                     >
-                                                        In use · until {formatTime(booking.end_time)}
+                                                        Booked
                                                     </button>
                                                 ))}
                                             </div>
@@ -172,7 +172,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                             });
                             return (
                                 <tr key={facility.id}>
-                                    <th className="border-b border-r bg-white p-3 text-left align-top whitespace-normal">
+                                    <th className="sticky left-0 z-10 border-b border-r bg-white p-3 text-left align-top whitespace-normal">
                                         <p className="text-sm font-semibold text-slate-800">{facility.name}</p>
                                         <p className="mt-1 text-xs font-normal text-slate-500">{facility.location}</p>
                                     </th>
@@ -213,14 +213,6 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                 <article key={booking.id} className="rounded-xl border border-[var(--ri-border)] p-4">
                                     <p className="font-bold">{booking.user?.name ?? booking.guest_name ?? 'Guest'}</p>
                                     <p className="text-sm text-slate-600">{statusLabel(booking.status)} · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}</p>
-                                    {booking.approved_by && (
-                                        <p className="mt-1 text-xs text-emerald-700">
-                                            Approved by {booking.approved_by}{booking.approved_at ? ` · ${new Date(booking.approved_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
-                                        </p>
-                                    )}
-                                    {booking.status === 'pending' && (
-                                        <p className="mt-1 text-xs text-amber-700">This time slot is temporarily held and is not yet a confirmed reservation.</p>
-                                    )}
                                     {booking.approved_by && (
                                         <p className="mt-1 text-xs text-emerald-700">
                                             Approved by {booking.approved_by}{booking.approved_at ? ` · ${new Date(booking.approved_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
