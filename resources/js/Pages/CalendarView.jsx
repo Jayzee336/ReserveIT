@@ -11,7 +11,6 @@ const formatTime = (value) => {
     if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) return String(value);
     return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
 };
-const formatMinutes = (minutes) => formatTime(`${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`);
 const statusLabel = (status) => status === 'pending'
     ? 'Pending approval · temporarily held'
     : status === 'approved'
