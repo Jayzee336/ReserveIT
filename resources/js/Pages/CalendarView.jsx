@@ -20,42 +20,6 @@ const statusLabel = (status) => status === 'pending'
 const toMinutes = (time) => { const [hour, minute] = String(time).split(':').map(Number); return hour * 60 + (minute || 0); };
 const statusClass = (status) => status === 'approved' ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500';
 
-function bookingCluster(bookings, slotMinute) {
-    const slotEnd = slotMinute + 60;
-    let cluster = bookings.filter((booking) => (
-        toMinutes(booking.start_time) < slotEnd &&
-        toMinutes(booking.end_time) > slotMinute
-    ));
-
-    let clusterStart = cluster.length
-        ? Math.min(...cluster.map((booking) => toMinutes(booking.start_time)))
-        : slotMinute;
-    let clusterEnd = cluster.length
-        ? Math.max(...cluster.map((booking) => toMinutes(booking.end_time)))
-        : slotEnd;
-
-    let changed = true;
-    while (changed && cluster.length) {
-        changed = false;
-        bookings.forEach((booking) => {
-            const start = toMinutes(booking.start_time);
-            const end = toMinutes(booking.end_time);
-            if (
-                start < clusterEnd &&
-                end > clusterStart &&
-                !cluster.some((item) => item.id === booking.id)
-            ) {
-                cluster.push(booking);
-                clusterStart = Math.min(clusterStart, start);
-                clusterEnd = Math.max(clusterEnd, end);
-                changed = true;
-            }
-        });
-    }
-
-    return { cluster, clusterStart, clusterEnd };
-}
-
 export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate }) {
     const [details, setDetails] = useState(null);
     const [create, setCreate] = useState(null);
@@ -143,26 +107,57 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                     </thead>
                     <tbody>
                         {serverFacilities.map((facility) => {
-                            const bookings = serverBookings.filter((booking) => booking.facility_id === facility.id).sort((a, b) => toMinutes(a.start_time) - toMinutes(b.start_time));
+                            const bookings = serverBookings
+                                .filter((booking) => booking.facility_id === facility.id)
+                                .sort((a, b) => toMinutes(a.start_time) - toMinutes(b.start_time));
                             const cells = [];
-                            let index = 0;
-                            while (index < HOURS.length) {
-                                const slot = HOURS[index];
-                                const { cluster, clusterEnd } = bookingCluster(bookings, toMinutes(slot));
-                                if (cluster.length) {
-                                    const span = Math.min(HOURS.length - index, Math.max(1, Math.ceil((clusterEnd - toMinutes(slot)) / 60)));
+
+                            HOURS.forEach((slot) => {
+                                const slotStart = toMinutes(slot);
+                                const slotEnd = slotStart + 60;
+                                const overlappingBookings = bookings.filter((booking) => (
+                                    toMinutes(booking.start_time) < slotEnd &&
+                                    toMinutes(booking.end_time) > slotStart
+                                ));
+                                const startingBookings = overlappingBookings.filter((booking) => (
+                                    toMinutes(booking.start_time) >= slotStart &&
+                                    toMinutes(booking.start_time) < slotEnd
+                                ));
+                                const continuingBookings = overlappingBookings.filter((booking) => (
+                                    toMinutes(booking.start_time) < slotStart
+                                ));
+
+                                if (overlappingBookings.length) {
                                     cells.push(
-                                        <td key={slot} colSpan={span} className="border-b border-r p-1.5 align-top">
-                                            <button type="button" onClick={() => setDetails({ facility, bookings: cluster })} className={`min-h-[64px] w-full rounded-xl bg-gradient-to-r ${statusClass(cluster.some((booking) => booking.status === 'approved') ? 'approved' : 'pending')} px-3 py-2 text-left text-white shadow-sm transition hover:brightness-95`}>
-                                                <span className="block text-xs font-bold uppercase">{cluster.length > 1 ? `${cluster.length} overlapping records` : statusLabel(cluster[0].status)}</span>
-                                                <span className="mt-1 block text-sm font-semibold">{cluster.length === 1 ? `${formatTime(cluster[0].start_time)}–${formatTime(cluster[0].end_time)}` : `${formatTime(slot)}–${formatMinutes(clusterEnd)}`}</span>
-                                            </button>
+                                        <td key={slot} className="border-b border-r p-1.5 align-top">
+                                            <div className="space-y-1.5">
+                                                {startingBookings.map((booking) => (
+                                                    <button
+                                                        key={booking.id}
+                                                        type="button"
+                                                        onClick={() => setDetails({ facility, bookings: [booking] })}
+                                                        className={`min-h-[64px] w-full rounded-xl bg-gradient-to-r ${statusClass(booking.status)} px-2.5 py-2 text-left text-white shadow-sm transition hover:brightness-95`}
+                                                    >
+                                                        <span className="block text-[10px] font-bold uppercase leading-4">{statusLabel(booking.status)}</span>
+                                                        <span className="mt-1 block text-xs font-semibold">{formatTime(booking.start_time)}–{formatTime(booking.end_time)}</span>
+                                                    </button>
+                                                ))}
+                                                {continuingBookings.map((booking) => (
+                                                    <button
+                                                        key={`continuation-${booking.id}`}
+                                                        type="button"
+                                                        onClick={() => setDetails({ facility, bookings: [booking] })}
+                                                        className={`w-full rounded-lg border border-dashed px-2.5 py-2 text-left text-[10px] font-semibold leading-4 ${booking.status === 'approved' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}
+                                                    >
+                                                        In use · until {formatTime(booking.end_time)}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </td>
                                     );
-                                    index += span;
                                 } else {
                                     cells.push(
-                                        <td key={slot} colSpan={1} className="border-b border-r p-1.5">
+                                        <td key={slot} className="border-b border-r p-1.5">
                                             <button
                                                 type="button"
                                                 aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
@@ -174,9 +169,8 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                             </button>
                                         </td>
                                     );
-                                    index += 1;
                                 }
-                            }
+                            });
                             return (
                                 <tr key={facility.id}>
                                     <th className="border-b border-r bg-white p-3 text-left align-top whitespace-normal">
