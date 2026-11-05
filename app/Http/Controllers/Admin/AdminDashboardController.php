@@ -71,7 +71,7 @@ class AdminDashboardController extends Controller
             ->filter(fn (Booking $booking) => $booking->approved_at && $booking->created_at)
             ->map(fn (Booking $booking) => $booking->created_at->diffInMinutes($booking->approved_at));
 
-        $averageApprovalHours = $approvalDurations->isNotEmpty()
+        $averageReviewHours = $approvalDurations->isNotEmpty()
             ? round($approvalDurations->avg() / 60, 1)
             : null;
 
@@ -128,7 +128,7 @@ class AdminDashboardController extends Controller
                 'returningClients' => $returningClients,
                 'approvalRate' => $approvalRate,
                 'cancellationRate' => $cancellationRate,
-                'averageApprovalHours' => $averageApprovalHours,
+                'averageReviewHours' => $averageReviewHours,
                 'peakHour' => $peakHour,
                 'peakHourBookings' => $peakHourBookings,
                 'overtimeBookings' => $overtimeBookings->count(),
