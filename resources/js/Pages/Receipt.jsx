@@ -47,19 +47,19 @@ export default function Receipt({ auth, booking }) {
                         <button
                             type="button"
                             onClick={() => window.print()}
-                            className="inline-flex items-center gap-2 rounded-lg bg-[bg-indigo-600] px-4 py-2 text-sm font-semibold text-white hover:bg-[bg-indigo-700]"
+                            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
                         >
                             <Printer className="h-4 w-4" /> Print / Save PDF
                         </button>
                     </div>
 
                     <article className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm print:rounded-none print:border-0 print:shadow-none">
-                        <div className="border-b border-gray-200 bg-[bg-indigo-700] px-6 py-8 text-white sm:px-10">
+                        <div className="border-b border-gray-200 bg-indigo-700 px-6 py-8 text-white sm:px-10">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[text-indigo-200]">ReserveIT</p>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-200">ReserveIT</p>
                                     <h1 className="mt-2 text-3xl font-bold">Booking Receipt</h1>
-                                    <p className="mt-2 text-sm text-[text-indigo-100]">Facility reservation confirmation</p>
+                                    <p className="mt-2 text-sm text-indigo-100">Facility reservation confirmation</p>
                                 </div>
                                 <CheckCircle className="h-10 w-10 flex-shrink-0 text-green-300" />
                             </div>
