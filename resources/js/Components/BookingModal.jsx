@@ -12,7 +12,7 @@ import {
 
 // Generate consistent 15-minute intervals from 8:00 AM through 7:45 PM.
 const OPENING_TIME = '08:00';
-const CLOSING_TIME = '20:00';
+const CLOSING_TIME = '22:00';
 const SLOT_INTERVAL_MINUTES = 15;
 
 const toMins = (time) => {
