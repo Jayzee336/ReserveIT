@@ -298,7 +298,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
     };
 
     return (
-        <div className="flex min-h-screen bg-[#FDF6F0]">
+        <div className="flex min-h-screen bg-[var(--ri-canvas)]">
             {/* Sidebar Navigation */}
             <aside
                 className={`fixed z-20 flex h-full flex-col justify-between bg-[#20212B] text-white shadow-xl transition-all duration-300 ${
