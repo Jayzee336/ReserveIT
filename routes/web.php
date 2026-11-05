@@ -247,25 +247,55 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'date' => ['nullable', 'date'],
         ])['date'] ?? today()->toDateString();
 
+        $user = Auth::user();
+        $canViewBookingDetails = in_array(
+            $user->role,
+            ['facility_admin', 'super_admin'],
+            true
+        );
+
+        $facilityQuery = Facility::query();
+
+        if ($user->role === 'facility_admin') {
+            $facilityQuery->forUser($user);
+        }
+
+        $bookingQuery = Booking::query()
+            ->where(function ($query) use ($selectedDate) {
+                // Support both the current date column and legacy booking_date data.
+                $query->whereDate('booking_date', $selectedDate)
+                    ->orWhereDate('date', $selectedDate);
+            })
+            ->whereNotIn('status', ['declined', 'cancelled']);
+
+        if ($user->role === 'facility_admin') {
+            $bookingQuery->forUser($user);
+        }
+
+        $bookingColumns = [
+            'id',
+            'facility_id',
+            'date',
+            'booking_date',
+            'start_time',
+            'end_time',
+            'status',
+        ];
+
+        if ($canViewBookingDetails) {
+            $bookingQuery->with('user:id,name,email');
+            $bookingColumns = array_merge($bookingColumns, [
+                'user_id',
+                'guest_name',
+                'guest_email',
+                'notes',
+            ]);
+        }
+
         return Inertia::render('CalendarDashboard', [
             'selectedDate' => $selectedDate,
-            'serverFacilities' => Facility::all(),
-            'serverBookings' => Booking::with('user:id,name,email')
-                ->whereDate('booking_date', $selectedDate)
-                ->whereNotIn('status', ['declined', 'cancelled'])
-                ->get([
-                    'id',
-                    'facility_id',
-                    'user_id',
-                    'guest_name',
-                    'guest_email',
-                    'guest_phone',
-                    'start_time',
-                    'end_time',
-                    'attendees',
-                    'notes',
-                    'status',
-                ]),
+            'serverFacilities' => $facilityQuery->get(),
+            'serverBookings' => $bookingQuery->get($bookingColumns),
         ]);
     })->name('schedule.index');
 
