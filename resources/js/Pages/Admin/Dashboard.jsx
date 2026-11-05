@@ -460,12 +460,18 @@ export default function AdminDashboard({
                     </Link>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <section>
+                    <div className="mb-3">
+                        <h2 className="font-semibold text-slate-900">System overview</h2>
+                        <p className="mt-0.5 text-xs text-slate-500">Overall account totals. Use the analytics filters below for date- and facility-specific reporting.</p>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <Stat label="Total facilities" value={stats.totalFacilities ?? 0} />
                     <Stat label="All bookings" value={stats.totalBookings ?? 0} />
                     <Stat label="Pending approval" value={stats.pendingApprovals ?? 0} />
                     <Stat label="Pending concerns" value={stats.pendingConcerns ?? 0} />
-                </div>
+                    </div>
+                </section>
 
                 <section className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
