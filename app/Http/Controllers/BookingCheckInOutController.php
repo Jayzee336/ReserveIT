@@ -31,6 +31,23 @@ class BookingCheckInOutController extends Controller
     }
 
     /**
+     * Only Facility Admins assigned to the booking's facility and Super Admins
+     * may record manual receipt of an overtime payment.
+     */
+    private function authorizeBillingAccess(Request $request, Booking $booking): void
+    {
+        $user = $request->user();
+
+        abort_unless(
+            in_array($user->role, ['facility_admin', 'super_admin'], true),
+            403,
+            'Only administrators can record overtime payments.'
+        );
+
+        Gate::authorize('view', $booking);
+    }
+
+    /**
      * Check in an approved booking.
      *
      * Policy:
@@ -328,17 +345,17 @@ class BookingCheckInOutController extends Controller
         Request $request,
         Booking $booking
     ) {
-        Gate::authorize('view', $booking);
+        $this->authorizeBillingAccess($request, $booking);
 
         $user = $request->user();
 
-        $result = DB::transaction(function () use ($booking, $user) {
+        $result = DB::transaction(function () use ($booking, $user, $request) {
             $lockedBooking = Booking::query()
                 ->whereKey($booking->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $this->authorizeCheckInOut($request, $lockedBooking);
+            $this->authorizeBillingAccess($request, $lockedBooking);
 
             if ($lockedBooking->checked_out_at === null) {
                 throw ValidationException::withMessages([
