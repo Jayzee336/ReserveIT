@@ -69,6 +69,8 @@ class BookingSchedulePrivacyTest extends TestCase
                 ->missing('serverBookings.0.guest_name')
                 ->missing('serverBookings.0.guest_email')
                 ->missing('serverBookings.0.notes')
+                ->missing('serverBookings.0.approved_by')
+                ->missing('serverBookings.0.approved_at')
             );
     }
 
@@ -92,6 +94,11 @@ class BookingSchedulePrivacyTest extends TestCase
             $owner,
             'assigned@example.com'
         );
+        $assignedBooking->update([
+            'status' => 'approved',
+            'approved_by' => 'Assigned Facility Admin',
+            'approved_at' => now(),
+        ]);
         $this->createBooking(
             $unassignedFacility,
             $owner,
@@ -109,6 +116,8 @@ class BookingSchedulePrivacyTest extends TestCase
                 ->where('serverBookings.0.id', $assignedBooking->id)
                 ->where('serverBookings.0.guest_email', 'assigned@example.com')
                 ->where('serverBookings.0.notes', 'Private booking purpose and notes')
+                ->where('serverBookings.0.approved_by', 'Assigned Facility Admin')
+                ->has('serverBookings.0.approved_at')
                 ->where('serverBookings.0.user.email', $owner->email)
             );
     }
