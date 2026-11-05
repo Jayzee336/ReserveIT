@@ -356,11 +356,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Overtime Check-In / Check-Out
     Route::post('/bookings/{booking}/check-in', [BookingCheckInOutController::class, 'checkIn'])
-        ->middleware('role:facility_admin,super_admin')
+        ->middleware('role:user,facility_admin,super_admin')
         ->name('bookings.check-in');
 
     Route::post('/bookings/{booking}/check-out', [BookingCheckInOutController::class, 'checkOut'])
-        ->middleware('role:facility_admin,super_admin')
+        ->middleware('role:user,facility_admin,super_admin')
         ->name('bookings.check-out');
 
     // Record an overtime payment separately from checkout.
