@@ -147,6 +147,9 @@ class AdminDashboardController extends Controller
                 'end_time' => $booking->end_time,
                 'status' => $booking->status,
                 'approved_at' => $booking->approved_at?->toDateTimeString(),
+                'approval_minutes' => $booking->approved_at && $booking->created_at
+                    ? round(max(0, $booking->approved_at->getTimestamp() - $booking->created_at->getTimestamp()) / 60, 1)
+                    : null,
                 'overtime_minutes' => (int) ($booking->overtime_minutes ?? 0),
                 'overtime_fee_amount' => (float) ($booking->overtime_fee_amount ?? 0),
                 'overtime_payment_status' => $booking->overtime_payment_status ?? 'not_applicable',
