@@ -166,6 +166,51 @@ function BookingDetailModal({ booking, onClose }) {
     );
 }
 
+function AnalyticsDetailModal({ detailKey, details, onClose }) {
+    if (!detailKey) return null;
+    const definitions = {
+        clients: { title: 'Unique clients', description: 'Clients with at least one booking in the selected period.', items: details.clients ?? [], type: 'clients' },
+        returningClients: { title: 'Returning clients', description: 'Clients with more than one booking in the selected period.', items: details.returningClients ?? [], type: 'clients' },
+        approvalRate: { title: 'Approval rate details', description: 'Bookings included in the approved-versus-declined calculation.', items: details.approvalRate ?? [], type: 'bookings' },
+        cancellationRate: { title: 'Cancellation details', description: 'Bookings counted in the cancellation rate.', items: details.cancellationRate ?? [], type: 'bookings' },
+        approvalTime: { title: 'Approval time details', description: 'Approved bookings with a recorded approval timestamp.', items: details.approvalTime ?? [], type: 'bookings' },
+        peakHour: { title: 'Peak-hour bookings', description: 'Bookings that started during the busiest hour.', items: details.peakHour ?? [], type: 'bookings' },
+        overtime: { title: 'Overtime details', description: 'Bookings with recorded overtime minutes and charges.', items: details.overtime ?? [], type: 'bookings' },
+    };
+    const definition = definitions[detailKey];
+    if (!definition) return null;
+    const formatTimeLabel = (value) => {
+        if (!value) return '—';
+        const [hourText, minuteText] = String(value).slice(0, 5).split(':');
+        const hour = Number(hourText);
+        return `${hour % 12 || 12}:${minuteText} ${hour >= 12 ? 'PM' : 'AM'}`;
+    };
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-3 sm:p-6" onClick={onClose}>
+            <div className="flex max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
+                <div className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4 sm:px-6">
+                    <div><h2 className="text-lg font-bold text-slate-900">{definition.title}</h2><p className="mt-1 text-sm text-slate-500">{definition.description}</p></div>
+                    <button type="button" onClick={onClose} className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-stone-100">Close</button>
+                </div>
+                <div className="overflow-auto p-4 sm:p-6">
+                    <p className="mb-4 text-sm font-semibold text-slate-700">{definition.items.length} records · Current dashboard filters applied</p>
+                    {definition.items.length === 0 ? <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-slate-500">No records found for this metric and filter selection.</div> : definition.type === 'clients' ? (
+                        <div className="overflow-x-auto rounded-xl border border-stone-200"><table className="min-w-full divide-y divide-stone-200 text-left text-sm">
+                            <thead className="bg-stone-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Client</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">Bookings</th><th className="px-4 py-3">Last booking</th></tr></thead>
+                            <tbody className="divide-y divide-stone-100">{definition.items.map((item, index) => <tr key={item.email || item.name + index} className="text-slate-700"><td className="px-4 py-3 font-semibold text-slate-900">{item.name}</td><td className="px-4 py-3">{item.email || '—'}</td><td className="px-4 py-3">{item.bookings}</td><td className="px-4 py-3">{item.lastBooking || '—'}</td></tr>)}</tbody>
+                        </table></div>
+                    ) : (
+                        <div className="overflow-x-auto rounded-xl border border-stone-200"><table className="min-w-full divide-y divide-stone-200 text-left text-sm">
+                            <thead className="bg-stone-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Facility / Client</th><th className="px-4 py-3">Date &amp; time</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Overtime</th><th className="px-4 py-3">Fee / payment</th></tr></thead>
+                            <tbody className="divide-y divide-stone-100">{definition.items.map((item) => <tr key={item.id} className="text-slate-700"><td className="px-4 py-3"><p className="font-semibold text-slate-900">{item.facility}</p><p className="text-xs text-slate-500">{item.client}</p></td><td className="whitespace-nowrap px-4 py-3">{item.date || '—'}<p className="text-xs text-slate-500">{formatTimeLabel(item.start_time)} – {formatTimeLabel(item.end_time)}</p></td><td className="px-4 py-3"><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold capitalize text-slate-700">{item.status}</span></td><td className="px-4 py-3">{item.overtime_minutes ? `${item.overtime_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_fee_amount ? `₱${Number(item.overtime_fee_amount).toFixed(2)}` : '—'}<p className="text-xs capitalize text-slate-500">{item.overtime_payment_status?.replaceAll('_', ' ') || ''}</p></td></tr>)}</tbody>
+                        </table></div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function ConfirmApproveModal({ bookingId, onConfirm, onCancel, isProcessing }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
@@ -214,12 +259,15 @@ export default function AdminDashboard({
     operationalAnalytics = {},
     analyticsFilters = {},
     analyticsFacilities = [],
+    analyticsDetails = {},
+    statusBreakdown = [],
     pendingBookings = [],
     recentConcerns = [],
 }) {
     const [bookingsList, setBookingsList] = useState(pendingBookings);
     const [processingId, setProcessingId] = useState(null);
     const [viewBooking, setViewBooking] = useState(null);
+    const [analyticsDetailKey, setAnalyticsDetailKey] = useState(null);
     const [confirmApproveId, setConfirmApproveId] = useState(null);
     const [declineModalOpen, setDeclineModalOpen] = useState(false);
     const [declineReason, setDeclineReason] = useState('');
@@ -446,21 +494,24 @@ export default function AdminDashboard({
                     </form>
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                         {[
-                            ['Unique clients', operationalAnalytics.uniqueClients ?? 0, 'Distinct account holders and guest contacts'],
-                            ['Returning clients', operationalAnalytics.returningClients ?? 0, 'Clients with more than one booking'],
-                            ['Approval rate', `${operationalAnalytics.approvalRate ?? 0}%`, 'Approved out of approved/declined decisions'],
-                            ['Cancellation rate', `${operationalAnalytics.cancellationRate ?? 0}%`, 'Cancelled out of all requests'],
-                            ['Average approval time', operationalAnalytics.averageApprovalHours === null || operationalAnalytics.averageApprovalHours === undefined ? 'No data' : `${operationalAnalytics.averageApprovalHours} hrs`, 'From request creation to approval'],
-                            ['Peak booking hour', operationalAnalytics.peakHour ?? 'No data', `${operationalAnalytics.peakHourBookings ?? 0} bookings started in this hour`],
-                            ['Overtime bookings', operationalAnalytics.overtimeBookings ?? 0, `${operationalAnalytics.overtimeMinutes ?? 0} total overtime minutes`],
-                            ['Overtime fees', `₱${Number(operationalAnalytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Recorded overtime charges in the period'],
-                        ].map(([label, value, hint]) => (
-                            <div key={label} className="rounded-xl border border-stone-100 bg-stone-50 p-4">
-                                <p className="text-xs font-medium text-slate-500">{label}</p>
-                                <p className="mt-2 text-xl font-bold text-[#6A535C]">{value}</p>
-                                <p className="mt-1 text-[11px] leading-4 text-slate-500">{hint}</p>
-                            </div>
+                            ['clients', 'Unique clients', operationalAnalytics.uniqueClients ?? 0, 'Distinct account holders and guest contacts'],
+                            ['returningClients', 'Returning clients', operationalAnalytics.returningClients ?? 0, 'Clients with more than one booking'],
+                            ['approvalRate', 'Approval rate', `${operationalAnalytics.approvalRate ?? 0}%`, 'Approved out of approved/declined decisions'],
+                            ['cancellationRate', 'Cancellation rate', `${operationalAnalytics.cancellationRate ?? 0}%`, 'Cancelled out of all requests'],
+                            ['approvalTime', 'Average approval time', operationalAnalytics.averageApprovalHours == null ? 'No data' : `${operationalAnalytics.averageApprovalHours} hrs`, 'From request creation to approval'],
+                            ['peakHour', 'Peak booking hour', operationalAnalytics.peakHour ?? 'No data', `${operationalAnalytics.peakHourBookings ?? 0} bookings started in this hour`],
+                            ['overtime', 'Overtime bookings', operationalAnalytics.overtimeBookings ?? 0, `${operationalAnalytics.overtimeMinutes ?? 0} total overtime minutes`],
+                            ['overtime', 'Overtime fees', `₱${Number(operationalAnalytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Recorded overtime charges in the period'],
+                        ].map(([key, label, value, hint], index) => (
+                            <button key={`${key}-${index}`} type="button" onClick={() => setAnalyticsDetailKey(key)} className="group rounded-xl border border-stone-200 bg-stone-50 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#846A75] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2">
+                                <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600"><span>{label}</span><span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details ↗</span></span>
+                                <span className="mt-2 block text-xl font-bold text-[#6A535C]">{value}</span><span className="mt-1 block text-[11px] leading-4 text-slate-500">{hint}</span>
+                            </button>
                         ))}
+                    </div>
+                    <div className="mt-5 rounded-xl border border-stone-200 p-4">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-slate-800">Booking status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
+                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{statusBreakdown.map((item) => <div key={item.status} className="rounded-lg bg-stone-50 px-3 py-3"><div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-600">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className="h-full rounded-full bg-[#846A75]" style={{ width: `${item.percentage}%` }} /></div><p className="mt-1 text-right text-[11px] text-slate-500">{item.percentage}%</p></div>)}</div>
                     </div>
                 </section>
 
@@ -666,6 +717,8 @@ export default function AdminDashboard({
                     ))}
                 </section>
             </div>
+
+            <AnalyticsDetailModal detailKey={analyticsDetailKey} details={analyticsDetails} onClose={() => setAnalyticsDetailKey(null)} />
 
             <BookingDetailModal
                 booking={viewBooking}
