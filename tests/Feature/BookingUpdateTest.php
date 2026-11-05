@@ -65,6 +65,29 @@ class BookingUpdateTest extends TestCase
         );
     }
 
+    public function test_user_cannot_edit_another_users_booking(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $facility = $this->createFacility();
+        $booking = $this->createBooking($owner, $facility, 'pending');
+        $originalDate = $booking->date->format('Y-m-d');
+
+        $this->actingAs($otherUser)
+            ->put("/bookings/{$booking->id}", [
+                'date' => now()->addDays(2)->toDateString(),
+                'start_time' => '13:00',
+                'end_time' => '14:00',
+                'attendees' => 10,
+                'notes' => 'Unauthorized change',
+                'needs_manpower' => false,
+            ])
+            ->assertNotFound();
+
+        $this->assertSame($originalDate, $booking->fresh()->date->format('Y-m-d'));
+        $this->assertSame('Original notes', $booking->fresh()->notes);
+    }
+
     public function test_user_can_cancel_pending_booking_and_declined_booking_cannot_be_cancelled(): void
     {
         $user = User::factory()->create();
