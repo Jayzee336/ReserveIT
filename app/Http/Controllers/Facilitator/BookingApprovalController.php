@@ -106,26 +106,94 @@ class BookingApprovalController extends Controller
     }
 
     /**
+     * Check whether another active booking overlaps this slot, including
+     * the configured cleanup buffer. The facility row must be locked first.
+     */
+    private function hasConflict(Booking $booking, int $bufferMinutes): bool
+    {
+        $candidateDate = ($booking->date ?? $booking->booking_date)->format('Y-m-d');
+        $candidateStart = Carbon::parse($booking->start_time);
+        $candidateEnd = Carbon::parse($booking->end_time);
+
+        $existingBookings = Booking::query()
+            ->where('facility_id', $booking->facility_id)
+            ->whereKeyNot($booking->getKey())
+            ->whereIn('status', ['pending', 'approved'])
+            ->where(function ($query) use ($candidateDate) {
+                $query->whereDate('date', $candidateDate)
+                    ->orWhereDate('booking_date', $candidateDate);
+            })
+            ->get(['start_time', 'end_time']);
+
+        foreach ($existingBookings as $existing) {
+            $bufferedStart = Carbon::parse($existing->start_time)
+                ->subMinutes($bufferMinutes);
+            $bufferedEnd = Carbon::parse($existing->end_time)
+                ->addMinutes($bufferMinutes);
+
+            if (
+                $candidateStart->lt($bufferedEnd) &&
+                $candidateEnd->gt($bufferedStart)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Approve a booking only if it is still pending.
      */
     public function approve(Booking $booking)
     {
         $user = Auth::user();
 
-        $this->authorize('approve', $booking);
+        $result = DB::transaction(function () use ($booking, $user) {
+            // Match booking creation's lock order so concurrent requests
+            // for the same facility serialize before checking availability.
+            Facility::whereKey($booking->facility_id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        // Atomically transition the booking from pending to approved.
-        $updated = Booking::query()
-            ->whereKey($booking->getKey())
-            ->where('status', 'pending')
-            ->update([
+            $lockedBooking = Booking::query()
+                ->whereKey($booking->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $this->authorize('approve', $lockedBooking);
+
+            if ($lockedBooking->status !== 'pending') {
+                return 'already_reviewed';
+            }
+
+            $settings = SystemSetting::current();
+            $bufferMinutes = max(
+                0,
+                (int) ($settings->cleanup_buffer_minutes ?? 30)
+            );
+
+            if ($this->hasConflict($lockedBooking, $bufferMinutes)) {
+                return 'conflict';
+            }
+
+            $lockedBooking->update([
                 'status' => 'approved',
                 'approved_by' => $user->name,
                 'approved_at' => now(),
-                'updated_at' => now(),
             ]);
 
-        if ($updated !== 1) {
+            return 'approved';
+        });
+
+        if ($result === 'conflict') {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This booking conflicts with another active booking for the facility. Resolve the schedule conflict before approving it.',
+            ]);
+        }
+
+        if ($result !== 'approved') {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
                 'message' => 'This booking has already been reviewed.',
@@ -134,7 +202,7 @@ class BookingApprovalController extends Controller
 
         $booking->refresh();
 
-        // Notify the user who made the booking.
+        // Notify after the booking transaction commits.
         if ($booking->user_id) {
             $bookingUser = User::find($booking->user_id);
 
