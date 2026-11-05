@@ -410,21 +410,35 @@ class BookingController extends Controller
      */
     public function cancel(string $id)
     {
-        $booking = Booking::query()
-            ->whereKey($id)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        $result = DB::transaction(function () use ($id) {
+            $booking = Booking::query()
+                ->whereKey($id)
+                ->where('user_id', Auth::id())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $updated = Booking::query()
-            ->whereKey($booking->getKey())
-            ->where('user_id', Auth::id())
-            ->whereIn('status', ['pending', 'approved'])
-            ->update([
+            if (! in_array($booking->status, ['pending', 'approved'], true)) {
+                return 'not_cancellable';
+            }
+
+            if ($booking->checked_in_at !== null || $booking->checked_out_at !== null) {
+                return 'already_started';
+            }
+
+            $booking->update([
                 'status' => 'cancelled',
-                'updated_at' => now(),
             ]);
 
-        if ($updated !== 1) {
+            return 'cancelled';
+        });
+
+        if ($result === 'already_started') {
+            return back()->withErrors([
+                'status' => 'A booking cannot be cancelled after check-in has started.',
+            ]);
+        }
+
+        if ($result !== 'cancelled') {
             return back()->with('toast', [
                 'type' => 'error',
                 'message' => 'This booking can no longer be cancelled.',
