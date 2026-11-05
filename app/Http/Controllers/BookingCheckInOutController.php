@@ -161,6 +161,12 @@ class BookingCheckInOutController extends Controller
 
             Gate::authorize('view', $lockedBooking);
 
+            if ($lockedBooking->status !== 'approved') {
+                throw ValidationException::withMessages([
+                    'check_out' => 'Only approved bookings can be checked out.',
+                ]);
+            }
+
             if ($lockedBooking->checked_in_at === null) {
                 throw ValidationException::withMessages([
                     'check_out' => 'This booking has not been checked in yet.',
