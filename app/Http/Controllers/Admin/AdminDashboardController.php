@@ -20,12 +20,13 @@ class AdminDashboardController extends Controller
         $bookingQuery = Booking::with(['facility:id,name', 'user:id,name,email'])->forUser($user);
 
         $periodStart = now()->subMonths(5)->startOfMonth();
+        $periodEnd = now()->endOfDay();
 
         $bookings = (clone $bookingQuery)
-            ->where(function ($query) use ($periodStart) {
-                $query->whereDate('booking_date', '>=', $periodStart->toDateString())
-                    ->orWhereDate('date', '>=', $periodStart->toDateString());
-            })
+            ->whereRaw(
+                'DATE(COALESCE(booking_date, date)) BETWEEN ? AND ?',
+                [$periodStart->toDateString(), $periodEnd->toDateString()]
+            )
             ->get();
 
         $bookingDateFor = fn (Booking $booking) => $booking->booking_date ?? $booking->date;
@@ -71,7 +72,7 @@ class AdminDashboardController extends Controller
             ->filter(fn (Booking $booking) => $booking->approved_at && $booking->created_at)
             ->map(fn (Booking $booking) => $booking->created_at->diffInMinutes($booking->approved_at));
 
-        $averageReviewHours = $approvalDurations->isNotEmpty()
+        $averageApprovalHours = $approvalDurations->isNotEmpty()
             ? round($approvalDurations->avg() / 60, 1)
             : null;
 
@@ -128,7 +129,7 @@ class AdminDashboardController extends Controller
                 'returningClients' => $returningClients,
                 'approvalRate' => $approvalRate,
                 'cancellationRate' => $cancellationRate,
-                'averageReviewHours' => $averageReviewHours,
+                'averageApprovalHours' => $averageApprovalHours,
                 'peakHour' => $peakHour,
                 'peakHourBookings' => $peakHourBookings,
                 'overtimeBookings' => $overtimeBookings->count(),
