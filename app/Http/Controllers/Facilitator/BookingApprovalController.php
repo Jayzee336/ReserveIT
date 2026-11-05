@@ -60,7 +60,7 @@ class BookingApprovalController extends Controller
             } elseif ($status === 'past_unapproved') {
                 $pendingQuery->where('id', 0);
                 $reviewedQuery->where('id', 0);
-            } elseif (in_array($status, ['approved', 'declined'], true)) {
+            } elseif (in_array($status, ['approved', 'declined', 'cancelled'], true)) {
                 $pendingQuery->where('id', 0);
                 $pastUnapprovedQuery->where('id', 0);
                 $reviewedQuery->where('status', $status);
