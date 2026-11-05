@@ -487,6 +487,21 @@ export default function MyBookings({
 
     const selectedFacility = selectedDetailBooking?.facility;
     const capacity = selectedFacility?.capacity;
+    const selectedBookingDate = String(
+        selectedDetailBooking?.date ?? selectedDetailBooking?.booking_date ?? ''
+    ).slice(0, 10);
+    const todayString = getLocalDateString();
+    const selectedBookingIsPast = Boolean(selectedBookingDate && selectedBookingDate < todayString);
+    const selectedBookingIsFuture = Boolean(selectedBookingDate && selectedBookingDate > todayString);
+    const selectedBookingStart = selectedBookingDate && selectedDetailBooking?.start_time
+        ? new Date(`${selectedBookingDate}T${String(selectedDetailBooking.start_time).slice(0, 5)}:00`)
+        : null;
+    const checkInOpensAt = selectedBookingStart && !Number.isNaN(selectedBookingStart.getTime())
+        ? new Date(selectedBookingStart.getTime() - 15 * 60 * 1000)
+        : null;
+    const isTooEarlyToCheckIn = Boolean(
+        checkInOpensAt && !Number.isNaN(checkInOpensAt.getTime()) && new Date() < checkInOpensAt
+    );
 
     const hasCapacityLimit =
         capacity !== null &&
@@ -1040,25 +1055,39 @@ export default function MyBookings({
                                                     : 'Not checked out'}
                                             </p>
                                         </div>
-                                        {!selectedDetailBooking.checked_out_at && (
+                                        {selectedDetailBooking.checked_in_at && !selectedDetailBooking.checked_out_at && (
                                             <button
                                                 type="button"
-                                                onClick={() => handleUserCheckInOut(
-                                                    selectedDetailBooking.checked_in_at ? 'out' : 'in',
-                                                    selectedDetailBooking.id
-                                                )}
+                                                onClick={() => handleUserCheckInOut('out', selectedDetailBooking.id)}
                                                 disabled={isCheckInOutProcessing}
-                                                className={`inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 ${selectedDetailBooking.checked_in_at ? 'bg-blue-700 hover:bg-blue-800' : 'bg-emerald-700 hover:bg-emerald-800'}`}
+                                                className="inline-flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
                                             >
-                                                {isCheckInOutProcessing
-                                                    ? 'Processing...'
-                                                    : selectedDetailBooking.checked_in_at
-                                                        ? 'Check Out'
-                                                        : 'Check In'}
+                                                {isCheckInOutProcessing ? 'Processing...' : 'Check Out'}
                                             </button>
                                         )}
+                                        {!selectedDetailBooking.checked_in_at && !selectedDetailBooking.checked_out_at && !selectedBookingIsPast && !selectedBookingIsFuture && !isTooEarlyToCheckIn && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleUserCheckInOut('in', selectedDetailBooking.id)}
+                                                disabled={isCheckInOutProcessing}
+                                                className="inline-flex items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                {isCheckInOutProcessing ? 'Processing...' : 'Check In'}
+                                            </button>
+                                        )}
+                                        {!selectedDetailBooking.checked_in_at && selectedBookingIsFuture && (
+                                            <p className="text-xs font-medium text-amber-800">Check-in becomes available on the scheduled date, beginning 15 minutes before the start time.</p>
+                                        )}
+                                        {!selectedDetailBooking.checked_in_at && selectedBookingIsPast && (
+                                            <p className="text-xs font-medium text-amber-800">This booking date has passed. Contact a Super Admin if a check-in correction is needed.</p>
+                                        )}
+                                        {!selectedDetailBooking.checked_in_at && !selectedBookingIsPast && !selectedBookingIsFuture && isTooEarlyToCheckIn && (
+                                            <p className="text-xs font-medium text-amber-800">
+                                                Check-in opens at {checkInOpensAt.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', hour12: true })}.
+                                            </p>
+                                        )}
                                         <p className="mt-2 text-xs text-gray-500">
-                                            Check-in is available from 15 minutes before your scheduled start. Checking out records the actual end time and calculates any applicable overtime charge.
+                                            The booking owner can check in from 15 minutes before the scheduled start. After check-in, check out here to record the actual end time and calculate any applicable overtime charge.
                                         </p>
                                         {selectedDetailBooking.checked_out_at && Number(selectedDetailBooking.overtime_fee_amount ?? 0) > 0 && (
                                             <p className="mt-2 text-xs font-semibold text-amber-800">
