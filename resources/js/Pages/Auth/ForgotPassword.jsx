@@ -59,7 +59,7 @@ export default function ForgotPassword({ status }) {
                 <div className="mt-6 text-center text-sm text-gray-600">
                     <Link
                         href={route('login')}
-                        className="inline-flex items-center gap-1 font-medium text-[text-indigo-600] hover:text-[text-indigo-500]"
+                        className="inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-500"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
