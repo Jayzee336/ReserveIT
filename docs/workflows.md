@@ -46,7 +46,7 @@ The server currently enforces:
 
 The React form additionally checks:
 
-- visible times between 08:00 and 20:00;
+- visible times between 08:00 AM and 10:00 PM;
 - facility capacity;
 - blackout dates passed to the component;
 - a three-day lead time for consent-required or weekend bookings;
@@ -82,20 +82,23 @@ Users can:
 
 - view their own bookings separated into upcoming and history;
 - search by facility and filter by status;
-- open booking details;
+- open booking details, including approval attribution and cancellation reason;
 - edit only pending bookings;
-- cancel pending or approved bookings.
+- cancel pending or approved bookings before check-in, with a required reason;
+- check in and check out their own approved bookings within the server-enforced attendance rules.
+
+A pending request temporarily holds its time slot while awaiting review; it is not a confirmed reservation. An approved booking is confirmed. When a user cancels, the reason is saved, assigned Facility Admins and active Super Admins receive a database notification, and the cancelled booking no longer blocks the slot.
 
 Cancellation changes the status to `cancelled`; it does not delete the record. Editing validates the date, time range, attendees, manpower flag, and notes, but it does not currently repeat every creation-time rule such as conflict checking and advance-window enforcement.
 
 ## Check-In, Check-Out, and Overtime
 
-1. A facility admin or super admin posts to `/bookings/{booking}/check-in`.
-2. Only approved bookings may be checked in, and a duplicate check-in is rejected.
-3. Staff posts to `/bookings/{booking}/check-out` after check-in; duplicate check-out is rejected.
+1. The booking owner, an assigned Facility Admin, or a Super Admin may post to `/bookings/{booking}/check-in` for an approved booking within their authorization scope.
+2. The owner can check in only their own booking; admins retain their existing facility-scoped permissions. Check-in opens 15 minutes before the scheduled start on the booking date. Premature, future-date, duplicate, and unauthorized check-ins are rejected.
+3. The booking owner or authorized administrator posts to `/bookings/{booking}/check-out` after check-in; duplicate check-out is rejected.
 4. `/admin/active-bookings` returns approved bookings that are checked in and not checked out.
-5. The endpoint calculates overtime by comparing the current time with the scheduled end time.
-6. Overtime fees are calculated as elapsed hours multiplied by `overtime_fee_per_hour`.
+5. The endpoint calculates overtime by comparing the actual checkout time with the scheduled end time. The final fee and rate are snapshotted at checkout.
+6. Overtime fees are calculated as elapsed hours multiplied by `overtime_fee_per_hour`. Only assigned Facility Admins and Super Admins may record manual payment receipt; booking owners cannot mark fees as paid.
 7. The React monitor polls every 30 seconds and highlights overtime records.
 
 ## Support Tickets and Concerns
@@ -139,7 +142,8 @@ A `BookingCreatedEvent` is dispatched when a booking is created, but the event d
 | View own bookings | Yes | Yes | Yes |
 | Review assigned booking | No | Yes | Yes |
 | Approve/decline booking | No | Assigned facilities | All facilities |
-| Check in/out | No | Assigned operational scope | All facilities |
+| Check in/out | Own approved bookings | Assigned operational scope | All facilities |
+| Record overtime payment | No | Assigned operational scope | All facilities |
 | Manage facilities | Browse | Edit assigned | Full CRUD |
 | Manage users/settings | No | No | Yes |
 | Submit ticket | Yes | Yes | Yes |
