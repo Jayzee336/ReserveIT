@@ -51,14 +51,24 @@ class AdminDashboardController extends Controller
 
         $bookingDateFor = fn (Booking $booking) => $booking->booking_date ?? $booking->date;
 
-        $usageOverTime = collect(range(5, 0))->map(function (int $monthsAgo) use ($bookings, $bookingDateFor) {
-            $month = now()->subMonths($monthsAgo)->startOfMonth();
-            return [
+        $usageOverTime = collect();
+        $monthCursor = Carbon::parse($filterFrom)->startOfMonth();
+        $lastMonth = Carbon::parse($filterTo)->startOfMonth();
+
+        while ($monthCursor->lte($lastMonth)) {
+            $month = $monthCursor->copy();
+            $monthBookings = $bookings->filter(
+                fn (Booking $booking) => $bookingDateFor($booking)?->isSameMonth($month)
+            );
+
+            $usageOverTime->push([
                 'label' => $month->format('M Y'),
-                'bookings' => $bookings->filter(fn (Booking $booking) => $bookingDateFor($booking)?->isSameMonth($month))->count(),
-                'approved' => $bookings->filter(fn (Booking $booking) => $bookingDateFor($booking)?->isSameMonth($month) && $booking->status === 'approved')->count(),
-            ];
-        })->values();
+                'bookings' => $monthBookings->count(),
+                'approved' => $monthBookings->where('status', 'approved')->count(),
+            ]);
+
+            $monthCursor->addMonth();
+        }
 
         $clientBookingGroups = $bookings->groupBy(function (Booking $booking) {
             if ($booking->user_id) {
