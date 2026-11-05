@@ -207,19 +207,62 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
         $this->assertNull($booking->fresh()->checked_out_at);
     }
 
-    public function test_regular_user_cannot_check_in_or_check_out(): void
+    public function test_regular_user_can_check_in_and_check_out_their_own_approved_booking(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-20 08:50:00'));
+
+        try {
+            $user = User::factory()->create([
+                'role' => 'user',
+                'is_active' => true,
+            ]);
+
+            $facility = $this->createFacility(
+                'check-in-user-owner',
+                'User Owner Test Facility'
+            );
+
+            $booking = $this->createBooking($facility, [
+                'user_id' => $user->id,
+                'date' => '2026-10-20',
+                'start_time' => '09:00:00',
+                'end_time' => '10:00:00',
+            ]);
+
+            $this->actingAs($user)
+                ->post(route('bookings.check-in', $booking))
+                ->assertSessionHasNoErrors();
+
+            $this->assertNotNull($booking->fresh()->checked_in_at);
+
+            $this->post(route('bookings.check-out', $booking))
+                ->assertSessionHasNoErrors();
+
+            $this->assertNotNull($booking->fresh()->checked_out_at);
+            $this->assertSame(0, $booking->fresh()->overtime_minutes);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_regular_user_cannot_check_in_or_check_out_another_users_booking(): void
     {
         $user = User::factory()->create([
             'role' => 'user',
             'is_active' => true,
         ]);
+        $owner = User::factory()->create([
+            'role' => 'user',
+            'is_active' => true,
+        ]);
 
         $facility = $this->createFacility(
-            'check-in-user',
-            'User Test Facility'
+            'check-in-user-not-owner',
+            'User Ownership Test Facility'
         );
 
         $booking = $this->createBooking($facility, [
+            'user_id' => $owner->id,
             'checked_in_at' => now()->subMinutes(30),
         ]);
 
@@ -227,11 +270,9 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
             ->post(route('bookings.check-in', $booking))
             ->assertForbidden();
 
-        $this->actingAs($user)
-            ->post(route('bookings.check-out', $booking))
+        $this->post(route('bookings.check-out', $booking))
             ->assertForbidden();
 
-        $this->assertNotNull($booking->fresh()->checked_in_at);
         $this->assertNull($booking->fresh()->checked_out_at);
     }
 
