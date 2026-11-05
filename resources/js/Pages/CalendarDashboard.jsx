@@ -113,7 +113,7 @@ export default function CalendarDashboard({
                             <div>
                                 <p className="text-sm font-semibold text-slate-800">Schedule visibility</p>
                                 <p className="mt-0.5 text-xs text-slate-500">
-                                    All Facilities shows occupancy only. Reservation details and management remain limited to your assigned facilities.
+                                    All Facilities lets you check availability and request bookings anywhere. Existing reservation details and management remain limited to your assigned facilities.
                                 </p>
                             </div>
                             <div className="inline-flex rounded-lg bg-slate-100 p-1" role="group" aria-label="Schedule visibility">
