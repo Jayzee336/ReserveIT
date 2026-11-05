@@ -68,9 +68,16 @@ class AdminDashboardController extends Controller
             ? round(($periodCancelled / $bookings->count()) * 100, 1)
             : 0.0;
 
+        // Use timestamp subtraction so Carbon's signed diff direction cannot
+        // turn a normal approval duration into a negative value.
         $approvalDurations = $bookings
             ->filter(fn (Booking $booking) => $booking->approved_at && $booking->created_at)
-            ->map(fn (Booking $booking) => $booking->created_at->diffInMinutes($booking->approved_at));
+            ->map(function (Booking $booking): int {
+                return max(
+                    0,
+                    $booking->approved_at->getTimestamp() - $booking->created_at->getTimestamp()
+                ) / 60;
+            });
 
         $averageApprovalHours = $approvalDurations->isNotEmpty()
             ? round($approvalDurations->avg() / 60, 1)
