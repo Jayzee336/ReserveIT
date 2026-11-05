@@ -24,10 +24,12 @@ class AdminDashboardController extends Controller
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
             'facility_id' => ['nullable', 'string', 'max:255'],
+            'group_by' => ['nullable', 'in:day,week,month'],
         ]);
         $filterFrom = $validatedFilters['from'] ?? $defaultFrom;
         $filterTo = $validatedFilters['to'] ?? $defaultTo;
         $filterFacilityId = $validatedFilters['facility_id'] ?? '';
+        $groupBy = $validatedFilters['group_by'] ?? 'month';
 
         $managedFacilities = Facility::query()
             ->forUser($user)
@@ -52,23 +54,69 @@ class AdminDashboardController extends Controller
         $bookingDateFor = fn (Booking $booking) => $booking->booking_date ?? $booking->date;
 
         $usageOverTime = collect();
-        $monthCursor = Carbon::parse($filterFrom)->startOfMonth();
-        $lastMonth = Carbon::parse($filterTo)->startOfMonth();
+        $periodCursor = Carbon::parse($filterFrom)->startOfDay();
+        $periodEnd = Carbon::parse($filterTo)->endOfDay();
 
-        while ($monthCursor->lte($lastMonth)) {
-            $month = $monthCursor->copy();
-            $monthBookings = $bookings->filter(
-                fn (Booking $booking) => $bookingDateFor($booking)?->isSameMonth($month)
-            );
+        if ($groupBy === 'week') {
+            $periodCursor->startOfWeek();
+            $periodEnd->endOfWeek();
+        } elseif ($groupBy === 'month') {
+            $periodCursor->startOfMonth();
+            $periodEnd->endOfMonth();
+        }
+
+        while ($periodCursor->lte($periodEnd)) {
+            $periodStart = $periodCursor->copy();
+            $periodFinish = match ($groupBy) {
+                'day' => $periodStart->copy()->endOfDay(),
+                'week' => $periodStart->copy()->endOfWeek(),
+                default => $periodStart->copy()->endOfMonth(),
+            };
+            $periodBookings = $bookings->filter(function (Booking $booking) use ($bookingDateFor, $periodStart, $periodFinish) {
+                $date = $bookingDateFor($booking);
+                return $date && $date->betweenIncluded($periodStart, $periodFinish);
+            });
 
             $usageOverTime->push([
-                'label' => $month->format('M Y'),
-                'bookings' => $monthBookings->count(),
-                'approved' => $monthBookings->where('status', 'approved')->count(),
+                'label' => $groupBy === 'day'
+                    ? $periodStart->format('M j')
+                    : ($groupBy === 'week'
+                        ? $periodStart->format('M j') . ' – ' . $periodFinish->format('M j')
+                        : $periodStart->format('M Y')),
+                'bookings' => $periodBookings->count(),
+                'approved' => $periodBookings->where('status', 'approved')->count(),
             ]);
 
-            $monthCursor->addMonth();
+            $periodCursor = match ($groupBy) {
+                'day' => $periodCursor->addDay(),
+                'week' => $periodCursor->addWeek(),
+                default => $periodCursor->addMonth(),
+            };
         }
+
+        $periodDays = Carbon::parse($filterFrom)->startOfDay()
+            ->diffInDays(Carbon::parse($filterTo)->startOfDay()) + 1;
+        $comparisonFrom = Carbon::parse($filterFrom)->subDays($periodDays)->toDateString();
+        $comparisonTo = Carbon::parse($filterFrom)->subDay()->toDateString();
+        $comparisonQuery = (clone $bookingQuery)->whereRaw(
+            'DATE(COALESCE(booking_date, date)) BETWEEN ? AND ?',
+            [$comparisonFrom, $comparisonTo]
+        );
+        if ($filterFacilityId !== '') {
+            $comparisonQuery->where('facility_id', $filterFacilityId);
+        }
+        $previousPeriodBookings = $comparisonQuery->count();
+        $currentPeriodBookings = $bookings->count();
+        $periodComparison = [
+            'currentBookings' => $currentPeriodBookings,
+            'previousBookings' => $previousPeriodBookings,
+            'change' => $previousPeriodBookings > 0
+                ? round((($currentPeriodBookings - $previousPeriodBookings) / $previousPeriodBookings) * 100, 1)
+                : null,
+            'direction' => $currentPeriodBookings <=> $previousPeriodBookings,
+            'previousFrom' => $comparisonFrom,
+            'previousTo' => $comparisonTo,
+        ];
 
         $clientBookingGroups = $bookings->groupBy(function (Booking $booking) {
             if ($booking->user_id) {
@@ -220,7 +268,9 @@ class AdminDashboardController extends Controller
                 'from' => $filterFrom,
                 'to' => $filterTo,
                 'facility_id' => $filterFacilityId,
+                'group_by' => $groupBy,
             ],
+            'periodComparison' => $periodComparison,
             'analyticsFacilities' => $managedFacilities,
             'statusBreakdown' => $statusBreakdown,
             'analyticsDetails' => $analyticsDetails,
