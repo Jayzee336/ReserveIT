@@ -129,6 +129,8 @@ class AdminDashboardAnalyticsTest extends TestCase
                 ->has('analyticsDetails.returningClients', 1)
                 ->has('analyticsDetails.overtime', 1)
                 ->where('analyticsDetails.overtime.0.overtime_minutes', 30)
+                ->has('analyticsDetails.approvalTime', 1)
+                ->where('analyticsDetails.approvalTime.0.approval_minutes', 30)
                 ->where('statusBreakdown.0.status', 'pending')
                 ->where('statusBreakdown.1.status', 'approved')
                 ->where('statusBreakdown.1.count', 1)
