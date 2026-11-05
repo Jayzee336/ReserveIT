@@ -364,7 +364,7 @@ export default function FacilitatorDashboard({
                         {/* Book a Facility */}
                         <Link
                             href={route('facilities.index')}
-                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[bg-indigo-600] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[bg-indigo-500] focus:outline-none focus:ring-2 focus:ring-[ring-indigo-400] focus:ring-offset-2"
+                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
                         >
                             <Plus className="h-4 w-4" />
                             Book a Facility
