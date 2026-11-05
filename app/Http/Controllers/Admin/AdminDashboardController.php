@@ -175,13 +175,6 @@ class AdminDashboardController extends Controller
                     : 0,
             ])->values();
 
-        $peakHourBookingsList = $peakHour === null
-            ? collect()
-            : $bookings->filter(
-                fn (Booking $booking) => ! empty($booking->start_time)
-                    && (int) substr((string) $booking->start_time, 0, 2) === (int) $bookingsByHour->keys()->first()
-            );
-
         $analyticsDetails = [
             'clients' => $clientDetails,
             'returningClients' => $clientDetails->where('bookings', '>', 1)->values(),
