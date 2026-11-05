@@ -222,7 +222,7 @@ export default function FacilityDetails({
                                                 </div>
 
                                                 <div className="min-w-0">
-                                                    <p className="break-words text-xs font-bold leading-5 text-indigo-950">
+                                                    <p className="break-words text-xs font-bold leading-5 text-[#34232F]">
                                                         {admin.name}
                                                     </p>
 
