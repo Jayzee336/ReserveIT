@@ -49,7 +49,7 @@ function StatusBadge({ status }) {
                 styles[normalized] ?? styles.pending
             }`}
         >
-            {String(status || '').toUpperCase()}
+            {normalized === 'pending' ? 'PENDING · SLOT HELD' : normalized === 'approved' ? 'APPROVED · CONFIRMED' : String(status || 'Unknown').toUpperCase()}
         </span>
     );
 }
