@@ -18,7 +18,7 @@ function Stat({ label, value }) {
     return (
         <div className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">{label}</p>
-            <p className="mt-2 text-3xl font-bold text-[#20212B]">{value}</p>
+            <p className="mt-2 text-3xl font-bold text-[#6A535C]">{value}</p>
         </div>
     );
 }
@@ -58,7 +58,7 @@ function BookingDetailModal({ booking, onClose }) {
             >
                 <div className="mb-6 flex items-start justify-between gap-3">
                     <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#20212B]">
+                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">
                             Booking Details
                         </p>
                         <h3 className="mt-1 text-xl font-semibold text-gray-900">
@@ -146,7 +146,7 @@ function BookingDetailModal({ booking, onClose }) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-xl bg-[#20212B] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                        className="rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
                     >
                         Close
                     </button>
@@ -322,7 +322,7 @@ export default function FacilitatorDashboard({
                             <select
                                 value={selectedFacilityId ?? ''}
                                 onChange={handleFacilityChange}
-                                className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#20212B]"
+                                className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#6A535C]"
                             >
                                 <option value="">All assigned facilities</option>
 
@@ -340,7 +340,7 @@ export default function FacilitatorDashboard({
                         {/* Active Bookings Monitor */}
                         <Link
                             href={route('admin.active-bookings.page')}
-                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#20212B] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#533e45] focus:outline-none focus:ring-2 focus:ring-[#745363] focus:ring-offset-2"
+                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#533e45] focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2"
                         >
                             <Activity className="h-4 w-4" />
                             Active Bookings Monitor
@@ -349,7 +349,7 @@ export default function FacilitatorDashboard({
                         {/* Book a Facility */}
                         <Link
                             href={route('facilities.index')}
-                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#745363] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#8C6A80] focus:outline-none focus:ring-2 focus:ring-[#A9869C] focus:ring-offset-2"
+                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[bg-indigo-600] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[bg-indigo-500] focus:outline-none focus:ring-2 focus:ring-[ring-indigo-400] focus:ring-offset-2"
                         >
                             <Plus className="h-4 w-4" />
                             Book a Facility
@@ -447,7 +447,7 @@ export default function FacilitatorDashboard({
 
                         <Link
                             href={route('facilitator.bookings.index')}
-                            className="text-sm font-semibold text-[#20212B] hover:underline"
+                            className="text-sm font-semibold text-[#6A535C] hover:underline"
                         >
                             View All Approvals
                         </Link>
