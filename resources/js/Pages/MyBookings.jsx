@@ -27,7 +27,7 @@ import {
 import { toast } from 'sonner';
 
 const OPENING_TIME = '08:00';
-const CLOSING_TIME = '20:00';
+const CLOSING_TIME = '22:00';
 const SLOT_INTERVAL_MINUTES = 15;
 
 const toMinutes = (time) => {
