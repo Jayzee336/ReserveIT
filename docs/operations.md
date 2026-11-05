@@ -83,6 +83,8 @@ php artisan migrate:rollback
 php artisan db:seed
 ```
 
+The defense-feedback upgrade adds a nullable `cancellation_reason` column to bookings. After pulling the branch, back up any database containing data you need, then apply pending migrations with `php artisan migrate` against the intended database.
+
 `migrate:fresh` destroys and recreates all tables and should be limited to disposable local/test databases:
 
 ```powershell
@@ -157,14 +159,16 @@ Important coverage areas to maintain:
 
 - authentication, verification, password reset, and forced password changes;
 - role and facility-assignment authorization;
-- booking validation and cleanup-buffer conflict rules;
-- approval, decline, cancellation, and edit state transitions;
-- check-in/out and overtime JSON responses;
+- booking validation, the 08:00–22:00 booking window, quarter-hour starts, and cleanup-buffer conflict rules;
+- approval, decline, cancellation-reason validation, cancellation notifications, and edit state transitions;
+- booking-owner check-in/out, assigned Facility Admin/Super Admin access, and rejection of another user's booking;
+- check-in/out timestamps, overtime calculation, immutable rate/fee snapshots, and payment-recording authorization;
+- facility-scoped client and operations analytics;
 - notification sharing and read/clear actions;
 - settings persistence;
 - consent-file authorization and download behavior.
 
-The feature suite now also covers booking approval conflicts and cleanup buffers, check-in/check-out state transitions, cancellation after check-in, transactional user-management safeguards, and overtime billing snapshots/payment authorization. Run the complete suite locally before release; repository edits alone do not establish that these tests pass.
+The feature suite also includes regression coverage for approval conflicts and cleanup buffers, booking-owner check-in/out authorization, owner checkout overtime calculation and payment restrictions, required cancellation reasons and administrator notifications, facility-scoped client/operations analytics, cancellation after check-in, transactional user-management safeguards, and overtime billing snapshots/payment authorization. Run the complete suite locally before release; repository edits alone do not establish that these tests pass.
 
 ## Troubleshooting
 
