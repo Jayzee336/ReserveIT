@@ -99,13 +99,13 @@ export default function Dashboard({ auth, stats, upcomingBooking }) {
             <Head title="Dashboard" />
 
             <div className="ri-page-shell space-y-7">
-                <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#20212B] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
-                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#745363]/50 blur-3xl" />
+                <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#6A535C] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
+                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#846A75]/50 blur-3xl" />
                     <div className="pointer-events-none absolute -bottom-32 right-1/3 -z-10 h-64 w-64 rounded-full bg-[#B88D59]/20 blur-3xl" />
 
                     <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl">
-                            <span className="ri-page-eyebrow !text-[#D8C3CF]">
+                            <span className="ri-page-eyebrow !text-[#FDF6F0]">
                                 <Sparkles className="h-3.5 w-3.5" />
                                 Your campus, better organized
                             </span>
@@ -120,7 +120,7 @@ export default function Dashboard({ auth, stats, upcomingBooking }) {
                         <div className="flex flex-col gap-3 sm:flex-row">
                             <Link
                                 href={route('facilities.index')}
-                                className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#20212B] hover:!border-white hover:!bg-[#F1EAF0]"
+                                className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#6A535C] hover:!border-white hover:!bg-[#FFF8F2]"
                             >
                                 <Building2 className="h-4 w-4" />
                                 Browse facilities
