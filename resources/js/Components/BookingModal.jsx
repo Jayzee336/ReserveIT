@@ -10,7 +10,7 @@ import {
     AlertTriangle,
 } from 'lucide-react';
 
-// Generate consistent 15-minute intervals from 8:00 AM through 7:45 PM.
+// Generate consistent 15-minute intervals from 8:00 AM through 9:45 PM; 10:00 PM is the closing-time end option.
 const OPENING_TIME = '08:00';
 const CLOSING_TIME = '22:00';
 const SLOT_INTERVAL_MINUTES = 15;
