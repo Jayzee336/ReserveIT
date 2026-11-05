@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Facility;
 use App\Models\SystemSetting;
+use App\Models\User;
+use App\Notifications\BookingOperationsNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -421,9 +423,21 @@ class BookingController extends Controller
      * The conditional update ensures the status changes only when
      * the booking is still pending or approved at update time.
      */
-    public function cancel(string $id)
+    public function cancel(Request $request, string $id)
     {
-        $result = DB::transaction(function () use ($id) {
+        $validated = $request->validate([
+            'cancellation_reason' => ['required', 'string', 'min:5', 'max:1000'],
+        ]);
+
+        $reason = trim($validated['cancellation_reason']);
+
+        if (mb_strlen($reason) < 5) {
+            throw ValidationException::withMessages([
+                'cancellation_reason' => 'Please provide a cancellation reason of at least 5 characters.',
+            ]);
+        }
+
+        $result = DB::transaction(function () use ($id, $reason) {
             $booking = Booking::query()
                 ->whereKey($id)
                 ->where('user_id', Auth::id())
@@ -431,36 +445,71 @@ class BookingController extends Controller
                 ->firstOrFail();
 
             if (! in_array($booking->status, ['pending', 'approved'], true)) {
-                return 'not_cancellable';
+                return ['status' => 'not_cancellable'];
             }
 
             if ($booking->checked_in_at !== null || $booking->checked_out_at !== null) {
-                return 'already_started';
+                return ['status' => 'already_started'];
             }
 
             $booking->update([
                 'status' => 'cancelled',
+                'cancellation_reason' => $reason,
             ]);
 
-            return 'cancelled';
+            return [
+                'status' => 'cancelled',
+                'booking_id' => $booking->getKey(),
+            ];
         });
 
-        if ($result === 'already_started') {
+        if ($result['status'] === 'already_started') {
             return back()->withErrors([
                 'status' => 'A booking cannot be cancelled after check-in has started.',
             ]);
         }
 
-        if ($result !== 'cancelled') {
+        if ($result['status'] !== 'cancelled') {
             return back()->with('toast', [
                 'type' => 'error',
                 'message' => 'This booking can no longer be cancelled.',
             ]);
         }
 
+        // Notify after the cancellation transaction commits. Facility admins
+        // only receive notices for facilities assigned to them.
+        $cancelledBooking = Booking::with('facility')->findOrFail($result['booking_id']);
+        $facilityAdmins = $cancelledBooking->facility
+            ? $cancelledBooking->facility->facilityAdmins()
+                ->where('is_active', true)
+                ->get()
+            : collect();
+
+        $superAdmins = User::query()
+            ->where('role', 'super_admin')
+            ->where('is_active', true)
+            ->get();
+
+        $message = sprintf(
+            '%s cancelled the booking for %s on %s (%s–%s). Reason: %s',
+            Auth::user()->name,
+            $cancelledBooking->facility?->name ?? 'a facility',
+            ($cancelledBooking->date ?? $cancelledBooking->booking_date)?->format('M d, Y') ?? 'an unspecified date',
+            $cancelledBooking->start_time,
+            $cancelledBooking->end_time,
+            $reason
+        );
+
+        $facilityAdmins
+            ->merge($superAdmins)
+            ->unique('id')
+            ->each(fn (User $admin) => $admin->notify(
+                new BookingOperationsNotification($message, (string) $cancelledBooking->getKey())
+            ));
+
         return back()->with('toast', [
             'type' => 'success',
-            'message' => 'Booking cancelled.',
+            'message' => 'Booking cancelled. The responsible administrators have been notified and the time slot is available again.',
         ]);
     }
 
