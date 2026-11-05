@@ -110,6 +110,59 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
         $this->assertNotNull($booking->fresh()->checked_out_at);
     }
 
+    public function test_cancelled_booking_cannot_be_checked_out_even_if_it_has_a_check_in_timestamp(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+
+        $facility = $this->createFacility(
+            'check-out-cancelled',
+            'Cancelled Booking Facility'
+        );
+
+        $facility->facilityAdmins()->attach($admin);
+
+        $booking = $this->createBooking($facility, [
+            'status' => 'cancelled',
+            'checked_in_at' => now()->subMinutes(30),
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('bookings.check-out', $booking))
+            ->assertSessionHasErrors('check_out');
+
+        $this->assertNull($booking->fresh()->checked_out_at);
+        $this->assertNull($booking->fresh()->overtime_fee_amount);
+    }
+
+    public function test_declined_booking_cannot_be_checked_out(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+
+        $facility = $this->createFacility(
+            'check-out-declined',
+            'Declined Booking Facility'
+        );
+
+        $facility->facilityAdmins()->attach($admin);
+
+        $booking = $this->createBooking($facility, [
+            'status' => 'declined',
+            'checked_in_at' => now()->subMinutes(30),
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('bookings.check-out', $booking))
+            ->assertSessionHasErrors('check_out');
+
+        $this->assertNull($booking->fresh()->checked_out_at);
+    }
+
     public function test_facility_admin_cannot_check_in_booking_for_unassigned_facility(): void
     {
         $admin = User::factory()->create([
