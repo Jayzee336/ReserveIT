@@ -250,20 +250,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Schedule Grid
     Route::get('/schedule', function (\Illuminate\Http\Request $request) {
-        $selectedDate = $request->validate([
+        $validated = $request->validate([
             'date' => ['nullable', 'date'],
-        ])['date'] ?? today()->toDateString();
+            'view' => ['nullable', 'string', Rule::in(['assigned', 'all'])],
+        ]);
 
+        $selectedDate = $validated['date'] ?? today()->toDateString();
         $user = Auth::user();
+        $isFacilityAdmin = $user->role === 'facility_admin';
+        $scheduleView = $isFacilityAdmin
+            ? ($validated['view'] ?? 'assigned')
+            : 'all';
+        $availabilityOnly = $isFacilityAdmin && $scheduleView === 'all';
         $canViewBookingDetails = in_array(
             $user->role,
             ['facility_admin', 'super_admin'],
             true
-        );
+        ) && !$availabilityOnly;
 
         $facilityQuery = Facility::query();
 
-        if ($user->role === 'facility_admin') {
+        if ($isFacilityAdmin && !$availabilityOnly) {
             $facilityQuery->forUser($user);
         }
 
@@ -275,10 +282,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             })
             ->whereNotIn('status', ['declined', 'cancelled']);
 
-        if ($user->role === 'facility_admin') {
+        if ($isFacilityAdmin && !$availabilityOnly) {
             $bookingQuery->forUser($user);
         }
 
+        // The all-facilities mode is strictly an availability overview. Only
+        // occupancy fields are returned; customer and reservation details stay private.
         $bookingColumns = [
             'id',
             'facility_id',
@@ -303,6 +312,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return Inertia::render('CalendarDashboard', [
             'selectedDate' => $selectedDate,
+            'scheduleView' => $scheduleView,
+            'canToggleScheduleView' => $isFacilityAdmin,
+            'availabilityOnly' => $availabilityOnly,
             'serverFacilities' => $facilityQuery->get(),
             'serverBookings' => $bookingQuery->get($bookingColumns),
         ]);
