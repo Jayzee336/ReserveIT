@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Facility;
 use App\Models\User;
+use App\Notifications\BookingOperationsNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -96,10 +98,10 @@ class BookingUpdateTest extends TestCase
         $declinedBooking = $this->createBooking($user, $facility, 'declined');
 
         $this->actingAs($user)
-            ->put("/bookings/{$pendingBooking->id}/cancel")
+            ->put("/bookings/{$pendingBooking->id}/cancel", ['cancellation_reason' => 'We no longer need this facility.'])
             ->assertSessionHasNoErrors();
 
-        $this->put("/bookings/{$declinedBooking->id}/cancel")
+        $this->put("/bookings/{$declinedBooking->id}/cancel", ['cancellation_reason' => 'This request should remain declined.'])
             ->assertSessionHasNoErrors();
 
         $this->assertSame('cancelled', $pendingBooking->refresh()->status);
@@ -114,7 +116,7 @@ class BookingUpdateTest extends TestCase
         $booking = $this->createBooking($owner, $facility, 'pending');
 
         $this->actingAs($otherUser)
-            ->put("/bookings/{$booking->id}/cancel")
+            ->put("/bookings/{$booking->id}/cancel", ['cancellation_reason' => 'This booking belongs to another user.'])
             ->assertNotFound();
 
         $this->assertSame('pending', $booking->refresh()->status);
@@ -127,7 +129,7 @@ class BookingUpdateTest extends TestCase
         $booking = $this->createBooking($user, $facility, 'approved');
 
         $this->actingAs($user)
-            ->put("/bookings/{$booking->id}/cancel")
+            ->put("/bookings/{$booking->id}/cancel", ['cancellation_reason' => 'Our plans have changed.'])
             ->assertSessionHasNoErrors();
 
         $this->assertSame('cancelled', $booking->refresh()->status);
@@ -141,10 +143,61 @@ class BookingUpdateTest extends TestCase
         $booking->update(['checked_in_at' => now()]);
 
         $this->actingAs($user)
-            ->put("/bookings/{$booking->id}/cancel")
+            ->put("/bookings/{$booking->id}/cancel", ['cancellation_reason' => 'The event has been rescheduled.'])
             ->assertSessionHasErrors('status');
 
         $this->assertSame('approved', $booking->fresh()->status);
+    }
+
+    public function test_cancellation_requires_a_reason(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $booking = $this->createBooking($user, $facility, 'pending');
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}/cancel")
+            ->assertSessionHasErrors('cancellation_reason');
+
+        $this->assertSame('pending', $booking->fresh()->status);
+        $this->assertNull($booking->fresh()->cancellation_reason);
+    }
+
+    public function test_cancellation_saves_reason_and_notifies_assigned_admins_and_super_admins(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create();
+        $assignedAdmin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+        $unassignedAdmin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+        $superAdmin = User::factory()->create([
+            'role' => 'super_admin',
+            'is_active' => true,
+        ]);
+
+        $facility = $this->createFacility();
+        $facility->facilityAdmins()->attach($assignedAdmin);
+        $booking = $this->createBooking($user, $facility, 'approved');
+        $reason = 'The event was moved to another date.';
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}/cancel", [
+                'cancellation_reason' => $reason,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('cancelled', $booking->fresh()->status);
+        $this->assertSame($reason, $booking->fresh()->cancellation_reason);
+
+        Notification::assertSentTo($assignedAdmin, BookingOperationsNotification::class);
+        Notification::assertSentTo($superAdmin, BookingOperationsNotification::class);
+        Notification::assertNotSentTo($unassignedAdmin, BookingOperationsNotification::class);
     }
 
     private function createFacility(): Facility
