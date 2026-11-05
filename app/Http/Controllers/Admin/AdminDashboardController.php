@@ -8,26 +8,46 @@ use App\Models\Facility;
 use App\Models\UserConcern;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AdminDashboardController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $user = Auth::user();
 
+        $defaultFrom = now()->subMonths(5)->startOfMonth()->toDateString();
+        $defaultTo = now()->toDateString();
+        $validatedFilters = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'facility_id' => ['nullable', 'string', 'max:255'],
+        ]);
+        $filterFrom = $validatedFilters['from'] ?? $defaultFrom;
+        $filterTo = $validatedFilters['to'] ?? $defaultTo;
+        $filterFacilityId = $validatedFilters['facility_id'] ?? '';
+
+        $managedFacilities = Facility::query()
+            ->forUser($user)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         $bookingQuery = Booking::with(['facility:id,name', 'user:id,name,email'])->forUser($user);
 
-        $periodStart = now()->subMonths(5)->startOfMonth();
-        $periodEnd = now()->endOfDay();
-
-        $bookings = (clone $bookingQuery)
+        $analyticsQuery = (clone $bookingQuery)
             ->whereRaw(
                 'DATE(COALESCE(booking_date, date)) BETWEEN ? AND ?',
-                [$periodStart->toDateString(), $periodEnd->toDateString()]
-            )
-            ->get();
+                [$filterFrom, $filterTo]
+            );
+
+        if ($filterFacilityId !== '') {
+            // The base query is already scoped to facilities assigned to this user.
+            $analyticsQuery->where('facility_id', $filterFacilityId);
+        }
+
+        $bookings = $analyticsQuery->get();
 
         $bookingDateFor = fn (Booking $booking) => $booking->booking_date ?? $booking->date;
 
@@ -130,8 +150,15 @@ class AdminDashboardController extends Controller
             ],
             'usageOverTime' => $usageOverTime,
             'mostUsedFacilities' => $mostUsedFacilities,
+            'analyticsFilters' => [
+                'from' => $filterFrom,
+                'to' => $filterTo,
+                'facility_id' => $filterFacilityId,
+            ],
+            'analyticsFacilities' => $managedFacilities,
             'operationalAnalytics' => [
-                'periodLabel' => 'Last 6 months',
+                'periodLabel' => Carbon::parse($filterFrom)->format('M j, Y')
+                    . ' – ' . Carbon::parse($filterTo)->format('M j, Y'),
                 'uniqueClients' => $uniqueClients,
                 'returningClients' => $returningClients,
                 'approvalRate' => $approvalRate,
