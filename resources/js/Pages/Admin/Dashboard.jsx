@@ -212,6 +212,8 @@ export default function AdminDashboard({
     usageOverTime = [],
     mostUsedFacilities = [],
     operationalAnalytics = {},
+    analyticsFilters = {},
+    analyticsFacilities = [],
     pendingBookings = [],
     recentConcerns = [],
 }) {
@@ -226,6 +228,33 @@ export default function AdminDashboard({
     const [searchQuery, setSearchQuery] = useState('');
     const [sortOrder, setSortOrder] = useState('newest');
     const [timeFilter, setTimeFilter] = useState('all');
+    const [analyticsFrom, setAnalyticsFrom] = useState(analyticsFilters.from ?? '');
+    const [analyticsTo, setAnalyticsTo] = useState(analyticsFilters.to ?? '');
+    const [analyticsFacility, setAnalyticsFacility] = useState(analyticsFilters.facility_id ?? '');
+
+    const applyAnalyticsFilters = (event) => {
+        event.preventDefault();
+        router.get(route('admin.dashboard'), {
+            from: analyticsFrom,
+            to: analyticsTo,
+            facility_id: analyticsFacility || undefined,
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const resetAnalyticsFilters = () => {
+        setAnalyticsFrom('');
+        setAnalyticsTo('');
+        setAnalyticsFacility('');
+        router.get(route('admin.dashboard'), {}, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
 
     useEffect(() => {
         setBookingsList(pendingBookings);
@@ -386,6 +415,29 @@ export default function AdminDashboard({
                             <p className="mt-0.5 text-xs text-slate-500">{operationalAnalytics.periodLabel ?? 'Last 6 months'} · scoped to facilities you manage</p>
                         </div>
                     </div>
+                    <form onSubmit={applyAnalyticsFilters} className="mb-4 grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.3fr_auto_auto] lg:items-end">
+                        <label className="block text-xs font-semibold text-slate-600">
+                            From
+                            <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20" />
+                        </label>
+                        <label className="block text-xs font-semibold text-slate-600">
+                            To
+                            <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20" />
+                        </label>
+                        <label className="block text-xs font-semibold text-slate-600">
+                            Facility
+                            <select value={analyticsFacility} onChange={(event) => setAnalyticsFacility(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20">
+                                <option value="">All managed facilities</option>
+                                {analyticsFacilities.map((facility) => <option key={facility.id} value={facility.id}>{facility.name}</option>)}
+                            </select>
+                        </label>
+                        <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]">
+                            <SlidersHorizontal className="h-4 w-4" /> Apply
+                        </button>
+                        <button type="button" onClick={resetAnalyticsFilters} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-stone-100">
+                            Reset
+                        </button>
+                    </form>
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                         {[
                             ['Unique clients', operationalAnalytics.uniqueClients ?? 0, 'Distinct account holders and guest contacts'],
