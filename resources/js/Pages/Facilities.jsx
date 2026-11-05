@@ -114,13 +114,13 @@ export default function Dashboard({ auth, facilities }) {
                     <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
                         <div className="mr-auto flex flex-wrap items-center gap-2">
                             {filterType !== 'All' && (
-                                <span className="inline-flex items-center gap-1 rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                                <span className="inline-flex items-center gap-1 rounded-full border border-[#EDE3EA] bg-[#F8F4F7] px-2.5 py-1 text-xs font-semibold text-[#5D4050]">
                                     {filterType}
                                     <button
                                         type="button"
                                         aria-label="Clear category filter"
                                         onClick={() => setFilterType('All')}
-                                        className="ml-0.5 hover:text-indigo-900"
+                                        className="ml-0.5 hover:text-[#34232F]"
                                     >
                                         <X className="h-3 w-3" />
                                     </button>
@@ -148,7 +148,7 @@ export default function Dashboard({ auth, facilities }) {
                                 type="text"
                                 placeholder="Search facilities..."
                                 aria-label="Search facilities"
-                                className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm shadow-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400"
+                                className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm shadow-sm focus:border-[#A9869C] focus:ring-2 focus:ring-[#A9869C]"
                                 value={searchTerm}
                                 onChange={(event) =>
                                     setSearchTerm(event.target.value)
@@ -161,7 +161,7 @@ export default function Dashboard({ auth, facilities }) {
                             onClick={openModal}
                             className={`relative flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
                                 activeFilterCount > 0
-                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                                    ? 'border-[#C5A9BA] bg-[#F8F4F7] text-[#5D4050] hover:bg-[#EDE3EA]'
                                     : 'border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50'
                             }`}
                         >
@@ -169,7 +169,7 @@ export default function Dashboard({ auth, facilities }) {
                             <span>Filters</span>
 
                             {activeFilterCount > 0 && (
-                                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white">
+                                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#745363] text-[10px] font-bold text-white">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -214,7 +214,7 @@ export default function Dashboard({ auth, facilities }) {
                                 </div>
 
                                 <div className="flex flex-grow flex-col p-4">
-                                    <h3 className="mb-0.5 line-clamp-1 text-base font-bold text-gray-900 transition-colors group-hover:text-indigo-600">
+                                    <h3 className="mb-0.5 line-clamp-1 text-base font-bold text-gray-900 transition-colors group-hover:text-[#745363]">
                                         {facility.name}
                                     </h3>
 
@@ -237,7 +237,7 @@ export default function Dashboard({ auth, facilities }) {
                                             </span>
                                         </div>
 
-                                        <span className="shrink-0 font-semibold text-indigo-600 transition-transform group-hover:translate-x-0.5">
+                                        <span className="shrink-0 font-semibold text-[#745363] transition-transform group-hover:translate-x-0.5">
                                             Book →
                                         </span>
                                     </div>
@@ -278,7 +278,7 @@ export default function Dashboard({ auth, facilities }) {
                     >
                         <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-6 py-4">
                             <div className="flex items-center gap-2">
-                                <Filter className="h-4 w-4 text-indigo-600" />
+                                <Filter className="h-4 w-4 text-[#745363]" />
                                 <h3
                                     id="facility-filter-title"
                                     className="font-bold text-gray-900"
@@ -314,8 +314,8 @@ export default function Dashboard({ auth, facilities }) {
                                             onClick={() => setPendingType(type)}
                                             className={`flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm font-medium transition-all ${
                                                 pendingType === type
-                                                    ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
-                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-indigo-300 hover:text-indigo-600'
+                                                    ? 'border-[#745363] bg-[#745363] text-white shadow-sm'
+                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-[#C5A9BA] hover:text-[#745363]'
                                             }`}
                                         >
                                             {pendingType === type && (
@@ -343,14 +343,14 @@ export default function Dashboard({ auth, facilities }) {
                                             onClick={() => setPendingSort(value)}
                                             className={`flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition-all ${
                                                 pendingSort === value
-                                                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
+                                                    ? 'border-[#C5A9BA] bg-[#F8F4F7] text-[#5D4050]'
                                                     : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                                             }`}
                                         >
                                             <span>{label}</span>
 
                                             {pendingSort === value && (
-                                                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-indigo-600">
+                                                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#745363]">
                                                     <Check className="h-2.5 w-2.5 text-white" />
                                                 </span>
                                             )}
@@ -372,7 +372,7 @@ export default function Dashboard({ auth, facilities }) {
                             <button
                                 type="button"
                                 onClick={applyFilters}
-                                className="flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+                                className="flex-1 rounded-xl bg-[#745363] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#5D4050]"
                             >
                                 Apply Filters
                             </button>
