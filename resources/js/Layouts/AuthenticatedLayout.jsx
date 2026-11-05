@@ -35,8 +35,8 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
                 collapsed ? 'justify-center px-0 py-3' : 'px-4 py-3'
             } ${
                 active
-                    ? 'bg-[#846A75] text-white shadow-inner'
-                    : 'text-purple-100 hover:bg-[#543F48] hover:text-white'
+                    ? 'bg-[#745363] text-white shadow-inner'
+                    : 'text-slate-200 hover:bg-[#30313D] hover:text-white'
             }`}
         >
             <Icon
@@ -301,14 +301,14 @@ export default function AuthenticatedLayout({ header, action, children }) {
         <div className="flex min-h-screen bg-[#FDF6F0]">
             {/* Sidebar Navigation */}
             <aside
-                className={`fixed z-20 flex h-full flex-col justify-between bg-[#6A535C] text-white shadow-xl transition-all duration-300 ${
+                className={`fixed z-20 flex h-full flex-col justify-between bg-[#20212B] text-white shadow-xl transition-all duration-300 ${
                     collapsed ? 'w-16' : 'w-64'
                 }`}
             >
                 <div>
                     {/* App title and sidebar collapse button */}
                     <div
-                        className={`flex items-center border-b border-[#543F48] transition-all duration-300 ${
+                        className={`flex items-center border-b border-[#30313D] transition-all duration-300 ${
                             collapsed
                                 ? 'flex-col justify-center gap-3 px-2 py-4'
                                 : 'justify-between p-5'
@@ -318,7 +318,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             <span className="mr-0.5 rounded border-2 border-white px-1.5 shadow-sm">
                                 R
                             </span>
-                            {!collapsed && <span>ReservedIT</span>}
+                            {!collapsed && <span>ReserveIT</span>}
                         </div>
 
                         <button
@@ -326,7 +326,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             onClick={() => setCollapsed((current) => !current)}
                             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                            className="rounded-lg p-1.5 text-purple-100 transition-colors hover:bg-[#543F48] hover:text-white"
+                            className="rounded-lg p-1.5 text-slate-200 transition-colors hover:bg-[#30313D] hover:text-white"
                         >
                             {collapsed ? (
                                 <PanelLeftOpen className="h-5 w-5 shrink-0" />
@@ -429,7 +429,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         {isSuperAdmin && (
                             <>
                                 {!collapsed && (
-                                    <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-purple-200/60">
+                                    <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                                         Admin
                                     </div>
                                 )}
@@ -484,15 +484,15 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 </div>
 
                 {/* Sidebar footer actions */}
-                <div className="border-t border-[#543F48] bg-[#5C4750] p-4">
+                <div className="border-t border-[#30313D] bg-[#282934] p-4">
                     {/* User profile badge */}
                     <div
-                        className={`mb-3 flex items-center rounded-xl border border-[#543F48]/40 bg-[#4E3A43]/50 p-2.5 ${
+                        className={`mb-3 flex items-center rounded-xl border border-[#30313D]/40 bg-[#343541]/50 p-2.5 ${
                             collapsed ? 'justify-center' : 'gap-3'
                         }`}
                         title={collapsed ? user?.name ?? 'User' : undefined}
                     >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-[#6A535C]">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-[#20212B]">
                             {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
                         </div>
 
@@ -511,7 +511,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     <Link
                         href={route('profile.edit')}
                         title={collapsed ? 'Settings' : undefined}
-                        className={`mb-1 flex w-full items-center rounded-xl text-sm font-medium text-purple-100 transition-colors hover:bg-[#4E3A43] hover:text-white ${
+                        className={`mb-1 flex w-full items-center rounded-xl text-sm font-medium text-slate-200 transition-colors hover:bg-[#343541] hover:text-white ${
                             collapsed
                                 ? 'justify-center px-0 py-2.5'
                                 : 'gap-3 px-4 py-2.5'
@@ -584,7 +584,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                                             <div className="flex items-center gap-2">
                                                 {unreadCount > 0 && (
-                                                    <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-[#6A535C]">
+                                                    <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-[#20212B]">
                                                         {unreadCount} New
                                                     </span>
                                                 )}
@@ -690,7 +690,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     >
                         <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">
+                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#20212B]">
                                     Notification
                                 </p>
                                 <h3 className="mt-1 text-xl font-semibold text-gray-900">
@@ -716,7 +716,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             <button
                                 type="button"
                                 onClick={() => setViewingNotification(null)}
-                                className="rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                                className="rounded-xl bg-[#20212B] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
                             >
                                 Close
                             </button>
@@ -735,7 +735,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     setHelpOpen(true);
                 }}
                 disabled={isLoggingOut}
-                className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#6A535C] text-xl font-semibold text-white shadow-lg transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
+                className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#20212B] text-xl font-semibold text-white shadow-lg transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
                 aria-label="Submit a ticket"
                 title="Submit a ticket"
             >
@@ -755,7 +755,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     <div className="w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl">
                         <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">
+                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#20212B]">
                                     Submit a Ticket
                                 </p>
                                 <h3 className="mt-1 text-xl font-semibold text-gray-900">
@@ -874,7 +874,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                         ticketDetailedInfo.trim().length === 0 ||
                                         ticketDetailedInfo.trim().length > TICKET_DESCRIPTION_MAX_LENGTH
                                     }
-                                    className="rounded-xl bg-[#6A535C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-xl bg-[#20212B] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isSubmittingTicket
                                         ? 'Submitting…'
