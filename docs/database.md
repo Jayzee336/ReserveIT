@@ -103,8 +103,8 @@ Bookings contain:
 - status: `pending`, `approved`, `declined`, or `cancelled`;
 - notes, attendee count, and manpower request;
 - consent-file metadata;
-- approval and rejection metadata;
-- check-in, check-out, and overtime timestamps.
+- approval attribution (`approved_by`, `approved_at`), decline/rejection metadata, and the user-supplied `cancellation_reason`;
+- check-in, check-out, overtime duration, fee/rate snapshots, and payment confirmation metadata.
 
 The model defines relationships to `Facility` and `User`, UUID behavior, mass-assignable fields, and the `forUser()` scope that limits facility-admin visibility.
 
@@ -157,6 +157,7 @@ The schema is built incrementally through [database/migrations](../database/migr
 - booking decline/rejection fields and normalized booking dates/statuses;
 - support-ticket fields;
 - system settings, check-in/out timestamps, overtime fields, and notifications;
+- cancellation-reason metadata for user-cancelled bookings;
 - Google account identity, auto-purge configuration, and QR-verification cleanup.
 
 Use `php artisan migrate:status` to inspect the applied migration set. Do not edit an already-applied migration in a shared environment; add a new migration for schema changes.
