@@ -11,8 +11,8 @@ stateDiagram-v2
     Pending --> Declined: Admin declines with reason
     Pending --> Cancelled: User cancels
     Approved --> Cancelled: User cancels
-    Approved --> CheckedIn: Staff checks in
-    CheckedIn --> CheckedOut: Staff checks out
+    Approved --> CheckedIn: Owner or authorized admin checks in
+    CheckedIn --> CheckedOut: Owner or authorized admin checks out
     Declined --> [*]
     Cancelled --> [*]
     CheckedOut --> [*]
@@ -37,7 +37,11 @@ The server currently enforces:
 
 - facility existence;
 - required date, start time, and end time;
+- operating hours from 08:00 AM through 10:00 PM;
+- 15-minute start/end increments;
 - end time later than start time;
+- maximum booking duration from system settings;
+- facility capacity and facility-specific TDEVS manpower availability;
 - maximum advance date using `max_advance_days`, defaulting to 30;
 - conflict checks against pending and approved bookings;
 - a cleanup buffer before and after neighboring bookings, defaulting to 30 minutes;
@@ -46,8 +50,8 @@ The server currently enforces:
 
 The React form additionally checks:
 
-- visible times between 08:00 AM and 10:00 PM;
-- facility capacity;
+- visible time-slot choices between 08:00 AM and 10:00 PM;
+
 - blackout dates passed to the component;
 - a three-day lead time for consent-required or weekend bookings;
 - optional TDEVS manpower.
@@ -89,7 +93,7 @@ Users can:
 
 A pending request temporarily holds its time slot while awaiting review; it is not a confirmed reservation. An approved booking is confirmed. When a user cancels, the reason is saved, assigned Facility Admins and active Super Admins receive a database notification, and the cancelled booking no longer blocks the slot.
 
-Cancellation changes the status to `cancelled`; it does not delete the record. Editing validates the date, time range, attendees, manpower flag, and notes, but it does not currently repeat every creation-time rule such as conflict checking and advance-window enforcement.
+Cancellation changes the status to `cancelled`; it does not delete the record. Editing is limited to pending bookings and revalidates the date/advance window, time span and operating hours, 15-minute intervals, facility capacity, manpower availability, consent requirements, and conflicts (under a facility/booking lock). The edit form does not upload a new consent document; if a selected date requires a document that is not already attached, the user must create a new booking with the document.
 
 ## Check-In, Check-Out, and Overtime
 
