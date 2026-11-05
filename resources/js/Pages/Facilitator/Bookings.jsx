@@ -39,6 +39,15 @@ function StatusBadge({ status }) {
     );
 }
 
+function formatTime(value) {
+    if (!value) return '—';
+    const [hourText, minuteText] = String(value).slice(0, 5).split(':');
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) return String(value);
+    return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
+}
+
 function formatTimestamp(value) {
     if (!value) return null;
 
@@ -188,7 +197,7 @@ function PendingBookingCard({
 
                     <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
-                        {booking.date ?? booking.booking_date} · {booking.start_time} - {booking.end_time}
+                        {booking.date ?? booking.booking_date} · {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
                     </p>
 
                     {booking.notes && (
@@ -282,9 +291,15 @@ function BookingDetailModal({
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="rounded-xl bg-stone-50 p-4">
                         <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            Status
+                            Booking status
                         </p>
                         <StatusBadge status={booking.status} />
+                        {String(booking.status).toLowerCase() === 'pending' && (
+                            <p className="mt-2 text-xs leading-5 text-amber-800">This request temporarily holds the time slot while awaiting approval. It is not yet a confirmed reservation.</p>
+                        )}
+                        {String(booking.status).toLowerCase() === 'approved' && (
+                            <p className="mt-2 text-xs leading-5 text-emerald-700">This reservation is approved and confirmed.</p>
+                        )}
                     </div>
 
                     <div className="rounded-xl bg-stone-50 p-4">
@@ -313,7 +328,7 @@ function BookingDetailModal({
                         </p>
                         <p className="mt-0.5 flex items-center gap-1.5 text-sm text-gray-600">
                             <Clock className="h-3.5 w-3.5 text-gray-400" />
-                            {booking.start_time} – {booking.end_time}
+                            {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
                         </p>
                     </div>
 
