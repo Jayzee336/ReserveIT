@@ -261,6 +261,12 @@ export default function AdminDashboard({
     }, [pendingBookings]);
 
     useEffect(() => {
+        setAnalyticsFrom(analyticsFilters.from ?? '');
+        setAnalyticsTo(analyticsFilters.to ?? '');
+        setAnalyticsFacility(analyticsFilters.facility_id ?? '');
+    }, [analyticsFilters.from, analyticsFilters.to, analyticsFilters.facility_id]);
+
+    useEffect(() => {
         const interval = setInterval(() => {
             router.reload({
                 only: ['pendingBookings'],
