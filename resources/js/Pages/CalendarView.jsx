@@ -114,7 +114,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                             <th className="w-64 border-b border-r p-3 text-left text-sm font-semibold text-slate-700">Facility</th>
                             {HOURS.map((hour) => (
                                 <th key={hour} className="w-24 border-b border-r p-3 text-center text-xs font-medium text-slate-500">
-                                    {hour}
+                                    {formatTime(hour)}
                                 </th>
                             ))}
                         </tr>
@@ -132,7 +132,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                     cells.push(
                                         <td key={slot} colSpan={span} className="border-b border-r p-1.5 align-top">
                                             <button type="button" onClick={() => setDetails({ facility, bookings: cluster })} className={`min-h-[64px] w-full rounded-xl bg-gradient-to-r ${statusClass(cluster.some((booking) => booking.status === 'approved') ? 'approved' : 'pending')} px-3 py-2 text-left text-white shadow-sm transition hover:brightness-95`}>
-                                                <span className="block text-xs font-bold uppercase">{cluster.length > 1 ? `${cluster.length} conflicting bookings` : cluster[0].status}</span>
+                                                <span className="block text-xs font-bold uppercase">{cluster.length > 1 ? `${cluster.length} overlapping records` : statusLabel(cluster[0].status)}</span>
                                                 <span className="mt-1 block text-sm font-semibold">{cluster.length === 1 ? `${formatTime(cluster[0].start_time)}–${formatTime(cluster[0].end_time)}` : `${formatTime(slot)}–${formatMinutes(clusterEnd)}`}</span>
                                             </button>
                                         </td>
@@ -198,6 +198,14 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                 <article key={booking.id} className="rounded-xl border border-[var(--ri-border)] p-4">
                                     <p className="font-bold">{booking.user?.name ?? booking.guest_name ?? 'Guest'}</p>
                                     <p className="text-sm text-slate-600">{statusLabel(booking.status)} · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}</p>
+                                    {booking.approved_by && (
+                                        <p className="mt-1 text-xs text-emerald-700">
+                                            Approved by {booking.approved_by}{booking.approved_at ? ` · ${new Date(booking.approved_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
+                                        </p>
+                                    )}
+                                    {booking.status === 'pending' && (
+                                        <p className="mt-1 text-xs text-amber-700">This time slot is temporarily held and is not yet a confirmed reservation.</p>
+                                    )}
                                     {booking.approved_by && (
                                         <p className="mt-1 text-xs text-emerald-700">
                                             Approved by {booking.approved_by}{booking.approved_at ? ` · ${new Date(booking.approved_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
