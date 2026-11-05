@@ -382,4 +382,119 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
 
         $this->assertNull($booking->fresh()->checked_out_at);
     }
+
+    public function test_checkout_snapshots_overtime_rate_and_final_charge(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-20 10:30:00'));
+
+        try {
+            $admin = User::factory()->create([
+                'role' => 'facility_admin',
+                'is_active' => true,
+            ]);
+
+            $facility = $this->createFacility(
+                'checkout-rate-snapshot',
+                'Rate Snapshot Facility'
+            );
+            $facility->facilityAdmins()->attach($admin);
+
+            SystemSetting::current()->update([
+                'overtime_fee_per_hour' => 10.00,
+            ]);
+
+            $booking = $this->createBooking($facility, [
+                'date' => '2026-10-20',
+                'start_time' => '09:00:00',
+                'end_time' => '10:00:00',
+                'checked_in_at' => Carbon::parse('2026-10-20 09:00:00'),
+            ]);
+
+            $this->actingAs($admin)
+                ->post(route('bookings.check-out', $booking))
+                ->assertSessionHasNoErrors();
+
+            $finalized = $booking->fresh();
+            $this->assertSame(30, $finalized->overtime_minutes);
+            $this->assertEquals(5.00, (float) $finalized->overtime_fee_amount);
+            $this->assertEquals(10.00, (float) $finalized->overtime_fee_rate);
+            $this->assertSame('unpaid', $finalized->overtime_payment_status);
+
+            SystemSetting::current()->update([
+                'overtime_fee_per_hour' => 25.00,
+            ]);
+
+            $unchanged = $booking->fresh();
+            $this->assertEquals(5.00, (float) $unchanged->overtime_fee_amount);
+            $this->assertEquals(10.00, (float) $unchanged->overtime_fee_rate);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_assigned_facility_admin_can_record_overtime_payment_once(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+
+        $facility = $this->createFacility(
+            'overtime-payment-once',
+            'Overtime Payment Facility'
+        );
+        $facility->facilityAdmins()->attach($admin);
+
+        $booking = $this->createBooking($facility, [
+            'checked_in_at' => now()->subHour(),
+            'checked_out_at' => now(),
+            'overtime_minutes' => 45,
+            'overtime_fee_amount' => 12.50,
+            'overtime_fee_rate' => 10.00,
+            'overtime_payment_status' => 'unpaid',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('bookings.overtime-payment', $booking))
+            ->assertSessionHasNoErrors();
+
+        $paid = $booking->fresh();
+        $this->assertSame('paid', $paid->overtime_payment_status);
+        $this->assertNotNull($paid->overtime_paid_at);
+        $this->assertSame((string) $admin->id, (string) $paid->overtime_paid_by);
+
+        $this->actingAs($admin)
+            ->post(route('bookings.overtime-payment', $booking))
+            ->assertSessionHasErrors('payment');
+
+        $this->assertSame('paid', $booking->fresh()->overtime_payment_status);
+    }
+
+    public function test_facility_admin_cannot_record_payment_for_unassigned_facility(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+
+        $facility = $this->createFacility(
+            'overtime-payment-other',
+            'Unassigned Payment Facility'
+        );
+
+        $booking = $this->createBooking($facility, [
+            'checked_out_at' => now(),
+            'overtime_fee_amount' => 12.50,
+            'overtime_fee_rate' => 10.00,
+            'overtime_payment_status' => 'unpaid',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('bookings.overtime-payment', $booking))
+            ->assertForbidden();
+
+        $this->assertSame('unpaid', $booking->fresh()->overtime_payment_status);
+        $this->assertNull($booking->fresh()->overtime_paid_at);
+    }
+
 }
