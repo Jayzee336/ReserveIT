@@ -164,7 +164,7 @@ Important coverage areas to maintain:
 - settings persistence;
 - consent-file authorization and download behavior.
 
-The existing suite includes framework authentication/profile tests and facility-assignment coverage. It should be expanded before relying on the booking and operations workflows in production.
+The feature suite now also covers booking approval conflicts and cleanup buffers, check-in/check-out state transitions, cancellation after check-in, transactional user-management safeguards, and overtime billing snapshots/payment authorization. Run the complete suite locally before release; repository edits alone do not establish that these tests pass.
 
 ## Troubleshooting
 
@@ -188,16 +188,24 @@ Confirm the file exists on the local disk, the booking has consent metadata, the
 
 Check email verification, `is_active`, and `must_change_password`. Temporary-password accounts are intentionally redirected to the forced password-change page.
 
-## Known Implementation Risks
+## Verified Operational Notes and Remaining Risks
 
-1. **Settings contract mismatch:** the settings controller accepts fields such as cleanup buffer, advance days, duration, consent requirement, and auto-approval scope, but the inspected schema/model only fully define the older settings. Align migrations, `SystemSetting::$fillable`, casts, controller validation, and UI before relying on those values.
-2. **Auto-purge must be verified:** the schema contains `auto_purge_unapproved_days`, and a purge command exists in the current working tree, but deployment should verify command scheduling and behavior.
-3. **Server/client rule mismatch:** capacity, three-day consent lead time, opening hours, blackout dates, and manpower behavior are not all enforced in the booking controller. Important rules need server-side enforcement.
-4. **Activity-log mismatch:** the model/table use `performed_by`, while approval code has attempted `user_id` and `notes`. Normalize the contract and add tests.
-5. **Unreachable middleware registration:** `bootstrap/app.php` contains a second application return after the active application configuration. Middleware registration after the first return is unreachable; consolidate it before deployment.
-6. **Duplicate approval endpoints:** direct booking approval and facilitator approval have different authorization/notification behavior. Consolidate or explicitly secure both paths.
-7. **Missing route risk:** some older frontend links, such as the receipt action, may reference routes absent from `routes/web.php`. Verify routes before enabling those controls.
-8. **Soft-delete test expectations:** user deletion is implemented with `SoftDeletes`; tests and operational expectations should assert the intended deletion semantics.
+The following items were checked against the current routes, controllers, models, and migrations in the feature branch:
+
+- **System settings contract:** the model, fillable fields, casts, settings controller validation, and migrations include the current approval scope, overtime rate, cleanup buffer, advance window, maximum duration, consent requirement, and auto-purge retention fields.
+- **Auto-purge scheduling:** `bookings:purge-unapproved` is scheduled daily. It is disabled when retention is set to zero and supports `--dry-run`; preview eligible records before enabling it on a production database.
+- **Activity-log contract:** the activity log migration and model use `performed_by`; the optional `reason` field is added by a later migration.
+- **Approval routes:** admin and facilitator approval/decline routes use the policy-protected facilitator controller. The old direct BookingController approval routes are not registered.
+- **Receipt route:** the named `bookings.receipt` route is registered and points to the BookingController receipt action.
+- **Middleware bootstrap:** the active application configuration registers the web middleware and role aliases in one reachable application builder chain.
+
+Remaining checks before production:
+
+1. **Booking policy completeness:** verify that every advertised rule—especially capacity, opening hours, blackout dates, manpower, and consent-letter requirements—is enforced server-side, not only in the interface.
+2. **Legacy date compatibility:** bookings have both `date` and `booking_date` fields. Continue testing records created before and after the schema change, especially records where one of those fields is null.
+3. **Scheduled command operations:** confirm the host actually runs Laravel's scheduler (for example, via the platform's cron/task scheduler). A schedule definition alone does not execute the commands.
+4. **External integrations:** verify OAuth credentials, mail delivery, queue workers, and file storage in the target environment; local configuration does not prove those services are operational.
+5. **Release verification:** run migrations and the complete PHP test suite, build frontend assets, and complete the manual UAT checklist against a backed-up test database before deployment.
 
 ## Extension Checklist
 
