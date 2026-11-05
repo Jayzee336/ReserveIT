@@ -19,7 +19,7 @@ const statusLabel = (status) => status === 'pending'
 const toMinutes = (time) => { const [hour, minute] = String(time).split(':').map(Number); return hour * 60 + (minute || 0); };
 const statusClass = (status) => status === 'approved' ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500';
 
-export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate }) {
+export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate, availabilityOnly = false }) {
     const [details, setDetails] = useState(null);
     const [create, setCreate] = useState(null);
     const detailsDialogRef = useRef(null);
@@ -88,8 +88,9 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
     return (
         <>
             <div className="mb-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-600">
-                <span><strong className="text-amber-700">Pending approval:</strong> slot temporarily held while awaiting review</span>
-                <span><strong className="text-emerald-700">Approved:</strong> confirmed reservation</span>
+                <span><strong className="text-amber-700">Pending:</strong> temporarily held slot</span>
+                <span><strong className="text-emerald-700">Booked:</strong> confirmed reservation</span>
+                {availabilityOnly && <span className="font-medium text-indigo-700">All-facilities view is read-only; switch to My Assigned Facilities to manage or create bookings.</span>}
                 <span className="text-slate-500">Schedule shown from 8:00 AM to 10:00 PM</span>
             </div>
             <div className="w-full overflow-x-auto whitespace-nowrap rounded-2xl border border-[var(--ri-border)]">
@@ -157,15 +158,25 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                 } else {
                                     cells.push(
                                         <td key={slot} className="border-b border-r p-1.5">
-                                            <button
-                                                type="button"
-                                                aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
-                                                title={`Book ${facility.name} at ${formatTime(slot)}`}
-                                                onClick={() => setCreate({ facility, startTime: slot })}
-                                                className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-[var(--ri-border-strong)] text-lg text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]"
-                                            >
-                                                +
-                                            </button>
+                                            {availabilityOnly ? (
+                                                <div
+                                                    aria-label={`Available at ${formatTime(slot)}; booking is managed from assigned facilities view`}
+                                                    title="Available · switch to My Assigned Facilities to create a booking"
+                                                    className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 text-xs font-medium text-emerald-700"
+                                                >
+                                                    Available
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
+                                                    title={`Book ${facility.name} at ${formatTime(slot)}`}
+                                                    onClick={() => setCreate({ facility, startTime: slot })}
+                                                    className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-[var(--ri-border-strong)] text-lg text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]"
+                                                >
+                                                    +
+                                                </button>
+                                            )}
                                         </td>
                                     );
                                 }
@@ -211,6 +222,20 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                         <div className="mt-5 space-y-3">
                             {details.bookings.map((booking) => (
                                 <article key={booking.id} className="rounded-xl border border-[var(--ri-border)] p-4">
+                                    {availabilityOnly ? (
+                                        <>
+                                            <p className="font-bold text-slate-900">
+                                                {booking.status === 'pending' ? 'Temporarily held' : 'Unavailable · confirmed booking'}
+                                            </p>
+                                            <p className="mt-1 text-sm text-slate-600">
+                                                {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
+                                            </p>
+                                            <p className="mt-2 text-xs text-slate-500">
+                                                Reservation details are hidden in All Facilities view. Switch to My Assigned Facilities to manage reservations for facilities assigned to you.
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
                                     <p className="font-bold">{booking.user?.name ?? booking.guest_name ?? 'Guest'}</p>
                                     <p className="text-sm text-slate-600">{statusLabel(booking.status)} · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}</p>
                                     {booking.approved_by && (
@@ -223,6 +248,8 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                     )}
                                     <p className="mt-1 text-sm">Contact: {booking.user?.email ?? booking.guest_email ?? 'Not supplied'}</p>
                                     <p className="mt-1 text-sm">Purpose: {booking.notes || 'Not supplied'}</p>
+                                        </>
+                                    )}
                                 </article>
                             ))}
                         </div>
