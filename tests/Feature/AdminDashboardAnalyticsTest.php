@@ -126,6 +126,7 @@ class AdminDashboardAnalyticsTest extends TestCase
                 ->where('operationalAnalytics.overtimeFees', 7.5)
                 ->where('operationalAnalytics.averageApprovalHours', 0.5)
             );
+    }
 
     public function test_analytics_filters_by_date_range_and_assigned_facility(): void
     {
@@ -163,6 +164,5 @@ class AdminDashboardAnalyticsTest extends TestCase
                 ->where('mostUsedFacilities.0.name', 'Analytics Filter A')
                 ->where('usageOverTime.0.bookings', 1)
             );
-    }
     }
 }
