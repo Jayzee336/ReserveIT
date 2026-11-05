@@ -52,14 +52,16 @@ const TIME_SLOTS = generateTimeSlots();
 const STATUS_PRIORITY = {
     pending: 1,
     approved: 2,
-    declined: 3,
-    cancelled: 4,
+    completed: 3,
+    declined: 4,
+    cancelled: 5,
 };
 
 const STATUS_OPTIONS = [
     { key: 'all', label: 'All Bookings' },
     { key: 'pending', label: 'Pending' },
     { key: 'approved', label: 'Approved' },
+    { key: 'completed', label: 'Completed' },
     { key: 'declined', label: 'Declined' },
     { key: 'cancelled', label: 'Cancelled' },
 ];
@@ -230,10 +232,28 @@ const formatTime = (time) => {
 
 const getStatus = (status) => String(status || 'unknown').toLowerCase().trim();
 
+const isBookingCompleted = (booking) => {
+    if (getStatus(booking?.status) !== 'approved') return false;
+
+    const bookingDate = String(booking?.date || booking?.booking_date || '').slice(0, 10);
+    const endTime = String(booking?.end_time || '').slice(0, 5);
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(bookingDate) || !/^\\d{2}:\\d{2}$/.test(endTime)) {
+        return false;
+    }
+
+    const endDateTime = new Date(`${bookingDate}T${endTime}:00`);
+    return !Number.isNaN(endDateTime.getTime()) && endDateTime.getTime() <= Date.now();
+};
+
+const getBookingDisplayStatus = (booking) =>
+    isBookingCompleted(booking) ? 'completed' : getStatus(booking?.status);
+
 const getStatusBadgeClass = (status) => {
     switch (getStatus(status)) {
         case 'approved':
             return 'bg-green-50 text-green-700 border-green-200';
+        case 'completed':
+            return 'bg-blue-50 text-blue-700 border-blue-200';
         case 'pending':
             return 'bg-amber-50 text-amber-700 border-amber-200';
         case 'declined':
@@ -251,6 +271,8 @@ const StatusIcon = ({ status }) => {
     switch (getStatus(status)) {
         case 'approved':
             return <CheckCircle className={`${iconClass} text-green-600`} />;
+        case 'completed':
+            return <CheckCircle className={`${iconClass} text-blue-600`} />;
         case 'pending':
             return <Clock3 className={`${iconClass} text-amber-600`} />;
         case 'declined':
@@ -417,8 +439,8 @@ export default function MyBookings({
     });
 
     const userBookings = [...bookings].sort((a, b) => {
-        const priorityA = STATUS_PRIORITY[getStatus(a.status)] ?? 99;
-        const priorityB = STATUS_PRIORITY[getStatus(b.status)] ?? 99;
+        const priorityA = STATUS_PRIORITY[getBookingDisplayStatus(a)] ?? 99;
+        const priorityB = STATUS_PRIORITY[getBookingDisplayStatus(b)] ?? 99;
 
         if (priorityA !== priorityB) return priorityA - priorityB;
 
@@ -438,19 +460,20 @@ export default function MyBookings({
         all: userBookings.length,
         pending: 0,
         approved: 0,
+        completed: 0,
         declined: 0,
         cancelled: 0,
     };
 
     userBookings.forEach((booking) => {
-        const status = getStatus(booking.status);
+        const status = getBookingDisplayStatus(booking);
         if (Object.prototype.hasOwnProperty.call(bookingCounts, status)) {
             bookingCounts[status] += 1;
         }
     });
 
     const filteredBookings = userBookings.filter((booking) => {
-        const status = getStatus(booking.status);
+        const status = getBookingDisplayStatus(booking);
         const facility = booking.facility || {};
         const bookingDate = String(booking.date || '').slice(0, 10);
         const query = searchQuery.trim().toLowerCase();
@@ -749,10 +772,11 @@ export default function MyBookings({
                         </span>
                     </div>
 
-                    <section aria-label="Booking status summary" className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+                    <section aria-label="Booking status summary" className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
                         <SummaryCard label="All Bookings" count={bookingCounts.all} active={statusFilter === 'all'} colorClass="border-indigo-200 bg-indigo-50 text-indigo-800" onClick={() => setStatusFilter('all')} />
                         <SummaryCard label="Pending" count={bookingCounts.pending} active={statusFilter === 'pending'} colorClass="border-amber-200 bg-amber-50 text-amber-800" onClick={() => setStatusFilter('pending')} />
                         <SummaryCard label="Approved" count={bookingCounts.approved} active={statusFilter === 'approved'} colorClass="border-green-200 bg-green-50 text-green-800" onClick={() => setStatusFilter('approved')} />
+                        <SummaryCard label="Completed" count={bookingCounts.completed} active={statusFilter === 'completed'} colorClass="border-blue-200 bg-blue-50 text-blue-800" onClick={() => setStatusFilter('completed')} />
                         <SummaryCard label="Declined" count={bookingCounts.declined} active={statusFilter === 'declined'} colorClass="border-red-200 bg-red-50 text-red-800" onClick={() => setStatusFilter('declined')} />
                         <SummaryCard label="Cancelled" count={bookingCounts.cancelled} active={statusFilter === 'cancelled'} colorClass="border-gray-200 bg-gray-50 text-gray-700" onClick={() => setStatusFilter('cancelled')} />
                     </section>
