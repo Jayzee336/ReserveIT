@@ -19,7 +19,7 @@ function Stat({ label, value }) {
     return (
         <div className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">{label}</p>
-            <p className="mt-2 text-3xl font-bold text-[#6A535C]">{value}</p>
+            <p className="mt-2 text-3xl font-bold text-[#20212B]">{value}</p>
         </div>
     );
 }
@@ -59,7 +59,7 @@ function BookingDetailModal({ booking, onClose }) {
             >
                 <div className="mb-6 flex items-start justify-between gap-3">
                     <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">
+                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#20212B]">
                             Booking Details
                         </p>
                         <h3 className="mt-1 text-xl font-semibold text-gray-900">
@@ -147,7 +147,7 @@ function BookingDetailModal({ booking, onClose }) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                        className="rounded-xl bg-[#20212B] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
                     >
                         Close
                     </button>
@@ -355,7 +355,7 @@ export default function AdminDashboard({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                     <Link
                         href={route('admin.active-bookings.page')}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#533e45] focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#20212B] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#533e45] focus:outline-none focus:ring-2 focus:ring-[#745363] focus:ring-offset-2"
                     >
                         <Activity className="h-4 w-4" />
                         Active Bookings Monitor
@@ -385,7 +385,7 @@ export default function AdminDashboard({
                                         {item.bookings}
                                     </span>
                                     <div
-                                        className="w-full rounded-t-lg bg-[#846A75]"
+                                        className="w-full rounded-t-lg bg-[#745363]"
                                         style={{
                                             height: `${(item.bookings / maximum) * 100}%`,
                                             minHeight: item.bookings ? '8px' : '2px',
@@ -412,7 +412,7 @@ export default function AdminDashboard({
                                         className="flex justify-between rounded-xl bg-stone-50 px-3 py-2 text-sm"
                                     >
                                         <span>{facility.name}</span>
-                                        <span className="font-semibold text-[#6A535C]">
+                                        <span className="font-semibold text-[#20212B]">
                                             {facility.bookings} bookings
                                         </span>
                                     </div>
@@ -439,7 +439,7 @@ export default function AdminDashboard({
 
                         <Link
                             href={route('facilitator.bookings.index')}
-                            className="shrink-0 text-sm font-semibold text-[#6A535C] hover:underline"
+                            className="shrink-0 text-sm font-semibold text-[#20212B] hover:underline"
                         >
                             Open approvals
                         </Link>
@@ -451,7 +451,7 @@ export default function AdminDashboard({
                             <input
                                 type="text"
                                 placeholder="Search by facility, user or guest name..."
-                                className="w-full rounded-lg border border-stone-200 bg-white py-2 pl-9 pr-4 text-sm text-stone-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20"
+                                className="w-full rounded-lg border border-stone-200 bg-white py-2 pl-9 pr-4 text-sm text-stone-700 focus:border-[#745363] focus:outline-none focus:ring-2 focus:ring-[#745363]/20"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -464,7 +464,7 @@ export default function AdminDashboard({
                             </div>
 
                             <select
-                                className="w-full rounded-lg border border-stone-200 bg-white py-1.5 pl-3 pr-8 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#846A75] sm:w-auto"
+                                className="w-full rounded-lg border border-stone-200 bg-white py-1.5 pl-3 pr-8 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#745363] sm:w-auto"
                                 value={sortOrder}
                                 onChange={(e) => setSortOrder(e.target.value)}
                             >
@@ -473,7 +473,7 @@ export default function AdminDashboard({
                             </select>
 
                             <select
-                                className="w-full rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#846A75] sm:w-auto"
+                                className="w-full rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#745363] sm:w-auto"
                                 value={timeFilter}
                                 onChange={(e) => setTimeFilter(e.target.value)}
                             >
@@ -552,7 +552,7 @@ export default function AdminDashboard({
                         </h2>
                         <Link
                             href={route('admin.concerns.index')}
-                            className="text-sm font-semibold text-[#6A535C]"
+                            className="text-sm font-semibold text-[#20212B]"
                         >
                             View all
                         </Link>
