@@ -12,29 +12,29 @@
 
 :root {
     color-scheme: light;
-    --ri-ink: #20212b;
-    --ri-ink-soft: #454653;
-    --ri-muted: #777783;
-    --ri-brand: #745363;
-    --ri-brand-strong: #5d4050;
-    --ri-brand-soft: #f1eaf0;
+    --ri-ink: #111827;
+    --ri-ink-soft: #374151;
+    --ri-muted: #6b7280;
+    --ri-brand: #4f46e5;
+    --ri-brand-strong: #4338ca;
+    --ri-brand-soft: #eef2ff;
     --ri-accent: #b88d59;
     --ri-accent-soft: #f6efe5;
-    --ri-canvas: #f7f6f4;
+    --ri-canvas: #fdf6f0;
     --ri-surface: #ffffff;
-    --ri-surface-subtle: #fbfaf9;
-    --ri-border: #e9e5e2;
-    --ri-border-strong: #d9d1cc;
+    --ri-surface-subtle: #fff8f2;
+    --ri-border: #e5e7eb;
+    --ri-border-strong: #d1d5db;
     --ri-success: #287a59;
     --ri-warning: #9b681d;
     --ri-danger: #b44949;
-    --ri-shadow-sm: 0 2px 8px rgb(32 33 43 / 5%);
-    --ri-shadow-md: 0 12px 32px rgb(32 33 43 / 8%);
-    --ri-shadow-lg: 0 24px 64px rgb(32 33 43 / 12%);
+    --ri-shadow-sm: 0 2px 8px rgb(17 24 39 / 5%);
+    --ri-shadow-md: 0 12px 32px rgb(17 24 39 / 8%);
+    --ri-shadow-lg: 0 24px 64px rgb(17 24 39 / 12%);
     --ri-radius-sm: 0.625rem;
     --ri-radius-md: 1rem;
     --ri-radius-lg: 1.5rem;
-    --ri-focus-ring: 0 0 0 3px rgb(116 83 99 / 22%);
+    --ri-focus-ring: 0 0 0 3px rgb(79 70 229 / 22%);
 }
 
 @layer base {
@@ -53,7 +53,7 @@
     }
 
     ::selection {
-        background: rgb(116 83 99 / 18%);
+        background: rgb(79 70 229 / 18%);
         color: var(--ri-ink);
     }
 
@@ -174,7 +174,7 @@
     .ri-btn-primary:hover:not(:disabled) {
         border-color: var(--ri-brand-strong);
         background: var(--ri-brand-strong);
-        box-shadow: 0 6px 16px rgb(93 64 80 / 20%);
+        box-shadow: 0 6px 16px rgb(67 56 202 / 20%);
         transform: translateY(-1px);
     }
 
@@ -200,7 +200,7 @@
 
 /* Keep long admin tables usable without adding a visible scrollbar. */
 * {
-    scrollbar-color: #c9bec5 transparent;
+    scrollbar-color: #d1d5db transparent;
     scrollbar-width: thin;
 }
 
@@ -212,11 +212,11 @@
 *::-webkit-scrollbar-thumb {
     border: 2px solid transparent;
     border-radius: 999px;
-    background: #c9bec5;
+    background: #d1d5db;
     background-clip: padding-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background: #a99aa3;
+    background: #9ca3af;
     background-clip: padding-box;
 }
