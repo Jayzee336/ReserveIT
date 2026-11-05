@@ -373,6 +373,17 @@ function BookingDetailModal({
                         </div>
                     )}
 
+                    {booking.cancellation_reason && (
+                        <div className="rounded-xl bg-amber-50 p-4 sm:col-span-2">
+                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-amber-700">
+                                Cancellation Reason
+                            </p>
+                            <p className="whitespace-pre-wrap text-sm text-amber-900">
+                                {booking.cancellation_reason}
+                            </p>
+                        </div>
+                    )}
+
                     {booking.decline_reason && (
                         <div className="rounded-xl bg-red-50 p-4 sm:col-span-2">
                             <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-red-600">
