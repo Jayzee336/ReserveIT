@@ -848,8 +848,8 @@ export default function MyBookings({
                                 const facility = booking.facility;
                                 if (!facility) return null;
 
-                                const status = getStatus(booking.status);
-                                const isCancelable = ['pending', 'approved'].includes(status);
+                                const status = getBookingDisplayStatus(booking);
+                                const isCancelable = status === 'pending' || status === 'approved';
 
                                 return (
                                     <article key={booking.id} className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
