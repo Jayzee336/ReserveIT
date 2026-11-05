@@ -90,7 +90,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
             <div className="mb-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-600">
                 <span><strong className="text-amber-700">Pending:</strong> temporarily held slot</span>
                 <span><strong className="text-emerald-700">Booked:</strong> confirmed reservation</span>
-                {availabilityOnly && <span className="font-medium text-indigo-700">All-facilities view is read-only; switch to My Assigned Facilities to manage or create bookings.</span>}
+                {availabilityOnly && <span className="font-medium text-indigo-700">You can check availability and request bookings for any facility here. Existing reservation details remain private.</span>}
                 <span className="text-slate-500">Schedule shown from 8:00 AM to 10:00 PM</span>
             </div>
             <div className="w-full overflow-x-auto whitespace-nowrap rounded-2xl border border-[var(--ri-border)]">
@@ -159,13 +159,15 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                     cells.push(
                                         <td key={slot} className="border-b border-r p-1.5">
                                             {availabilityOnly ? (
-                                                <div
-                                                    aria-label={`Available at ${formatTime(slot)}; booking is managed from assigned facilities view`}
-                                                    title="Available · switch to My Assigned Facilities to create a booking"
-                                                    className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 text-xs font-medium text-emerald-700"
+                                                <button
+                                                    type="button"
+                                                    aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
+                                                    title={`Available · request ${facility.name} at ${formatTime(slot)}`}
+                                                    onClick={() => setCreate({ facility, startTime: slot })}
+                                                    className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-emerald-200 bg-emerald-50/40 text-xs font-semibold text-emerald-700 transition hover:border-emerald-400 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                                 >
-                                                    Available
-                                                </div>
+                                                    + Book
+                                                </button>
                                             ) : (
                                                 <button
                                                     type="button"
