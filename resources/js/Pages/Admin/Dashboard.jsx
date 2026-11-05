@@ -211,6 +211,7 @@ export default function AdminDashboard({
     stats = {},
     usageOverTime = [],
     mostUsedFacilities = [],
+    operationalAnalytics = {},
     pendingBookings = [],
     recentConcerns = [],
 }) {
@@ -377,6 +378,33 @@ export default function AdminDashboard({
                     <Stat label="Pending approval" value={stats.pendingApprovals ?? 0} />
                     <Stat label="Pending concerns" value={stats.pendingConcerns ?? 0} />
                 </div>
+
+                <section className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <h2 className="font-semibold text-slate-900">Client &amp; operations analytics</h2>
+                            <p className="mt-0.5 text-xs text-slate-500">{operationalAnalytics.periodLabel ?? 'Last 6 months'} · scoped to facilities you manage</p>
+                        </div>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        {[
+                            ['Unique clients', operationalAnalytics.uniqueClients ?? 0, 'Distinct account holders and guest contacts'],
+                            ['Returning clients', operationalAnalytics.returningClients ?? 0, 'Clients with more than one booking'],
+                            ['Approval rate', `${operationalAnalytics.approvalRate ?? 0}%`, 'Approved out of approved/declined decisions'],
+                            ['Cancellation rate', `${operationalAnalytics.cancellationRate ?? 0}%`, 'Cancelled out of all requests'],
+                            ['Average approval time', operationalAnalytics.averageApprovalHours === null || operationalAnalytics.averageApprovalHours === undefined ? 'No data' : `${operationalAnalytics.averageApprovalHours} hrs`, 'From request creation to approval/decision'],
+                            ['Peak booking hour', operationalAnalytics.peakHour ?? 'No data', `${operationalAnalytics.peakHourBookings ?? 0} bookings started in this hour`],
+                            ['Overtime bookings', operationalAnalytics.overtimeBookings ?? 0, `${operationalAnalytics.overtimeMinutes ?? 0} total overtime minutes`],
+                            ['Overtime fees', `₱${Number(operationalAnalytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Recorded overtime charges in the period'],
+                        ].map(([label, value, hint]) => (
+                            <div key={label} className="rounded-xl border border-stone-100 bg-stone-50 p-4">
+                                <p className="text-xs font-medium text-slate-500">{label}</p>
+                                <p className="mt-2 text-xl font-bold text-[#6A535C]">{value}</p>
+                                <p className="mt-1 text-[11px] leading-4 text-slate-500">{hint}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
 
                 <div className="grid gap-6 xl:grid-cols-2">
                     <section className="rounded-2xl bg-white p-5 shadow-sm">
