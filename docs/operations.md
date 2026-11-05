@@ -149,11 +149,25 @@ Notifications displayed by the current UI are database-backed and refreshed thro
 
 ## Testing
 
-Run the application test suite with:
+Run the full application test suite with:
 
 ```powershell
 php artisan test
 ```
+
+For defense demonstrations, run the focused suites individually so their output is easy to show:
+
+```powershell
+php artisan test --filter=BookingApprovalWorkflowTest
+php artisan test --filter=BookingUpdateTest
+php artisan test --filter=BookingCheckInOutTest
+php artisan test --filter=BookingSchedulePrivacyTest
+php artisan test --filter=AdminDashboardAnalyticsTest
+php artisan test
+npm.cmd run build
+```
+
+Capture the terminal output for each focused suite and the final full-suite run. Pair it with browser screenshots of the corresponding workflow. Do not mark a manual UAT case as Passed until it has actually been run with a test account.
 
 Important coverage areas to maintain:
 
