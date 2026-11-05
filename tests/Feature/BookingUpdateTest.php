@@ -200,6 +200,69 @@ class BookingUpdateTest extends TestCase
         Notification::assertNotSentTo($unassignedAdmin, BookingOperationsNotification::class);
     }
 
+    public function test_booking_time_must_stay_within_eight_am_to_ten_pm(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $booking = $this->createBooking($user, $facility, 'pending');
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}", [
+                'date' => now()->addDays(2)->toDateString(),
+                'start_time' => '21:00',
+                'end_time' => '22:15',
+                'attendees' => 10,
+                'notes' => 'Outside closing time',
+                'needs_manpower' => false,
+            ])
+            ->assertSessionHasErrors('end_time');
+
+        $this->assertSame('09:00', substr($booking->fresh()->start_time, 0, 5));
+        $this->assertSame('10:00', substr($booking->fresh()->end_time, 0, 5));
+    }
+
+    public function test_booking_time_must_use_fifteen_minute_intervals(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $booking = $this->createBooking($user, $facility, 'pending');
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}", [
+                'date' => now()->addDays(2)->toDateString(),
+                'start_time' => '08:10',
+                'end_time' => '09:00',
+                'attendees' => 10,
+                'notes' => 'Invalid interval',
+                'needs_manpower' => false,
+            ])
+            ->assertSessionHasErrors('start_time');
+
+        $this->assertSame('09:00', substr($booking->fresh()->start_time, 0, 5));
+    }
+
+    public function test_booking_can_end_at_ten_pm(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $booking = $this->createBooking($user, $facility, 'pending');
+        $newDate = now()->addDays(2)->toDateString();
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}", [
+                'date' => $newDate,
+                'start_time' => '21:00',
+                'end_time' => '22:00',
+                'attendees' => 10,
+                'notes' => 'Evening booking',
+                'needs_manpower' => false,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('21:00', substr($booking->fresh()->start_time, 0, 5));
+        $this->assertSame('22:00', substr($booking->fresh()->end_time, 0, 5));
+    }
+
     private function createFacility(): Facility
     {
         return Facility::create([
