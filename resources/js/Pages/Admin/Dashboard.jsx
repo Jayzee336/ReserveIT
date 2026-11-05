@@ -15,6 +15,15 @@ import {
     Activity,
 } from 'lucide-react';
 
+function formatTime(value) {
+    if (!value) return '—';
+    const [hourText, minuteText] = String(value).slice(0, 5).split(':');
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) return String(value);
+    return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
+}
+
 function Stat({ label, value }) {
     return (
         <div className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
@@ -105,7 +114,7 @@ function BookingDetailModal({ booking, onClose }) {
                         </p>
                         <p className="mt-0.5 flex items-center gap-1.5 text-sm text-gray-600">
                             <Clock className="h-3.5 w-3.5 text-gray-400" />
-                            {booking.start_time} – {booking.end_time}
+                            {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
                         </p>
                     </div>
 
@@ -498,7 +507,7 @@ export default function AdminDashboard({
                                         </p>
                                         <p className="text-xs text-slate-500">
                                             {booking.user?.name ?? booking.guest_name ?? 'Guest'} ·{' '}
-                                            {booking.booking_date ?? booking.date} · {booking.start_time}–{booking.end_time}
+                                            {booking.booking_date ?? booking.date} · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}
                                         </p>
                                     </div>
 
