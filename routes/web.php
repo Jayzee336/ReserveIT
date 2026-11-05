@@ -227,8 +227,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ],
             'upcomingBooking' => Booking::with('facility')
                 ->where('user_id', Auth::id())
-                ->where('date', '>=', now()->toDateString())
-                ->orderBy('date', 'asc')
+                ->whereIn('status', ['pending', 'approved'])
+                ->where(function ($query) {
+                    $today = now()->toDateString();
+
+                    $query->whereDate('booking_date', '>=', $today)
+                        ->orWhereDate('date', '>=', $today);
+                })
+                ->orderByRaw('COALESCE(booking_date, date) asc')
+                ->orderBy('start_time', 'asc')
                 ->first(),
             'recentActivities' => [
                 [
