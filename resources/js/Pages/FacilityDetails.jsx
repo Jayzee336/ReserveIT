@@ -77,7 +77,7 @@ export default function FacilityDetails({
                         onClick={() => {
                             window.location.href = '/facilities';
                         }}
-                        className="group mb-4 inline-flex items-center text-sm font-medium text-gray-500 transition-colors hover:text-[text-indigo-600]"
+                        className="group mb-4 inline-flex items-center text-sm font-medium text-gray-500 transition-colors hover:text-indigo-600"
                     >
                         <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
                         Back to facilities
@@ -103,7 +103,7 @@ export default function FacilityDetails({
 
                             <div className="absolute bottom-0 left-0 right-0 p-5 text-white sm:p-7 lg:p-8">
                                 <div className="mb-3 flex flex-wrap items-center gap-2">
-                                    <span className="inline-flex items-center rounded-full bg-[bg-indigo-500]/90 px-3 py-1 text-xs font-bold uppercase tracking-wide backdrop-blur-sm">
+                                    <span className="inline-flex items-center rounded-full bg-indigo-500/90 px-3 py-1 text-xs font-bold uppercase tracking-wide backdrop-blur-sm">
                                         {facility.type}
                                     </span>
 
@@ -142,7 +142,7 @@ export default function FacilityDetails({
                                     <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <div className="flex min-w-0 items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3.5">
                                             <div className="shrink-0 rounded-lg bg-white p-2 shadow-sm">
-                                                <MapPin className="h-4 w-4 text-[text-indigo-600]" />
+                                                <MapPin className="h-4 w-4 text-indigo-600" />
                                             </div>
 
                                             <div className="min-w-0">
@@ -158,7 +158,7 @@ export default function FacilityDetails({
 
                                         <div className="flex min-w-0 items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3.5">
                                             <div className="shrink-0 rounded-lg bg-white p-2 shadow-sm">
-                                                <Users className="h-4 w-4 text-[text-indigo-600]" />
+                                                <Users className="h-4 w-4 text-indigo-600" />
                                             </div>
 
                                             <div className="min-w-0">
@@ -205,7 +205,7 @@ export default function FacilityDetails({
                             {facility.facility_admins?.length > 0 && (
                                 <div className="mt-6 border-t border-gray-100 pt-5">
                                     <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-700">
-                                        <BadgeCheck className="h-4 w-4 text-[text-indigo-500]" />
+                                        <BadgeCheck className="h-4 w-4 text-indigo-500" />
                                         Facility Administrators
                                     </h3>
 
@@ -213,20 +213,20 @@ export default function FacilityDetails({
                                         {facility.facility_admins.map((admin) => (
                                             <div
                                                 key={admin.id}
-                                                className="flex min-w-0 items-start gap-3 rounded-xl border border-[border-indigo-100] bg-[bg-indigo-50]/60 px-3.5 py-3"
+                                                className="flex min-w-0 items-start gap-3 rounded-xl border border-indigo-100 bg-indigo-50/60 px-3.5 py-3"
                                             >
-                                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[bg-indigo-100] text-sm font-bold text-[text-indigo-700]">
+                                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700">
                                                     {(admin.name || 'A')
                                                         .charAt(0)
                                                         .toUpperCase()}
                                                 </div>
 
                                                 <div className="min-w-0">
-                                                    <p className="break-words text-xs font-bold leading-5 text-[text-indigo-950]">
+                                                    <p className="break-words text-xs font-bold leading-5 text-indigo-950">
                                                         {admin.name}
                                                     </p>
 
-                                                    <p className="break-all text-xs text-[text-indigo-500]">
+                                                    <p className="break-all text-xs text-indigo-500">
                                                         {admin.email}
                                                     </p>
                                                 </div>
@@ -255,9 +255,9 @@ export default function FacilityDetails({
                             aria-labelledby="booking-modal-title"
                             className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"
                         >
-                            <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[from-indigo-50] to-white px-4 py-4 sm:px-6">
+                            <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white px-4 py-4 sm:px-6">
                                 <div className="min-w-0">
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-[text-indigo-500]">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500">
                                         New reservation
                                     </p>
 
