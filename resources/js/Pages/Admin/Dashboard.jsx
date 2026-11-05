@@ -261,6 +261,7 @@ export default function AdminDashboard({
     analyticsFacilities = [],
     analyticsDetails = {},
     statusBreakdown = [],
+    periodComparison = {},
     pendingBookings = [],
     recentConcerns = [],
 }) {
@@ -279,6 +280,7 @@ export default function AdminDashboard({
     const [analyticsFrom, setAnalyticsFrom] = useState(analyticsFilters.from ?? '');
     const [analyticsTo, setAnalyticsTo] = useState(analyticsFilters.to ?? '');
     const [analyticsFacility, setAnalyticsFacility] = useState(analyticsFilters.facility_id ?? '');
+    const [analyticsGroupBy, setAnalyticsGroupBy] = useState(analyticsFilters.group_by ?? 'month');
 
     const applyAnalyticsFilters = (event) => {
         event.preventDefault();
@@ -286,6 +288,7 @@ export default function AdminDashboard({
             from: analyticsFrom,
             to: analyticsTo,
             facility_id: analyticsFacility || undefined,
+            group_by: analyticsGroupBy,
         }, {
             preserveScroll: true,
             preserveState: true,
@@ -297,6 +300,7 @@ export default function AdminDashboard({
         setAnalyticsFrom('');
         setAnalyticsTo('');
         setAnalyticsFacility('');
+        setAnalyticsGroupBy('month');
         router.get(route('admin.dashboard'), {}, {
             preserveScroll: true,
             preserveState: true,
@@ -312,7 +316,8 @@ export default function AdminDashboard({
         setAnalyticsFrom(analyticsFilters.from ?? '');
         setAnalyticsTo(analyticsFilters.to ?? '');
         setAnalyticsFacility(analyticsFilters.facility_id ?? '');
-    }, [analyticsFilters.from, analyticsFilters.to, analyticsFilters.facility_id]);
+        setAnalyticsGroupBy(analyticsFilters.group_by ?? 'month');
+    }, [analyticsFilters.from, analyticsFilters.to, analyticsFilters.facility_id, analyticsFilters.group_by]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -469,7 +474,7 @@ export default function AdminDashboard({
                             <p className="mt-0.5 text-xs text-slate-500">{operationalAnalytics.periodLabel ?? 'Last 6 months'} · scoped to facilities you manage</p>
                         </div>
                     </div>
-                    <form onSubmit={applyAnalyticsFilters} className="mb-4 grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.3fr_auto_auto] lg:items-end">
+                    <form onSubmit={applyAnalyticsFilters} className="mb-4 grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.2fr_0.8fr_auto_auto] lg:items-end">
                         <label className="block text-xs font-semibold text-slate-600">
                             From
                             <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20" />
@@ -483,6 +488,14 @@ export default function AdminDashboard({
                             <select value={analyticsFacility} onChange={(event) => setAnalyticsFacility(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20">
                                 <option value="">All managed facilities</option>
                                 {analyticsFacilities.map((facility) => <option key={facility.id} value={facility.id}>{facility.name}</option>)}
+                            </select>
+                        </label>
+                        <label className="block text-xs font-semibold text-slate-600">
+                            Trend interval
+                            <select value={analyticsGroupBy} onChange={(event) => setAnalyticsGroupBy(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20">
+                                <option value="day">Daily</option>
+                                <option value="week">Weekly</option>
+                                <option value="month">Monthly</option>
                             </select>
                         </label>
                         <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]">
@@ -517,11 +530,20 @@ export default function AdminDashboard({
 
                 <div className="grid gap-6 xl:grid-cols-2">
                     <section className="rounded-2xl bg-white p-5 shadow-sm">
-                        <h2 className="font-semibold text-slate-900">
-                            Booking volume over time
-                        </h2>
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                                <h2 className="font-semibold text-slate-900">Booking volume over time</h2>
+                                <p className="mt-1 text-xs text-slate-500 capitalize">{analyticsFilters.group_by ?? 'month'} view</p>
+                            </div>
+                            <div className="rounded-lg bg-stone-50 px-3 py-2 text-right">
+                                <p className="text-xs text-slate-500">Compared with previous {Math.max(1, Math.round((new Date(analyticsFilters.to).getTime() - new Date(analyticsFilters.from).getTime()) / 86400000) + 1)}-day period</p>
+                                <p className="text-sm font-bold text-[#6A535C]">{periodComparison.change == null ? 'No previous-period data' : `${periodComparison.change > 0 ? '+' : ''}${periodComparison.change}%`}</p>
+                                <p className="text-[10px] text-slate-500">{periodComparison.currentBookings ?? 0} current · {periodComparison.previousBookings ?? 0} previous</p>
+                            </div>
+                        </div>
 
-                        <div className="mt-6 flex h-44 items-end gap-3">
+                        <div className="mt-6 overflow-x-auto">
+                        <div className="flex h-44 min-w-[560px] items-end gap-3">
                             {usageOverTime.map((item) => (
                                 <div
                                     key={item.label}
@@ -542,6 +564,7 @@ export default function AdminDashboard({
                                     </span>
                                 </div>
                             ))}
+                        </div>
                         </div>
                     </section>
 
