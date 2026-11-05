@@ -45,6 +45,32 @@ class BookingApprovalWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_facility_admin_can_filter_cancelled_booking_history_and_view_reason(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+
+        $facility = $this->createFacility('approval-cancelled-history', 'Cancelled History Facility');
+        $facility->facilityAdmins()->attach($admin);
+
+        $booking = $this->createBooking($facility, 'cancelled');
+        $booking->update([
+            'cancellation_reason' => 'The event was rescheduled.',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('facilitator.bookings.index', ['status' => 'cancelled']))
+            ->assertOk()
+            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+                ->component('Facilitator/Bookings')
+                ->has('reviewedBookings', 1)
+                ->where('reviewedBookings.0.status', 'cancelled')
+                ->where('reviewedBookings.0.cancellation_reason', 'The event was rescheduled.')
+            );
+    }
+
     public function test_assigned_facility_admin_can_approve_pending_booking(): void
     {
         $admin = User::factory()->create([
