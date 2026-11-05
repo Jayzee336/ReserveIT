@@ -25,102 +25,112 @@ class BookingCheckInOutController extends Controller
      */
     public function checkIn(Request $request, Booking $booking)
     {
-        Gate::authorize('view', $booking);
-
-        abort_if(
-            $booking->status !== 'approved',
-            403,
-            'Only approved bookings can be checked in.'
-        );
-
-        abort_if(
-            $booking->checked_in_at !== null,
-            422,
-            'This booking is already checked in.'
-        );
-
-        abort_if(
-            $booking->checked_out_at !== null,
-            422,
-            'This booking has already been checked out.'
-        );
-
         $user = $request->user();
-        $now = Carbon::now();
-        $today = $now->copy()->startOfDay();
 
-        $bookingDate = Carbon::parse($booking->date)->startOfDay();
+        // Lock and re-check the booking so simultaneous requests cannot
+        // create duplicate check-ins or activity records.
+        $result = DB::transaction(function () use ($booking, $request, $user) {
+            $lockedBooking = Booking::query()
+                ->whereKey($booking->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $isPastBooking = $bookingDate->lt($today);
-        $isFutureBooking = $bookingDate->gt($today);
-        $isSuperAdmin = $user->role === 'super_admin';
-        $overrideReason = null;
+            Gate::authorize('view', $lockedBooking);
 
-        // Future bookings cannot be checked in early.
-        if ($isFutureBooking) {
-            throw ValidationException::withMessages([
-                'check_in' => 'Check-in is only allowed on the scheduled booking date.',
-            ]);
-        }
-
-        // Past bookings require a Super Admin override.
-        if ($isPastBooking && ! $isSuperAdmin) {
-            throw ValidationException::withMessages([
-                'check_in' => 'Check-in is not allowed for past-dated bookings. Contact a Super Admin for assistance.',
-            ]);
-        }
-
-        // Require an auditable reason for past-date overrides.
-        if ($isPastBooking && $isSuperAdmin) {
-            $validated = $request->validate([
-                'reason' => ['required', 'string', 'min:10', 'max:1000'],
-            ]);
-
-            $overrideReason = trim($validated['reason']);
-
-            if (mb_strlen($overrideReason) < 10) {
-                throw ValidationException::withMessages([
-                    'reason' => 'Please provide a meaningful reason of at least 10 characters.',
-                ]);
-            }
-        }
-
-        // Apply the 15-minute early check-in window on today's bookings.
-        if (! $isPastBooking) {
-            $scheduledStart = Carbon::parse(
-                $bookingDate->format('Y-m-d') . ' ' . $booking->start_time
+            abort_if(
+                $lockedBooking->status !== 'approved',
+                403,
+                'Only approved bookings can be checked in.'
             );
 
-            $earliestCheckIn = $scheduledStart->copy()->subMinutes(15);
+            abort_if(
+                $lockedBooking->checked_in_at !== null,
+                422,
+                'This booking is already checked in.'
+            );
 
-            if ($now->lt($earliestCheckIn)) {
+            abort_if(
+                $lockedBooking->checked_out_at !== null,
+                422,
+                'This booking has already been checked out.'
+            );
+
+            $now = Carbon::now();
+            $today = $now->copy()->startOfDay();
+            $bookingDate = Carbon::parse($lockedBooking->date)->startOfDay();
+
+            $isPastBooking = $bookingDate->lt($today);
+            $isFutureBooking = $bookingDate->gt($today);
+            $isSuperAdmin = $user->role === 'super_admin';
+            $overrideReason = null;
+
+            if ($isFutureBooking) {
                 throw ValidationException::withMessages([
-                    'check_in' => 'Check-in is allowed starting 15 minutes before the scheduled start time.',
+                    'check_in' => 'Check-in is only allowed on the scheduled booking date.',
                 ]);
             }
-        }
 
-        $booking->update([
-            'checked_in_at' => $now,
-        ]);
+            if ($isPastBooking && ! $isSuperAdmin) {
+                throw ValidationException::withMessages([
+                    'check_in' => 'Check-in is not allowed for past-dated bookings. Contact a Super Admin for assistance.',
+                ]);
+            }
 
-        ActivityLog::create([
-            'booking_id' => $booking->id,
-            'action' => $isPastBooking
-                ? 'check_in_past_booking_override'
-                : 'check_in',
-            'performed_by' => (string) $user->id,
-            'reason' => $overrideReason,
-        ]);
+            if ($isPastBooking && $isSuperAdmin) {
+                $validated = $request->validate([
+                    'reason' => ['required', 'string', 'min:10', 'max:1000'],
+                ]);
 
-        $message = $isPastBooking
-            ? "Booking #{$booking->id} checked in using a Super Admin exception."
-            : "Booking #{$booking->id} marked as checked in.";
+                $overrideReason = trim($validated['reason']);
+
+                if (mb_strlen($overrideReason) < 10) {
+                    throw ValidationException::withMessages([
+                        'reason' => 'Please provide a meaningful reason of at least 10 characters.',
+                    ]);
+                }
+            }
+
+            if (! $isPastBooking) {
+                $scheduledStart = Carbon::parse(
+                    $bookingDate->format('Y-m-d') . ' ' . $lockedBooking->start_time
+                );
+
+                $earliestCheckIn = $scheduledStart->copy()->subMinutes(15);
+
+                if ($now->lt($earliestCheckIn)) {
+                    throw ValidationException::withMessages([
+                        'check_in' => 'Check-in is allowed starting 15 minutes before the scheduled start time.',
+                    ]);
+                }
+            }
+
+            $lockedBooking->update([
+                'checked_in_at' => $now,
+            ]);
+
+            ActivityLog::create([
+                'booking_id' => $lockedBooking->id,
+                'action' => $isPastBooking
+                    ? 'check_in_past_booking_override'
+                    : 'check_in',
+                'performed_by' => (string) $user->id,
+                'reason' => $overrideReason,
+            ]);
+
+            return [
+                'booking_id' => $lockedBooking->id,
+                'is_past_booking' => $isPastBooking,
+            ];
+        });
+
+        $message = $result['is_past_booking']
+            ? "Booking #{$result['booking_id']} checked in using a Super Admin exception."
+            : "Booking #{$result['booking_id']} marked as checked in.";
 
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => $message,
-                'booking_id' => $booking->id,
+                'booking_id' => $result['booking_id'],
             ]);
         }
 
