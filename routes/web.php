@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Validation\Rule;
 
 // 1. Welcome Page
 Route::get('/', function () {
