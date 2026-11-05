@@ -15,6 +15,22 @@ use Illuminate\Validation\ValidationException;
 class BookingCheckInOutController extends Controller
 {
     /**
+     * Booking owners may check in/out their own reservations. Facility Admins
+     * and Super Admins continue to rely on the existing facility-scoped policy.
+     */
+    private function authorizeCheckInOut(Request $request, Booking $booking): void
+    {
+        $user = $request->user();
+
+        $isOwner = $user->role === 'user'
+            && (string) $booking->user_id === (string) $user->getKey();
+
+        if (! $isOwner) {
+            Gate::authorize('view', $booking);
+        }
+    }
+
+    /**
      * Check in an approved booking.
      *
      * Policy:
@@ -35,7 +51,7 @@ class BookingCheckInOutController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            Gate::authorize('view', $lockedBooking);
+            $this->authorizeCheckInOut($request, $lockedBooking);
 
             abort_if(
                 $lockedBooking->status !== 'approved',
@@ -149,7 +165,7 @@ class BookingCheckInOutController extends Controller
      */
     public function checkOut(Request $request, Booking $booking)
     {
-        Gate::authorize('view', $booking);
+        $this->authorizeCheckInOut($request, $booking);
 
         $user = $request->user();
 
@@ -159,7 +175,7 @@ class BookingCheckInOutController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            Gate::authorize('view', $lockedBooking);
+            $this->authorizeCheckInOut($request, $lockedBooking);
 
             if ($lockedBooking->status !== 'approved') {
                 throw ValidationException::withMessages([
@@ -306,7 +322,7 @@ class BookingCheckInOutController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            Gate::authorize('view', $lockedBooking);
+            $this->authorizeCheckInOut($request, $lockedBooking);
 
             if ($lockedBooking->checked_out_at === null) {
                 throw ValidationException::withMessages([
