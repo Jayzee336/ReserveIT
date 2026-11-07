@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { usePage } from '@inertiajs/react';
 import { X as XIcon } from 'lucide-react';
 import BookingModal from '@/Components/BookingModal';
 
-const HOURS = Array.from({ length: 14 }, (_, index) => `${String(index + 8).padStart(2, '0')}:00`);
+
 const formatTime = (value) => {
     if (!value) return '—';
     const [hourText, minuteText] = String(value).slice(0, 5).split(':');
@@ -20,6 +21,15 @@ const toMinutes = (time) => { const [hour, minute] = String(time).split(':').map
 const statusClass = (status) => status === 'approved' ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500';
 
 export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate, availabilityOnly = false }) {
+    const { systemSettings = {} } = usePage().props;
+    const openingTime = String(systemSettings.opening_time ?? '08:00').slice(0, 5);
+    const closingTime = String(systemSettings.closing_time ?? '00:00').slice(0, 5);
+    const openingHour = Math.floor(Number(openingTime.split(':')[0]));
+    const closingMinutes = closingTime === '00:00' ? 1440 : toMinutes(closingTime);
+    const HOURS = [];
+    for (let minutes = openingHour * 60; minutes < closingMinutes; minutes += 60) {
+        HOURS.push(`${String(Math.floor(minutes / 60)).padStart(2, '0')}:00`);
+    }
     const [details, setDetails] = useState(null);
     const [create, setCreate] = useState(null);
     const detailsDialogRef = useRef(null);
@@ -91,7 +101,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                 <span><strong className="text-amber-700">Pending:</strong> temporarily held slot</span>
                 <span><strong className="text-emerald-700">Booked:</strong> confirmed reservation</span>
                 {availabilityOnly && <span className="font-medium text-indigo-700">You can check availability and request bookings for any facility here. Existing reservation details remain private.</span>}
-                <span className="text-slate-500">Schedule shown from 8:00 AM to 10:00 PM</span>
+                <span className="text-slate-500">Schedule shown from {formatTime(openingTime)} to {closingTime === '00:00' ? '12:00 AM (midnight)' : formatTime(closingTime)}</span>
             </div>
             <div className="w-full overflow-x-auto whitespace-nowrap rounded-2xl border border-[var(--ri-border)]">
                 <table className="min-w-[1580px] w-full table-fixed border-collapse">
