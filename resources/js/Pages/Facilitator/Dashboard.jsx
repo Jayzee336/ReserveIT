@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import DashboardDrilldownModal from '@/Components/DashboardDrilldownModal';
 import {
     Activity,
     CheckCircle2,
@@ -27,13 +28,10 @@ function formatTime(value) {
     return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
 }
 
-function Stat({ label, value }) {
-    return (
-        <div className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">{label}</p>
-            <p className="mt-2 text-3xl font-bold text-[#6A535C]">{value}</p>
-        </div>
-    );
+function Stat({ label, value, onClick }) {
+    const content = <><p className="text-sm text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold text-[#6A535C]">{value}</p>{onClick && <span className="mt-2 block text-[10px] font-bold uppercase tracking-wide text-[#846A75]">View details ↗</span>}</>;
+    const classes = "min-w-0 rounded-2xl border border-stone-100 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2";
+    return onClick ? <button type="button" onClick={onClick} className={`w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
 }
 
 function StatusBadge({ status }) {
@@ -232,6 +230,8 @@ export default function FacilitatorDashboard({
     analyticsFilters = {},
     usageOverTime = [],
     statusBreakdown = [],
+    statusDetails = {},
+    analyticsDetails = {},
     mostUsedFacilities = [],
 }) {
     const { auth } = usePage().props;
@@ -245,6 +245,9 @@ export default function FacilitatorDashboard({
     const [declineModalOpen, setDeclineModalOpen] = useState(false);
     const [declineReason, setDeclineReason] = useState('');
     const [declineBookingId, setDeclineBookingId] = useState(null);
+    const [selectedAnalyticsDetail, setSelectedAnalyticsDetail] = useState(null);
+    const [selectedTrendLabel, setSelectedTrendLabel] = useState(null);
+    const selectedTrend = usageOverTime.find((item) => item.label === selectedTrendLabel);
 
     const pendingApprovals = stats?.pendingApprovals ?? 0;
     const todayBookings = stats?.todayBookings ?? 0;
@@ -440,14 +443,14 @@ export default function FacilitatorDashboard({
                         <button type="button" onClick={() => { setAnalyticsFrom(''); setAnalyticsTo(''); setAnalyticsGroupBy('month'); router.get(route('facilitator.dashboard'), { facility_id: selectedFacilityId || undefined }, { preserveState: true, preserveScroll: true, replace: true }); }} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-stone-100">Reset</button>
                     </form>
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <Stat label="Total bookings" value={analytics.totalBookings ?? 0}/>
-                        <Stat label="Unique clients" value={analytics.uniqueClients ?? 0}/>
-                        <Stat label="Returning clients" value={analytics.returningClients ?? 0}/>
-                        <Stat label="Approval rate" value={`${analytics.approvalRate ?? 0}%`}/>
-                        <Stat label="Cancellation rate" value={`${analytics.cancellationRate ?? 0}%`}/>
-                        <Stat label="Average approval time" value={analytics.averageApprovalHours != null ? `${analytics.averageApprovalHours} hrs` : '—'}/>
-                        <Stat label="Peak booking hour" value={analytics.peakHour ?? '—'}/>
-                        <Stat label="Overtime bookings" value={analytics.overtimeBookings ?? 0}/>
+                        <Stat label="Total bookings" value={analytics.totalBookings ?? 0} onClick={() => setSelectedAnalyticsDetail({title:'Total bookings',description:'All bookings in the selected date range and assigned facility scope.',items:analyticsDetails.totalBookings ?? [],mode:'bookings'})}/>
+                        <Stat label="Unique clients" value={analytics.uniqueClients ?? 0} onClick={() => setSelectedAnalyticsDetail({title:'Unique clients',description:'Clients with at least one booking in the selected period.',items:analyticsDetails.uniqueClients ?? [],mode:'clients'})}/>
+                        <Stat label="Returning clients" value={analytics.returningClients ?? 0} onClick={() => setSelectedAnalyticsDetail({title:'Returning clients',description:'Clients with more than one booking in the selected period.',items:analyticsDetails.returningClients ?? [],mode:'clients'})}/>
+                        <Stat label="Approval rate" value={`${analytics.approvalRate ?? 0}%`} onClick={() => setSelectedAnalyticsDetail({title:'Approval rate details',description:'Bookings included in approved-versus-declined decisions.',items:analyticsDetails.approvalRate ?? [],mode:'bookings'})}/>
+                        <Stat label="Cancellation rate" value={`${analytics.cancellationRate ?? 0}%`} onClick={() => setSelectedAnalyticsDetail({title:'Cancellation details',description:'Cancelled bookings in the selected period.',items:analyticsDetails.cancellationRate ?? [],mode:'bookings'})}/>
+                        <Stat label="Average approval time" value={analytics.averageApprovalHours != null ? `${analytics.averageApprovalHours} hrs` : '—'} onClick={() => setSelectedAnalyticsDetail({title:'Approval time details',description:'Approved bookings with recorded approval timestamps.',items:analyticsDetails.approvalTime ?? [],mode:'bookings'})}/>
+                        <Stat label="Peak booking hour" value={analytics.peakHour ?? '—'} onClick={() => setSelectedAnalyticsDetail({title:'Peak-hour bookings',description:'Bookings that started during the busiest hour.',items:analyticsDetails.peakHour ?? [],mode:'bookings'})}/>
+                        <Stat label="Overtime bookings" value={analytics.overtimeBookings ?? 0} onClick={() => setSelectedAnalyticsDetail({title:'Overtime bookings',description:'Reservations with recorded overtime minutes and charges.',items:analyticsDetails.overtimeBookings ?? [],mode:'bookings'})}/>
                     </div>
                     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.9fr)]">
                         <div className="rounded-xl border border-[var(--ri-border)] p-4">
