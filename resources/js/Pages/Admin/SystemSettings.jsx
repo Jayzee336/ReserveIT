@@ -68,12 +68,14 @@ export default function SystemSettings({ settings }) {
 
     const [saving, setSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
+    const [saveMessageType, setSaveMessageType] = useState('');
 
     const saveSettings = (updatedPayload = {}) => {
         if (saving) return;
 
         setSaving(true);
         setSaveMessage('');
+        setSaveMessageType('');
 
         const payload = {
             auto_approve_scope: approvalScope,
@@ -92,16 +94,21 @@ export default function SystemSettings({ settings }) {
 
         router.patch(route('admin.settings.update'), payload, {
             preserveScroll: true,
-            onSuccess: () => setSaveMessage('Settings saved successfully.'),
+            onSuccess: () => {
+                setSaveMessageType('success');
+                setSaveMessage('Settings saved successfully.');
+            },
             onError: (errors) => {
                 const timeError = errors.opening_time || errors.closing_time;
                 if (timeError) {
                     // Restore the last server-saved values when the operating-hours pair is invalid.
                     setOpeningTime(settings.opening_time?.slice(0, 5) ?? '08:00');
                     setClosingTime(settings.closing_time?.slice(0, 5) ?? '00:00');
+                    setSaveMessageType('error');
                     setSaveMessage(timeError);
                     return;
                 }
+                setSaveMessageType('error');
                 setSaveMessage('Could not save settings. Please check the values and try again.');
             },
             onFinish: () => setSaving(false),
@@ -175,12 +182,12 @@ export default function SystemSettings({ settings }) {
                     <div
                         role="status"
                         className={`flex items-start gap-2 rounded-xl border px-4 py-3 text-sm ${
-                            saveMessage.startsWith('Could not')
+                            saveMessageType === 'error'
                                 ? 'border-red-200 bg-red-50 text-red-700'
                                 : 'border-emerald-200 bg-emerald-50 text-emerald-800'
                         }`}
                     >
-                        {saveMessage.startsWith('Could not') ? (
+                        {saveMessageType === 'error' ? (
                             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                         ) : (
                             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
