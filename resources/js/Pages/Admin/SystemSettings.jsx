@@ -61,6 +61,10 @@ export default function SystemSettings({ settings }) {
     const [autoPurgeDays, setAutoPurgeDays] = useState(
         Number(settings.auto_purge_unapproved_days ?? 0)
     );
+    const [openingTime, setOpeningTime] = useState(settings.opening_time?.slice(0, 5) ?? '08:00');
+    const [closingTime, setClosingTime] = useState(settings.closing_time?.slice(0, 5) ?? '00:00');
+    const [earlyCheckIn, setEarlyCheckIn] = useState(settings.early_check_in_minutes ?? 15);
+    const [overtimeGrace, setOvertimeGrace] = useState(settings.overtime_grace_minutes ?? 0);
 
     const [saving, setSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
@@ -79,6 +83,10 @@ export default function SystemSettings({ settings }) {
             max_booking_duration: maxBookingDuration,
             require_consent_letter: requireConsent,
             auto_purge_unapproved_days: autoPurgeDays,
+            opening_time: openingTime,
+            closing_time: closingTime,
+            early_check_in_minutes: earlyCheckIn,
+            overtime_grace_minutes: overtimeGrace,
             ...updatedPayload,
         };
 
@@ -318,6 +326,45 @@ export default function SystemSettings({ settings }) {
                         </div>
                     </SectionCard>
 
+
+                    <SectionCard
+                        icon={Clock3}
+                        title="Operating Hours & Check-in Policies"
+                        description="Configure the school's daily booking window and attendance timing rules."
+                    >
+                        <div className="grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label className={labelClass} htmlFor="opening-time">Opening Time</label>
+                                <input id="opening-time" type="time" value={openingTime} disabled={saving}
+                                    onChange={(e) => setOpeningTime(e.target.value)}
+                                    onBlur={() => saveSettings({ opening_time: openingTime })}
+                                    className={inputClass} />
+                            </div>
+                            <div>
+                                <label className={labelClass} htmlFor="closing-time">Closing Time</label>
+                                <input id="closing-time" type="time" value={closingTime} disabled={saving}
+                                    onChange={(e) => setClosingTime(e.target.value)}
+                                    onBlur={() => saveSettings({ closing_time: closingTime })}
+                                    className={inputClass} />
+                                <p className="mt-1 text-xs text-slate-500">12:00 AM means the end of the booking day (midnight).</p>
+                            </div>
+                            <div>
+                                <label className={labelClass} htmlFor="early-check-in">Early Check-in Allowance (Minutes)</label>
+                                <input id="early-check-in" type="number" min="0" max="180" value={earlyCheckIn} disabled={saving}
+                                    onChange={(e) => setEarlyCheckIn(e.target.value)}
+                                    onBlur={() => saveSettings({ early_check_in_minutes: earlyCheckIn })}
+                                    className={inputClass} />
+                            </div>
+                            <div>
+                                <label className={labelClass} htmlFor="overtime-grace">Overtime Grace Period (Minutes)</label>
+                                <input id="overtime-grace" type="number" min="0" max="180" value={overtimeGrace} disabled={saving}
+                                    onChange={(e) => setOvertimeGrace(e.target.value)}
+                                    onBlur={() => saveSettings({ overtime_grace_minutes: overtimeGrace })}
+                                    className={inputClass} />
+                                <p className="mt-1 text-xs text-slate-500">Grace time is excluded before overtime fees begin.</p>
+                            </div>
+                        </div>
+                    </SectionCard>
                     <SectionCard
                         icon={Wallet}
                         title="Financial Policies"
