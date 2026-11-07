@@ -187,6 +187,13 @@ class FacilitatorDashboardController extends Controller
 
         $statusBreakdown = BookingDashboardAnalytics::statusBreakdown($analyticsBookings);
         $analyticsBookingRows = BookingDashboardAnalytics::bookingRows($analyticsBookings);
+        $statusDetails = collect(BookingDashboardAnalytics::STATUSES)->mapWithKeys(
+            fn (string $status) => [
+                $status => BookingDashboardAnalytics::bookingRows(
+                    BookingDashboardAnalytics::filterByStatus($analyticsBookings, $status)
+                ),
+            ]
+        );
 
         $clientDetails = $clientGroups->map(function ($clientBookings): array {
             $first = $clientBookings->first();
@@ -305,6 +312,7 @@ class FacilitatorDashboardController extends Controller
                 'overtimeFees' => round((float) $overtimeBookings->sum('overtime_fee_amount'), 2),
             ],
             'statusBreakdown' => $statusBreakdown,
+            'statusDetails' => $statusDetails,
             'analyticsDetails' => $analyticsDetails,
             'analyticsBookingRows' => $analyticsBookingRows,
             'usageOverTime' => $usageOverTime,
