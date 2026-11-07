@@ -31,8 +31,8 @@ function formatTime(value) {
 }
 
 function Stat({ label, value, onClick }) {
-    const content = <><p className="text-sm text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold text-[#6A535C]">{value}</p>{onClick && <span className="mt-2 block text-[10px] font-bold uppercase tracking-wide text-[#846A75]">View details ↗</span>}</>;
-    const classes = "min-w-0 rounded-2xl border border-stone-100 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2";
+    const content = <><p className="text-sm font-medium text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold tracking-tight text-[#6A535C]">{value}</p>{onClick && <span className="mt-3 block text-[10px] font-bold uppercase tracking-wide text-[#846A75]">View details ↗</span>}</>;
+    const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2";
     return onClick ? <button type="button" onClick={onClick} className={`w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
 }
 
@@ -391,22 +391,10 @@ export default function FacilitatorDashboard({
 
                 {/* Statistics */}
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <Stat
-                        label="Pending approvals"
-                        value={pendingApprovals}
-                    />
-                    <Stat
-                        label="Today's bookings"
-                        value={todayBookings}
-                    />
-                    <Stat
-                        label="Weekly utilization"
-                        value={`${weeklyUtilizationRate}%`}
-                    />
-                    <Stat
-                        label="Active occupancy"
-                        value={activeOccupancy}
-                    />
+                    <Stat label="Pending approvals" value={pendingApprovals} onClick={() => setSelectedAnalyticsDetail({ title: 'Pending approvals', description: 'Requests awaiting a decision for facilities assigned to you.', items: pendingBookings, mode: 'bookings' })} />
+                    <Stat label="Today's bookings" value={todayBookings} onClick={() => setSelectedAnalyticsDetail({ title: "Today's bookings", description: 'Ongoing, upcoming, and completed bookings scheduled for today.', items: [...(todaySchedule?.ongoing ?? []), ...(todaySchedule?.upcoming ?? []), ...(todaySchedule?.completed ?? [])], mode: 'bookings' })} />
+                    <Stat label="Weekly utilization" value={`${weeklyUtilizationRate}%`} onClick={() => setSelectedAnalyticsDetail({ title: 'Weekly utilization', description: 'Booking activity included in the current assigned-facility analytics view.', items: analyticsDetails.totalBookings ?? [], mode: 'bookings' })} />
+                    <Stat label="Active occupancy" value={activeOccupancy} onClick={() => setSelectedAnalyticsDetail({ title: 'Active occupancy', description: 'Currently ongoing bookings at facilities assigned to you.', items: todaySchedule?.ongoing ?? [], mode: 'bookings' })} />
                 </div>
 
                 {/* Assigned-facility analytics */}
@@ -522,7 +510,7 @@ export default function FacilitatorDashboard({
                 </section>
 
                 {/* Today's Schedule */}
-                <section className="rounded-2xl bg-white p-5 shadow-sm">
+                <section className="ri-panel p-5 sm:p-6">
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                         <h2 className="font-semibold text-slate-900">
                             Today's Operational Schedule
