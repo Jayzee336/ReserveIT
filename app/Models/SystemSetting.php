@@ -15,6 +15,10 @@ class SystemSetting extends Model
         'max_booking_duration',
         'require_consent_letter',
         'auto_purge_unapproved_days',
+        'opening_time',
+        'closing_time',
+        'early_check_in_minutes',
+        'overtime_grace_minutes',
     ];
 
     protected $casts = [
@@ -26,6 +30,10 @@ class SystemSetting extends Model
         'max_booking_duration' => 'integer',
         'require_consent_letter' => 'boolean',
         'auto_purge_unapproved_days' => 'integer',
+        'opening_time' => 'string',
+        'closing_time' => 'string',
+        'early_check_in_minutes' => 'integer',
+        'overtime_grace_minutes' => 'integer',
     ];
 
     public static function current(): self
@@ -39,6 +47,10 @@ class SystemSetting extends Model
             'max_booking_duration' => 4,
             'require_consent_letter' => false,
             'auto_purge_unapproved_days' => 0,
+            'opening_time' => '08:00',
+            'closing_time' => '00:00',
+            'early_check_in_minutes' => 15,
+            'overtime_grace_minutes' => 0,
         ]);
     }
 }
