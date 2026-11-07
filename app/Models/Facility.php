@@ -15,6 +15,7 @@ class Facility extends Model
         'requiresWeekendConsent' => 'boolean',
         'allowTdevsManpower' => 'boolean',
         'capacity' => 'integer',
+        'booking_lead_time_days' => 'integer',
     ];
 
     public function facilityAdmins()

@@ -33,6 +33,7 @@ const EMPTY_FORM = {
     location: '',
     requiresWeekendConsent: true,
     allowTdevsManpower: true,
+    booking_lead_time_days: 3,
     assigned_admin_ids: [],
 };
 
@@ -325,6 +326,7 @@ function FacilityFormModal({
             requiresWeekendConsent:
                 Boolean(facility.requiresWeekendConsent),
             allowTdevsManpower: Boolean(facility.allowTdevsManpower),
+            booking_lead_time_days: facility.booking_lead_time_days ?? 3,
             assigned_admin_ids:
                 facility.facility_admins?.map((admin) => admin.id) ?? [],
         };
@@ -418,6 +420,7 @@ function FacilityFormModal({
         payload.append('description', form.description.trim());
         payload.append('location', form.location.trim());
         payload.append('requirement', form.requirement);
+        payload.append('booking_lead_time_days', String(form.booking_lead_time_days ?? 3));
 
         // Always submit both booleans, including when unchecked.
         payload.append(
@@ -673,6 +676,25 @@ function FacilityFormModal({
                                 </option>
                             </select>
                             <FieldError message={errors.requirement} />
+                        </div>
+
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                                Minimum Booking Lead Time (Days)
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="30"
+                                step="1"
+                                value={form.booking_lead_time_days ?? 3}
+                                onChange={(e) => updateField('booking_lead_time_days', e.target.value)}
+                                className={inputClass('booking_lead_time_days')}
+                            />
+                            <FieldError message={errors.booking_lead_time_days} />
+                            <p className="mt-1 text-xs text-gray-500">
+                                Applied when a booking requires a consent letter. Set 0 to allow same-day requests. Default: 3 days.
+                            </p>
                         </div>
 
                         <div className="rounded-xl border border-gray-200 p-3 space-y-3">

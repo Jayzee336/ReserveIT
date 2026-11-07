@@ -452,6 +452,12 @@ export default function AdminDashboard({
                 {/* Dashboard quick actions */}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                     <Link
+                        href={route('schedule.index')}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                        Book a Facility
+                    </Link>
+                    <Link
                         href={route('admin.active-bookings.page')}
                         className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#533e45] focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2"
                     >

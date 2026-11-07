@@ -496,6 +496,7 @@ class FacilityManagementController extends Controller
             'requiresWeekendConsent' => ['required', 'boolean'],
 
             'allowTdevsManpower' => ['required', 'boolean'],
+            'booking_lead_time_days' => ['sometimes', 'required', 'integer', 'min:0', 'max:30'],
         ];
 
         if ($allowAdminAssignments) {

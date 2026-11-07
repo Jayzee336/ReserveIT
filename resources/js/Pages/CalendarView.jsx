@@ -107,18 +107,19 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                 {availabilityOnly && <span className="font-medium text-indigo-700">You can check availability and request bookings for any facility here. Existing reservation details remain private.</span>}
                 <span className="text-slate-500">Schedule shown from {formatTime(openingTime)} to {closingTime === '00:00' ? '12:00 AM (midnight)' : formatTime(closingTime)}</span>
             </div>
-            <div className="w-full overflow-hidden rounded-2xl border border-[var(--ri-border)]">
-                <table className="w-full table-fixed border-collapse">
+            <div className="w-full overflow-x-auto overflow-y-hidden rounded-2xl border border-[var(--ri-border)]">
+                <table className="min-w-[1850px] w-full table-fixed border-collapse">
                     <thead className="bg-[var(--ri-surface-subtle)]">
                         <tr>
-                            <th className="sticky left-0 z-20 w-[150px] border-b border-r bg-[#fbf5ef] px-2 py-2 text-left text-xs font-semibold text-slate-700">Facility</th>
+                            <th className="sticky left-0 z-20 w-[190px] min-w-[190px] border-b border-r bg-[#fbf5ef] px-2 py-2 text-left text-xs font-semibold text-slate-700">Facility</th>
                             {HOURS.map((hour) => (
-                                <th key={hour} title={formatTime(hour)} className="border-b border-r px-0.5 py-2 text-center text-[9px] font-semibold leading-tight text-slate-600">
+                                <th key={hour} title={formatTime(hour)} className="w-[72px] min-w-[72px] border-b border-r px-0.5 py-2 text-center text-[9px] font-semibold leading-tight text-slate-600">
                                     {formatTime(hour).replace(':00', '')}
                                 </th>
                             ))}
-                            <th title={`Closing boundary: ${closingBoundaryLabel}`} className="border-b border-l-2 border-l-indigo-200 bg-indigo-50/70 px-0.5 py-2 text-center text-[9px] font-bold leading-tight text-indigo-700">
-                                {closingBoundaryLabel.replace(':00', '')}
+                            <th title={`Closing boundary: ${closingBoundaryLabel} — end time only`} className="w-[82px] min-w-[82px] border-b border-l-2 border-l-indigo-200 bg-indigo-50/70 px-0.5 py-2 text-center text-[9px] font-bold leading-tight text-indigo-700">
+                                <span className="block">{closingBoundaryLabel.replace(':00', '')}</span>
+                                <span className="block text-[8px] font-medium text-indigo-500">End only</span>
                             </th>
                         </tr>
                     </thead>

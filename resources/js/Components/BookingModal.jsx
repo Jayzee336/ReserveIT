@@ -138,16 +138,12 @@ export default function BookingModal({
         requireConsentGlobally || facilityConsentRequired;
 
     const today = useMemo(() => getLocalDateString(new Date()), []);
-
-    const minDate = useMemo(
-        () => (isConsentRequired ? addDaysToLocalDate(3) : today),
-        [isConsentRequired, today]
-    );
-
+    const consentLeadTimeDays = Math.max(0, Number(facility?.booking_lead_time_days ?? 3));
     const earliestConsentDate = useMemo(
-        () => addDaysToLocalDate(3),
-        []
+        () => addDaysToLocalDate(consentLeadTimeDays),
+        [consentLeadTimeDays]
     );
+    const minDate = isConsentRequired ? earliestConsentDate : today;
 
     const isDateTooSoon =
         isConsentRequired &&
@@ -539,7 +535,7 @@ export default function BookingModal({
 
                     {isConsentRequired && (
                         <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-600">
-                            3-day lead time required
+                            {consentLeadTimeDays}-day lead time required
                         </span>
                     )}
                 </div>
@@ -588,7 +584,7 @@ export default function BookingModal({
                     <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5">
                         <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
                         <p className="text-xs text-red-600">
-                            Consent-required bookings need 3 days advance notice.
+                            This facility requires {consentLeadTimeDays} days advance notice for consent-required bookings.
                             Earliest: {earliestConsentDate}
                         </p>
                     </div>
@@ -681,8 +677,8 @@ export default function BookingModal({
                 </div>
 
                 <p className="text-xs text-gray-400">
-                    Time slots are available every 15 minutes, from 8:00 AM
-                    until the {CLOSING_TIME === '00:00' ? '12:00 AM (midnight)' : formatTime(CLOSING_TIME)} closing time.
+                    Time slots are available every 15 minutes, from {formatTime(OPENING_TIME)}
+                    until {CLOSING_TIME === '00:00' ? '12:00 AM (midnight)' : formatTime(CLOSING_TIME)}. The closing time is an end-time option, not a new start slot.
                 </p>
 
                 {/* Attendees */}
