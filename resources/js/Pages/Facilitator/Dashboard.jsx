@@ -371,19 +371,19 @@ export default function FacilitatorDashboard({
                         </div>
                         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
                             <Link
-                                href={route('admin.active-bookings.page')}
-                                className="inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                            >
-                                <Activity className="h-4 w-4" />
-                                Active Bookings Monitor
-                            </Link>
-                            <Link
                                 href={route('schedule.index')}
                                 className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#6A535C] hover:!border-white hover:!bg-[#FFF8F2]"
                             >
                                 <Plus className="h-4 w-4" />
                                 Book a Facility
                                 <ArrowRight className="h-4 w-4" />
+                            </Link>
+                            <Link
+                                href={route('admin.active-bookings.page')}
+                                className="inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                            >
+                                <Activity className="h-4 w-4" />
+                                Active Bookings Monitor
                             </Link>
                         </div>
                     </div>
