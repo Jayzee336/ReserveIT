@@ -220,12 +220,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // General User Dashboard — all metrics are scoped to the signed-in account.
     Route::get('/user/dashboard', function () {
         $userId = Auth::id();
+        $filters = request()->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'group_by' => ['nullable', 'in:day,week,month'],
+        ]);
+        $filterFrom = $filters['from'] ?? now()->subMonths(5)->startOfMonth()->toDateString();
+        $filterTo = $filters['to'] ?? now()->toDateString();
+        $groupBy = $filters['group_by'] ?? 'month';
+
         $userBookings = Booking::with('facility:id,name,location')
             ->where('user_id', $userId)
             ->latest()
             ->get();
 
-        $statusBreakdown = BookingDashboardAnalytics::statusBreakdown($userBookings);
+        // Keep account-wide booking history separate from the selected analytics period.
+        $analyticsBookings = $userBookings->filter(function (Booking $booking) use ($filterFrom, $filterTo) {
+            $date = $booking->booking_date ?? $booking->date;
+
+            return $date
+                && \Carbon\Carbon::parse($date)->toDateString() >= $filterFrom
+                && \Carbon\Carbon::parse($date)->toDateString() <= $filterTo;
+        })->values();
+
+        $statusBreakdown = BookingDashboardAnalytics::statusBreakdown($analyticsBookings);
         $statusCounts = collect($statusBreakdown)->mapWithKeys(
             fn (array $item) => [$item['status'] => $item['count']]
         );
@@ -233,26 +251,80 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $statusDetails = collect(BookingDashboardAnalytics::STATUSES)->mapWithKeys(
             fn (string $status) => [
                 $status => BookingDashboardAnalytics::bookingRows(
-                    BookingDashboardAnalytics::filterByStatus($userBookings, $status)
+                    BookingDashboardAnalytics::filterByStatus($analyticsBookings, $status)
                 ),
             ]
         );
 
-        $trendStart = \Carbon\Carbon::now()->subMonths(5)->startOfMonth();
         $bookingTrends = collect();
-        for ($monthIndex = 0; $monthIndex < 6; $monthIndex++) {
-            $month = $trendStart->copy()->addMonths($monthIndex);
-            $monthBookings = $userBookings->filter(function ($booking) use ($month) {
+        $cursor = \Carbon\Carbon::parse($filterFrom)->startOfDay();
+        $periodEnd = \Carbon\Carbon::parse($filterTo)->endOfDay();
+
+        if ($groupBy === 'week') {
+            $cursor->startOfWeek();
+            $periodEnd->endOfWeek();
+        } elseif ($groupBy === 'month') {
+            $cursor->startOfMonth();
+            $periodEnd->endOfMonth();
+        }
+
+        while ($cursor->lte($periodEnd)) {
+            $periodStart = $cursor->copy();
+            $periodFinish = match ($groupBy) {
+                'day' => $periodStart->copy()->endOfDay(),
+                'week' => $periodStart->copy()->endOfWeek(),
+                default => $periodStart->copy()->endOfMonth(),
+            };
+            $periodBookings = $analyticsBookings->filter(function (Booking $booking) use ($periodStart, $periodFinish) {
                 $date = $booking->booking_date ?? $booking->date;
-                return $date && \Carbon\Carbon::parse($date)->isSameMonth($month);
+                return $date && \Carbon\Carbon::parse($date)->betweenIncluded($periodStart, $periodFinish);
             });
 
             $bookingTrends->push([
-                'label' => $month->format('M Y'),
-                'bookings' => $monthBookings->count(),
-                'facilities' => BookingDashboardAnalytics::facilityBreakdown($monthBookings),
+                'label' => $groupBy === 'day'
+                    ? $periodStart->format('M j')
+                    : ($groupBy === 'week'
+                        ? $periodStart->format('M j') . ' – ' . $periodFinish->format('M j')
+                        : $periodStart->format('M Y')),
+                'bookings' => $periodBookings->count(),
+                'facilities' => BookingDashboardAnalytics::facilityBreakdown($periodBookings),
             ]);
+
+            $cursor = match ($groupBy) {
+                'day' => $cursor->addDay(),
+                'week' => $cursor->addWeek(),
+                default => $cursor->addMonth(),
+            };
         }
+
+        $decidedBookings = $analyticsBookings->filter(
+            fn (Booking $booking) => in_array(BookingDashboardAnalytics::displayStatus($booking), ['approved', 'declined'], true)
+        );
+        $approvedInPeriod = $analyticsBookings->filter(
+            fn (Booking $booking) => BookingDashboardAnalytics::displayStatus($booking) === 'approved'
+        )->count();
+        $approvalRate = $decidedBookings->isNotEmpty()
+            ? round(($approvedInPeriod / $decidedBookings->count()) * 100, 1)
+            : 0.0;
+        $cancellationRate = $analyticsBookings->isNotEmpty()
+            ? round(($analyticsBookings->filter(fn (Booking $booking) => $booking->status === 'cancelled')->count() / $analyticsBookings->count()) * 100, 1)
+            : 0.0;
+        $approvalMinutes = $analyticsBookings
+            ->filter(fn (Booking $booking) => $booking->approved_at && $booking->created_at)
+            ->map(fn (Booking $booking) => max(0, $booking->approved_at->getTimestamp() - $booking->created_at->getTimestamp()) / 60);
+        $averageApprovalHours = $approvalMinutes->isNotEmpty()
+            ? round($approvalMinutes->avg() / 60, 1)
+            : null;
+        $analyticsDetails = [
+            'totalBookings' => BookingDashboardAnalytics::bookingRows($analyticsBookings),
+            'approvalRate' => BookingDashboardAnalytics::bookingRows($decidedBookings),
+            'cancellationRate' => BookingDashboardAnalytics::bookingRows(
+                $analyticsBookings->where('status', 'cancelled')->values()
+            ),
+            'approvalTime' => BookingDashboardAnalytics::bookingRows(
+                $analyticsBookings->filter(fn (Booking $booking) => $booking->approved_at !== null)->values()
+            ),
+        ];
 
         $mostUsedFacilities = $userBookings
             ->groupBy('facility_id')
@@ -290,6 +362,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'cancelledBookings' => $statusCounts['cancelled'],
             ],
             'bookingTrends' => $bookingTrends,
+            'analyticsFilters' => [
+                'from' => $filterFrom,
+                'to' => $filterTo,
+                'group_by' => $groupBy,
+            ],
+            'analytics' => [
+                'periodLabel' => \Carbon\Carbon::parse($filterFrom)->format('M j, Y')
+                    . ' – ' . \Carbon\Carbon::parse($filterTo)->format('M j, Y'),
+                'totalBookings' => $analyticsBookings->count(),
+                'approvalRate' => $approvalRate,
+                'cancellationRate' => $cancellationRate,
+                'averageApprovalHours' => $averageApprovalHours,
+            ],
+            'analyticsDetails' => $analyticsDetails,
             'statusBreakdown' => $statusBreakdown,
             'statusDetails' => $statusDetails,
             'bookingDetails' => $bookingDetailRows,
