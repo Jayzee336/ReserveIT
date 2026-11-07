@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import DashboardDrilldownModal from '@/Components/DashboardDrilldownModal';
 import {
@@ -250,6 +250,11 @@ export default function FacilitatorDashboard({
     const [declineBookingId, setDeclineBookingId] = useState(null);
     const [selectedAnalyticsDetail, setSelectedAnalyticsDetail] = useState(null);
     const [selectedTrendLabel, setSelectedTrendLabel] = useState(null);
+
+    useEffect(() => {
+        setAnalyticsFacility(selectedFacilityId ?? '');
+    }, [selectedFacilityId]);
+
     const selectedTrend = usageOverTime.find((item) => item.label === selectedTrendLabel);
     const displayedStatusBreakdown = DASHBOARD_STATUS_ORDER.map((status) => {
         const item = statusBreakdown.find((entry) => entry.status === status);
