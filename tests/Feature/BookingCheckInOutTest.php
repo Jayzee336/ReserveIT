@@ -636,4 +636,68 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
         $this->assertNotContains($unassignedBooking->id, $ids);
     }
 
+
+    public function test_configured_early_check_in_allowance_is_respected(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-20 08:40:00'));
+
+        try {
+            $admin = User::factory()->create([
+                'role' => 'facility_admin',
+                'is_active' => true,
+            ]);
+            $facility = $this->createFacility('early-window-config', 'Early Window Facility');
+            $facility->facilityAdmins()->attach($admin);
+            SystemSetting::current()->update(['early_check_in_minutes' => 30]);
+
+            $booking = $this->createBooking($facility, [
+                'date' => '2026-10-20',
+                'start_time' => '09:00:00',
+                'end_time' => '10:00:00',
+            ]);
+
+            $this->actingAs($admin)
+                ->post(route('bookings.check-in', $booking))
+                ->assertSessionHasNoErrors();
+
+            $this->assertNotNull($booking->fresh()->checked_in_at);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_configured_overtime_grace_period_is_excluded_from_fee(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-10-20 10:20:00'));
+
+        try {
+            $admin = User::factory()->create([
+                'role' => 'facility_admin',
+                'is_active' => true,
+            ]);
+            $facility = $this->createFacility('overtime-grace-config', 'Overtime Grace Facility');
+            $facility->facilityAdmins()->attach($admin);
+            SystemSetting::current()->update([
+                'overtime_fee_per_hour' => 60.00,
+                'overtime_grace_minutes' => 15,
+            ]);
+
+            $booking = $this->createBooking($facility, [
+                'date' => '2026-10-20',
+                'start_time' => '09:00:00',
+                'end_time' => '10:00:00',
+                'checked_in_at' => Carbon::parse('2026-10-20 09:00:00'),
+            ]);
+
+            $this->actingAs($admin)
+                ->post(route('bookings.check-out', $booking))
+                ->assertSessionHasNoErrors();
+
+            $this->assertSame(5, $booking->fresh()->overtime_minutes);
+            $this->assertEquals(5.00, (float) $booking->fresh()->overtime_fee_amount);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
 }
