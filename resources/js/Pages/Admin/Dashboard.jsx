@@ -189,6 +189,13 @@ function AnalyticsDetailModal({ detailKey, details, facilities = [], pendingBook
     };
     const definition = definitions[detailKey];
     if (!definition) return null;
+    const records = Array.isArray(definition.items)
+        ? definition.items
+        : Array.isArray(definition.items?.data)
+            ? definition.items.data
+            : definition.items && typeof definition.items === 'object'
+                ? Object.values(definition.items)
+                : [];
     const formatTimeLabel = (value) => {
         if (!value) return '—';
         const [hourText, minuteText] = String(value).slice(0, 5).split(':');
@@ -203,20 +210,20 @@ function AnalyticsDetailModal({ detailKey, details, facilities = [], pendingBook
                     <button type="button" onClick={onClose} className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-stone-100">Close</button>
                 </div>
                 <div className="overflow-auto p-4 sm:p-6">
-                    <p className="mb-4 text-sm font-semibold text-slate-700">{definition.items.length} records · Current dashboard filters applied</p>
-                    {definition.items.length === 0 ? <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-slate-500">No records found for this metric and filter selection.</div> : definition.type === 'clients' ? (
+                    <p className="mb-4 text-sm font-semibold text-slate-700">{records.length} records · Current dashboard filters applied</p>
+                    {records.length === 0 ? <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-slate-500">No records found for this metric and filter selection.</div> : definition.type === 'clients' ? (
                         <div className="overflow-x-auto rounded-xl border border-stone-200"><table className="min-w-full divide-y divide-stone-200 text-left text-sm">
                             <thead className="bg-stone-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Client</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">Bookings</th><th className="px-4 py-3">Last booking</th></tr></thead>
-                            <tbody className="divide-y divide-stone-100">{definition.items.map((item, index) => <tr key={item.email || item.name + index} className="text-slate-700"><td className="px-4 py-3 font-semibold text-slate-900">{item.name}</td><td className="px-4 py-3">{item.email || '—'}</td><td className="px-4 py-3">{item.bookings}</td><td className="px-4 py-3">{item.lastBooking || '—'}</td></tr>)}</tbody>
+                            <tbody className="divide-y divide-stone-100">{records.map((item, index) => <tr key={item.email || item.name + index} className="text-slate-700"><td className="px-4 py-3 font-semibold text-slate-900">{item.name}</td><td className="px-4 py-3">{item.email || '—'}</td><td className="px-4 py-3">{item.bookings}</td><td className="px-4 py-3">{item.lastBooking || '—'}</td></tr>)}</tbody>
                         </table></div>
                     ) : definition.type === 'facilities' ? (
-                        <div className="space-y-2">{definition.items.map((item) => <div key={item.id ?? item.name} className="rounded-xl border border-stone-200 bg-[#FFFAF7] px-4 py-3"><p className="font-semibold text-slate-900">{item.name ?? 'Facility'}</p><p className="mt-1 text-xs text-slate-500">{item.location ?? item.address ?? 'Facility listing'}</p></div>)}</div>
+                        <div className="space-y-2">{records.map((item) => <div key={item.id ?? item.name} className="rounded-xl border border-stone-200 bg-[#FFFAF7] px-4 py-3"><p className="font-semibold text-slate-900">{item.name ?? 'Facility'}</p><p className="mt-1 text-xs text-slate-500">{item.location ?? item.address ?? 'Facility listing'}</p></div>)}</div>
                     ) : definition.type === 'concerns' ? (
-                        <div className="space-y-2">{definition.items.map((item) => <div key={item.id} className="rounded-xl border border-stone-200 bg-[#FFFAF7] px-4 py-3"><p className="text-sm text-slate-800">{item.message ?? item.subject ?? 'Concern'}</p><p className="mt-1 text-xs text-slate-500">{item.user?.name ?? item.user?.email ?? 'Submitted by user'} · {item.status ?? 'Pending'}</p></div>)}</div>
+                        <div className="space-y-2">{records.map((item) => <div key={item.id} className="rounded-xl border border-stone-200 bg-[#FFFAF7] px-4 py-3"><p className="text-sm text-slate-800">{item.message ?? item.subject ?? 'Concern'}</p><p className="mt-1 text-xs text-slate-500">{item.user?.name ?? item.user?.email ?? 'Submitted by user'} · {item.status ?? 'Pending'}</p></div>)}</div>
                     ) : (
                         <div className="overflow-x-auto rounded-xl border border-stone-200"><table className="min-w-full divide-y divide-stone-200 text-left text-sm">
                             <thead className="bg-stone-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Facility / Client</th><th className="px-4 py-3">Date &amp; time</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Approval delay</th><th className="px-4 py-3">Overtime</th><th className="px-4 py-3">Fee / payment</th></tr></thead>
-                            <tbody className="divide-y divide-stone-100">{definition.items.map((item) => <tr key={item.id} className="text-slate-700"><td className="px-4 py-3"><p className="font-semibold text-slate-900">{item.facility}</p><p className="text-xs text-slate-500">{item.client}</p></td><td className="whitespace-nowrap px-4 py-3">{item.date || '—'}<p className="text-xs text-slate-500">{formatTimeLabel(item.start_time)} – {formatTimeLabel(item.end_time)}</p></td><td className="px-4 py-3"><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold capitalize text-slate-700">{item.display_status || item.status}</span></td><td className="px-4 py-3">{item.approval_minutes != null ? `${item.approval_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_minutes ? `${item.overtime_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_fee_amount ? `₱${Number(item.overtime_fee_amount).toFixed(2)}` : '—'}<p className="text-xs capitalize text-slate-500">{item.overtime_payment_status?.replaceAll('_', ' ') || ''}</p></td></tr>)}</tbody>
+                            <tbody className="divide-y divide-stone-100">{records.map((item) => <tr key={item.id} className="text-slate-700"><td className="px-4 py-3"><p className="font-semibold text-slate-900">{item.facility}</p><p className="text-xs text-slate-500">{item.client}</p></td><td className="whitespace-nowrap px-4 py-3">{item.date || '—'}<p className="text-xs text-slate-500">{formatTimeLabel(item.start_time)} – {formatTimeLabel(item.end_time)}</p></td><td className="px-4 py-3"><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold capitalize text-slate-700">{item.display_status || item.status}</span></td><td className="px-4 py-3">{item.approval_minutes != null ? `${item.approval_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_minutes ? `${item.overtime_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_fee_amount ? `₱${Number(item.overtime_fee_amount).toFixed(2)}` : '—'}<p className="text-xs capitalize text-slate-500">{item.overtime_payment_status?.replaceAll('_', ' ') || ''}</p></td></tr>)}</tbody>
                         </table></div>
                     )}
                 </div>
