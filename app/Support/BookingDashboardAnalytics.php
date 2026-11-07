@@ -56,11 +56,14 @@ final class BookingDashboardAnalytics
 
     public static function statusBreakdown(Collection $bookings, ?Carbon $asOf = null): array
     {
-        $counts = collect(self::STATUSES)->mapWithKeys(fn (string $status) => [$status => 0]);
+        // Use a native array for mutable counters. Laravel Collection's
+        // ArrayAccess does not support indirect increment operations.
+        $counts = array_fill_keys(self::STATUSES, 0);
 
         foreach ($bookings as $booking) {
             $status = self::displayStatus($booking, $asOf);
-            if ($counts->has($status)) {
+
+            if (array_key_exists($status, $counts)) {
                 $counts[$status]++;
             }
         }
