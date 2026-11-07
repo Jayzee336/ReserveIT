@@ -165,6 +165,8 @@ export default function BookingModal({
         return toMins(time) <= currentMinutes;
     };
 
+    const toEndMins = (time) => time === '00:00' ? 1440 : toMins(time);
+
     const capacity = facility?.capacity || 0;
 
     const isOverCapacity = Boolean(
@@ -193,7 +195,7 @@ export default function BookingModal({
             }
 
             const bookingStart = toMins(booking.start_time);
-            const bookingEnd = toMins(booking.end_time);
+            const bookingEnd = toEndMins(String(booking.end_time).slice(0, 5));
 
             const blockedStart = bookingStart - cleanupBuffer;
             const blockedEnd = bookingEnd + cleanupBuffer;
@@ -213,7 +215,7 @@ export default function BookingModal({
         const startMinutes = toMins(startTime);
 
         return TIME_SLOTS.filter(
-            (time) => toMins(time) > startMinutes
+            (time) => toEndMins(time) > startMinutes
         );
     }, [startTime]);
 
