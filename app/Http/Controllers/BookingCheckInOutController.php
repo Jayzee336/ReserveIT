@@ -236,6 +236,9 @@ class BookingCheckInOutController extends Controller
                 . ' '
                 . $lockedBooking->end_time
             );
+            if (substr((string) $lockedBooking->end_time, 0, 5) === '00:00') {
+                $scheduledEnd->addDay();
+            }
 
             $checkedInAt = Carbon::parse($lockedBooking->checked_in_at);
 
@@ -456,6 +459,9 @@ class BookingCheckInOutController extends Controller
                     . ' '
                     . $booking->end_time
                 );
+                if (substr((string) $booking->end_time, 0, 5) === '00:00') {
+                    $scheduledEnd->addDay();
+                }
 
                 $checkedInAt = Carbon::parse($booking->checked_in_at);
 
