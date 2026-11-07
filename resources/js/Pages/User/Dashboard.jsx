@@ -10,6 +10,7 @@ import {
     Sparkles,
     CheckCircle2,
     XCircle,
+    Ban,
     BarChart3,
     TrendingUp,
 } from 'lucide-react';
@@ -153,12 +154,13 @@ export default function Dashboard({
                     </div>
                 </section>
 
-                <section aria-label="Booking overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                <section aria-label="Booking overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
                     <MetricCard icon={CalendarDays} label="Total bookings" value={metrics.totalBookings} detail="All requests on your account" />
+                    <MetricCard icon={Building2} label="Available venues" value={metrics.activeRooms} detail="Spaces currently listed" />
                     <MetricCard icon={CheckCircle2} label="Approved" value={metrics.approvedBookings} detail="Confirmed reservations" />
                     <MetricCard icon={Clock3} label="Pending" value={metrics.pendingRequests} detail="Awaiting a decision" />
                     <MetricCard icon={XCircle} label="Declined" value={metrics.declinedBookings} detail="Requests not approved" />
-                    <MetricCard icon={Building2} label="Cancelled" value={metrics.cancelledBookings} detail="Cancelled reservations" />
+                    <MetricCard icon={Ban} label="Cancelled" value={metrics.cancelledBookings} detail="Cancelled reservations" />
                 </section>
 
                 <section aria-label="Your booking analytics" className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.9fr)]">
