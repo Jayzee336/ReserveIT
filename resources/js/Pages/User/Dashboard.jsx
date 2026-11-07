@@ -112,6 +112,7 @@ export default function Dashboard({
         activeRooms: 0,
         pendingRequests: 0,
         approvedBookings: 0,
+        completedBookings: 0,
         declinedBookings: 0,
         cancelledBookings: 0,
     };
