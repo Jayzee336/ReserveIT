@@ -172,10 +172,10 @@ function AnalyticsDetailModal({ detailKey, details, facilities = [], pendingBook
     if (!detailKey) return null;
     const definitions = {
         facilities: { title: 'Registered facilities', description: 'Facilities currently listed in ReserveIT.', items: facilities, type: 'facilities' },
-        allBookings: { title: 'Booking records', description: 'Booking records available in the current analytics breakdown.', items: [...(details.pending ?? []), ...(details.approved ?? []), ...(details.completed ?? []), ...(details.declined ?? []), ...(details.cancelled ?? [])], type: 'bookings' },
+        allBookings: { title: 'Booking records', description: 'Booking records represented by the current date and facility analytics filters.', items: [...(details.pending ?? []), ...(details.approved ?? []), ...(details.completed ?? []), ...(details.declined ?? []), ...(details.cancelled ?? [])], type: 'bookings' },
         pendingConcerns: { title: 'Pending concerns', description: 'Recent concern records currently supplied to the dashboard.', items: recentConcerns.filter((item) => ['pending', 'open', 'submitted'].includes(String(item.status ?? 'pending').toLowerCase())), type: 'concerns' },
         clients: { title: 'Unique clients', description: 'Clients with at least one booking in the selected period.', items: details.clients ?? [], type: 'clients' },
-        pending: { title: 'Pending bookings', description: 'Requests awaiting an administrator decision.', items: details.pending ?? [], type: 'bookings' },
+        pending: { title: 'Pending bookings', description: 'Requests currently awaiting an administrator decision.', items: pendingBookings, type: 'bookings' },
         approved: { title: 'Approved bookings', description: 'Confirmed reservations that have not yet completed.', items: details.approved ?? [], type: 'bookings' },
         completed: { title: 'Completed bookings', description: 'Approved reservations that have finished.', items: details.completed ?? [], type: 'bookings' },
         declined: { title: 'Declined bookings', description: 'Requests that were declined.', items: details.declined ?? [], type: 'bookings' },
