@@ -41,6 +41,7 @@ function StatusBadge({ status }) {
     const styles = {
         pending: 'bg-amber-50 text-amber-700 ring-amber-600/20',
         approved: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+        completed: 'bg-sky-50 text-sky-700 ring-sky-600/20',
         declined: 'bg-red-50 text-red-700 ring-red-600/20',
         cancelled: 'bg-gray-100 text-gray-600 ring-gray-500/20',
     };
@@ -172,6 +173,11 @@ function AnalyticsDetailModal({ detailKey, details, onClose }) {
     if (!detailKey) return null;
     const definitions = {
         clients: { title: 'Unique clients', description: 'Clients with at least one booking in the selected period.', items: details.clients ?? [], type: 'clients' },
+        pending: { title: 'Pending bookings', description: 'Requests awaiting an administrator decision.', items: details.pending ?? [], type: 'bookings' },
+        approved: { title: 'Approved bookings', description: 'Confirmed reservations that have not yet completed.', items: details.approved ?? [], type: 'bookings' },
+        completed: { title: 'Completed bookings', description: 'Approved reservations that have finished.', items: details.completed ?? [], type: 'bookings' },
+        declined: { title: 'Declined bookings', description: 'Requests that were declined.', items: details.declined ?? [], type: 'bookings' },
+        cancelled: { title: 'Cancelled bookings', description: 'Reservations cancelled by their requester or an administrator.', items: details.cancelled ?? [], type: 'bookings' },
         returningClients: { title: 'Returning clients', description: 'Clients with more than one booking in the selected period.', items: details.returningClients ?? [], type: 'clients' },
         approvalRate: { title: 'Approval rate details', description: 'Bookings included in the approved-versus-declined calculation.', items: details.approvalRate ?? [], type: 'bookings' },
         cancellationRate: { title: 'Cancellation details', description: 'Bookings counted in the cancellation rate.', items: details.cancellationRate ?? [], type: 'bookings' },
@@ -204,7 +210,7 @@ function AnalyticsDetailModal({ detailKey, details, onClose }) {
                     ) : (
                         <div className="overflow-x-auto rounded-xl border border-stone-200"><table className="min-w-full divide-y divide-stone-200 text-left text-sm">
                             <thead className="bg-stone-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Facility / Client</th><th className="px-4 py-3">Date &amp; time</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Approval delay</th><th className="px-4 py-3">Overtime</th><th className="px-4 py-3">Fee / payment</th></tr></thead>
-                            <tbody className="divide-y divide-stone-100">{definition.items.map((item) => <tr key={item.id} className="text-slate-700"><td className="px-4 py-3"><p className="font-semibold text-slate-900">{item.facility}</p><p className="text-xs text-slate-500">{item.client}</p></td><td className="whitespace-nowrap px-4 py-3">{item.date || '—'}<p className="text-xs text-slate-500">{formatTimeLabel(item.start_time)} – {formatTimeLabel(item.end_time)}</p></td><td className="px-4 py-3"><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold capitalize text-slate-700">{item.status}</span></td><td className="px-4 py-3">{item.approval_minutes != null ? `${item.approval_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_minutes ? `${item.overtime_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_fee_amount ? `₱${Number(item.overtime_fee_amount).toFixed(2)}` : '—'}<p className="text-xs capitalize text-slate-500">{item.overtime_payment_status?.replaceAll('_', ' ') || ''}</p></td></tr>)}</tbody>
+                            <tbody className="divide-y divide-stone-100">{definition.items.map((item) => <tr key={item.id} className="text-slate-700"><td className="px-4 py-3"><p className="font-semibold text-slate-900">{item.facility}</p><p className="text-xs text-slate-500">{item.client}</p></td><td className="whitespace-nowrap px-4 py-3">{item.date || '—'}<p className="text-xs text-slate-500">{formatTimeLabel(item.start_time)} – {formatTimeLabel(item.end_time)}</p></td><td className="px-4 py-3"><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold capitalize text-slate-700">{item.display_status || item.status}</span></td><td className="px-4 py-3">{item.approval_minutes != null ? `${item.approval_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_minutes ? `${item.overtime_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_fee_amount ? `₱${Number(item.overtime_fee_amount).toFixed(2)}` : '—'}<p className="text-xs capitalize text-slate-500">{item.overtime_payment_status?.replaceAll('_', ' ') || ''}</p></td></tr>)}</tbody>
                         </table></div>
                     )}
                 </div>
@@ -573,10 +579,11 @@ export default function AdminDashboard({
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
                         <div className="space-y-3">{statusBreakdown.map((item) => {
                             const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
-                            return <div key={item.status} className="rounded-lg bg-stone-50 px-3 py-2.5">
+                            return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg bg-stone-50 px-3 py-2.5 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
                                 <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage}%</span></span></div>
                                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${item.percentage}%` }}/></div>
-                            </div>;
+                                <span className="mt-1 block text-right text-[10px] font-semibold text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details ↗</span>
+                            </button>;
                         })}</div>
                     </div>
                 </section>
