@@ -93,7 +93,17 @@ export default function SystemSettings({ settings }) {
         router.patch(route('admin.settings.update'), payload, {
             preserveScroll: true,
             onSuccess: () => setSaveMessage('Settings saved successfully.'),
-            onError: () => setSaveMessage('Could not save settings. Please check the values and try again.'),
+            onError: (errors) => {
+                const timeError = errors.opening_time || errors.closing_time;
+                if (timeError) {
+                    // Restore the last server-saved values when the operating-hours pair is invalid.
+                    setOpeningTime(settings.opening_time?.slice(0, 5) ?? '08:00');
+                    setClosingTime(settings.closing_time?.slice(0, 5) ?? '00:00');
+                    setSaveMessage(timeError);
+                    return;
+                }
+                setSaveMessage('Could not save settings. Please check the values and try again.');
+            },
             onFinish: () => setSaving(false),
         });
     };
