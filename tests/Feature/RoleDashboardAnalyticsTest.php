@@ -6,12 +6,25 @@ use App\Models\Booking;
 use App\Models\Facility;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class RoleDashboardAnalyticsTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Carbon::setTestNow(now()->startOfDay()->addHours(8));
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
 
     private function createFacility(string $id, string $name): Facility
     {
@@ -100,8 +113,10 @@ class RoleDashboardAnalyticsTest extends TestCase
                 ->where('analytics.overtimeFees', 7.5)
                 ->where('statusBreakdown.0.status', 'pending')
                 ->where('statusBreakdown.0.count', 1)
-                ->where('statusBreakdown.2.status', 'declined')
-                ->where('statusBreakdown.3.count', 1)
+                ->where('statusBreakdown.2.status', 'completed')
+                ->where('statusBreakdown.2.count', 0)
+                ->where('statusBreakdown.3.status', 'declined')
+                ->where('statusBreakdown.4.count', 1)
                 ->has('mostUsedFacilities', 2)
             );
     }
@@ -148,7 +163,10 @@ class RoleDashboardAnalyticsTest extends TestCase
         $otherUser = User::factory()->create(['role' => 'user']);
         $facility = $this->createFacility('personal-dashboard-facility', 'Personal Dashboard Hall');
 
-        $this->createBooking($facility, $user, 'approved');
+        $this->createBooking($facility, $user, 'approved', [
+            'start_time' => '07:00:00',
+            'end_time' => '07:30:00',
+        ]);
         $this->createBooking($facility, $user, 'pending');
         $this->createBooking($facility, $otherUser, 'approved');
 
@@ -158,13 +176,19 @@ class RoleDashboardAnalyticsTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('User/Dashboard')
                 ->where('stats.totalBookings', 2)
-                ->where('stats.approvedBookings', 1)
+                ->where('stats.approvedBookings', 0)
+                ->where('stats.completedBookings', 1)
                 ->where('stats.pendingRequests', 1)
                 ->where('stats.declinedBookings', 0)
                 ->where('stats.cancelledBookings', 0)
                 ->has('bookingTrends', 6)
                 ->where('statusBreakdown.0.status', 'pending')
                 ->where('statusBreakdown.0.count', 1)
+                ->where('statusBreakdown.1.status', 'approved')
+                ->where('statusBreakdown.1.count', 0)
+                ->where('statusBreakdown.2.status', 'completed')
+                ->where('statusBreakdown.2.count', 1)
+                ->has('statusDetails.completed', 1)
                 ->has('mostUsedFacilities', 1)
                 ->where('mostUsedFacilities.0.name', 'Personal Dashboard Hall')
                 ->has('recentBookings', 2)
