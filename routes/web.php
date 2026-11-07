@@ -216,35 +216,80 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/developer/contact', [DeveloperContactController::class, 'store'])
         ->name('developer.contact');
 
-    // General User Dashboard
+    // General User Dashboard — all metrics are scoped to the signed-in account.
     Route::get('/user/dashboard', function () {
+        $userId = Auth::id();
+        $userBookings = Booking::with('facility:id,name,location')
+            ->where('user_id', $userId)
+            ->latest()
+            ->get();
+
+        $statusCounts = collect(['pending', 'approved', 'declined', 'cancelled'])
+            ->mapWithKeys(fn ($status) => [
+                $status => $userBookings->where('status', $status)->count(),
+            ]);
+
+        $trendStart = \Carbon\Carbon::now()->subMonths(5)->startOfMonth();
+        $bookingTrends = collect();
+        for ($monthIndex = 0; $monthIndex < 6; $monthIndex++) {
+            $month = $trendStart->copy()->addMonths($monthIndex);
+            $monthBookings = $userBookings->filter(function ($booking) use ($month) {
+                $date = $booking->booking_date ?? $booking->date;
+                return $date && \Carbon\Carbon::parse($date)->isSameMonth($month);
+            });
+
+            $bookingTrends->push([
+                'label' => $month->format('M Y'),
+                'bookings' => $monthBookings->count(),
+            ]);
+        }
+
+        $mostUsedFacilities = $userBookings
+            ->groupBy('facility_id')
+            ->map(fn ($items) => [
+                'name' => $items->first()->facility?->name ?? 'Deleted facility',
+                'bookings' => $items->count(),
+            ])
+            ->sortByDesc('bookings')
+            ->take(5)
+            ->values();
+
+        $upcomingBooking = Booking::with('facility')
+            ->where('user_id', $userId)
+            ->whereIn('status', ['pending', 'approved'])
+            ->where(function ($query) {
+                $today = now()->toDateString();
+                $query->whereDate('booking_date', '>=', $today)
+                    ->orWhere(function ($legacyQuery) use ($today) {
+                        $legacyQuery->whereNull('booking_date')
+                            ->whereDate('date', '>=', $today);
+                    });
+            })
+            ->orderByRaw('COALESCE(booking_date, date) asc')
+            ->orderBy('start_time', 'asc')
+            ->first();
+
         return Inertia::render('User/Dashboard', [
             'stats' => [
-                'totalBookings' => Booking::where('user_id', Auth::id())->count(),
+                'totalBookings' => $userBookings->count(),
                 'activeRooms' => Facility::count(),
-                'pendingRequests' => Booking::where('user_id', Auth::id())
-                    ->where('status', 'pending')
-                    ->count(),
+                'pendingRequests' => $statusCounts['pending'],
+                'approvedBookings' => $statusCounts['approved'],
+                'declinedBookings' => $statusCounts['declined'],
+                'cancelledBookings' => $statusCounts['cancelled'],
             ],
-            'upcomingBooking' => Booking::with('facility')
-                ->where('user_id', Auth::id())
-                ->whereIn('status', ['pending', 'approved'])
-                ->where(function ($query) {
-                    $today = now()->toDateString();
-
-                    $query->whereDate('booking_date', '>=', $today)
-                        ->orWhereDate('date', '>=', $today);
-                })
-                ->orderByRaw('COALESCE(booking_date, date) asc')
-                ->orderBy('start_time', 'asc')
-                ->first(),
-            'recentActivities' => [
-                [
-                    'id' => 1,
-                    'text' => 'Welcome to your new ReserveIT dashboard hub!',
-                    'time' => 'Just now',
-                ],
-            ],
+            'bookingTrends' => $bookingTrends,
+            'statusBreakdown' => collect(['pending', 'approved', 'declined', 'cancelled'])
+                ->map(fn ($status) => [
+                    'status' => $status,
+                    'count' => $statusCounts[$status],
+                    'percentage' => $userBookings->isNotEmpty()
+                        ? round(($statusCounts[$status] / $userBookings->count()) * 100, 1)
+                        : 0,
+                ])->values(),
+            'mostUsedFacilities' => $mostUsedFacilities,
+            'recentBookings' => $userBookings->take(5)->values(),
+            'upcomingBooking' => $upcomingBooking,
         ]);
     })->middleware('role:user,super_admin,facility_admin')
         ->name('user.dashboard');
