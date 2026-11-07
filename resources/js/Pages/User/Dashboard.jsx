@@ -8,6 +8,10 @@ import {
     MapPin,
     ShieldCheck,
     Sparkles,
+    CheckCircle2,
+    XCircle,
+    BarChart3,
+    TrendingUp,
 } from 'lucide-react';
 
 const STATUS_STYLES = {
@@ -86,12 +90,24 @@ function formatTime(value) {
     });
 }
 
-export default function Dashboard({ auth, stats, upcomingBooking }) {
+export default function Dashboard({
+    auth,
+    stats,
+    upcomingBooking,
+    bookingTrends = [],
+    statusBreakdown = [],
+    mostUsedFacilities = [],
+    recentBookings = [],
+}) {
     const metrics = stats ?? {
         totalBookings: 0,
         activeRooms: 0,
         pendingRequests: 0,
+        approvedBookings: 0,
+        declinedBookings: 0,
+        cancelledBookings: 0,
     };
+    const trendMaximum = Math.max(...bookingTrends.map((item) => item.bookings), 1);
     const firstName = auth?.user?.name?.trim()?.split(/\s+/)[0] || 'there';
 
     return (
@@ -137,25 +153,99 @@ export default function Dashboard({ auth, stats, upcomingBooking }) {
                     </div>
                 </section>
 
-                <section aria-label="Booking overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    <MetricCard
-                        icon={CalendarDays}
-                        label="Total bookings"
-                        value={metrics.totalBookings}
-                        detail="Reservations on your account"
-                    />
-                    <MetricCard
-                        icon={Building2}
-                        label="Available venues"
-                        value={metrics.activeRooms}
-                        detail="Spaces currently listed"
-                    />
-                    <MetricCard
-                        icon={Clock3}
-                        label="Pending approvals"
-                        value={metrics.pendingRequests}
-                        detail="Requests awaiting a decision"
-                    />
+                <section aria-label="Booking overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                    <MetricCard icon={CalendarDays} label="Total bookings" value={metrics.totalBookings} detail="All requests on your account" />
+                    <MetricCard icon={CheckCircle2} label="Approved" value={metrics.approvedBookings} detail="Confirmed reservations" />
+                    <MetricCard icon={Clock3} label="Pending" value={metrics.pendingRequests} detail="Awaiting a decision" />
+                    <MetricCard icon={XCircle} label="Declined" value={metrics.declinedBookings} detail="Requests not approved" />
+                    <MetricCard icon={Building2} label="Cancelled" value={metrics.cancelledBookings} detail="Cancelled reservations" />
+                </section>
+
+                <section aria-label="Your booking analytics" className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.9fr)]">
+                    <article className="ri-panel min-w-0 p-5 sm:p-6">
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <p className="ri-page-eyebrow">Your activity</p>
+                                <h2 className="mt-1 text-lg font-bold text-slate-900">Booking activity</h2>
+                                <p className="mt-1 text-xs text-slate-500">Monthly reservations over the last six months.</p>
+                            </div>
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ri-brand-soft)] text-[var(--ri-brand)]"><TrendingUp className="h-5 w-5" /></span>
+                        </div>
+                        <div className="mt-6 grid grid-cols-6 items-end gap-2 sm:gap-4">
+                            {bookingTrends.map((item) => (
+                                <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
+                                    <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
+                                    <div className="flex h-32 w-full items-end rounded-t-lg bg-[var(--ri-surface-subtle)]">
+                                        <div
+                                            className="w-full rounded-t-lg bg-[var(--ri-brand)] transition-all"
+                                            style={{ height: item.bookings > 0 ? `${Math.max(8, (item.bookings / trendMaximum) * 100)}%` : '3px' }}
+                                            title={`${item.bookings} bookings`}
+                                        />
+                                    </div>
+                                    <span className="truncate text-[10px] text-slate-500">{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                        {bookingTrends.length === 0 && <p className="mt-6 text-sm text-slate-500">No booking activity yet.</p>}
+                    </article>
+
+                    <article className="ri-panel p-5 sm:p-6">
+                        <div className="flex items-center gap-3">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ri-brand-soft)] text-[var(--ri-brand)]"><BarChart3 className="h-5 w-5" /></span>
+                            <div>
+                                <p className="ri-page-eyebrow">Your reservations</p>
+                                <h2 className="text-lg font-bold text-slate-900">Status breakdown</h2>
+                            </div>
+                        </div>
+                        <div className="mt-5 space-y-4">
+                            {statusBreakdown.map((item) => (
+                                <div key={item.status}>
+                                    <div className="mb-1.5 flex justify-between gap-3 text-xs">
+                                        <span className="font-semibold capitalize text-slate-700">{item.status}</span>
+                                        <span className="text-slate-500">{item.count} · {item.percentage}%</span>
+                                    </div>
+                                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                        <div
+                                            className={`h-full rounded-full ${item.status === 'approved' ? 'bg-emerald-500' : item.status === 'pending' ? 'bg-amber-400' : item.status === 'declined' ? 'bg-rose-500' : 'bg-slate-400'}`}
+                                            style={{ width: `${item.percentage}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                            {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No reservations to summarize.</p>}
+                        </div>
+                    </article>
+                </section>
+
+                <section className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+                    <article className="ri-panel p-5 sm:p-6">
+                        <h2 className="font-bold text-slate-900">Your most booked facilities</h2>
+                        <div className="mt-4 space-y-3">
+                            {mostUsedFacilities.length ? mostUsedFacilities.map((facility) => (
+                                <div key={facility.name} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--ri-surface-subtle)] px-4 py-3 text-sm">
+                                    <span className="font-medium text-slate-700">{facility.name}</span>
+                                    <span className="shrink-0 font-semibold text-[var(--ri-brand)]">{facility.bookings} bookings</span>
+                                </div>
+                            )) : <p className="text-sm text-slate-500">You have not booked a facility yet.</p>}
+                        </div>
+                    </article>
+                    <article className="ri-panel p-5 sm:p-6">
+                        <div className="flex items-center justify-between gap-3">
+                            <h2 className="font-bold text-slate-900">Recent booking activity</h2>
+                            <Link href={route('bookings.index')} className="text-xs font-semibold text-[var(--ri-brand)]">View all</Link>
+                        </div>
+                        <div className="mt-4 space-y-3">
+                            {recentBookings.length ? recentBookings.slice(0, 5).map((booking) => (
+                                <div key={booking.id} className="flex items-center justify-between gap-3 border-b border-[var(--ri-border)] pb-3 last:border-0">
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold text-slate-800">{booking.facility?.name ?? 'Facility'}</p>
+                                        <p className="text-xs text-slate-500">{formatDate(booking.booking_date ?? booking.date)} · {formatTime(booking.start_time)}</p>
+                                    </div>
+                                    <StatusBadge status={booking.status} />
+                                </div>
+                            )) : <p className="text-sm text-slate-500">No recent booking activity.</p>}
+                        </div>
+                    </article>
                 </section>
 
                 <section className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(18rem,0.85fr)]">
