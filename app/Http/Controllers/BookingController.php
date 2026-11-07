@@ -46,32 +46,40 @@ class BookingController extends Controller
      * Enforce the booking hours and 15-minute interval used by the booking forms
      * and Schedule Grid. The closing time is available as an end time only.
      */
-    private function validateOperatingHours(string $startTime, string $endTime): void
+    private function validateOperatingHours(string $startTime, string $endTime, $settings): void
     {
-        $openingTime = '08:00';
-        $closingTime = '22:00';
+        $openingTime = substr((string) ($settings->opening_time ?? '08:00'), 0, 5);
+        $closingTime = substr((string) ($settings->closing_time ?? '00:00'), 0, 5);
+        $openingMinutes = $this->timeToMinutes($openingTime);
+        $closingMinutes = $closingTime === '00:00' ? 1440 : $this->timeToMinutes($closingTime);
+        $startMinutes = $this->timeToMinutes($startTime);
+        $endMinutes = $endTime === '00:00' ? 1440 : $this->timeToMinutes($endTime);
 
-        if ($startTime < $openingTime) {
+        if ($startMinutes < $openingMinutes || $startMinutes >= $closingMinutes) {
             throw ValidationException::withMessages([
-                'start_time' => 'Bookings cannot start before 8:00 AM.',
+                'start_time' => 'The selected start time is outside the configured operating hours.',
             ]);
         }
 
-        if ($endTime > $closingTime) {
+        if ($endMinutes > $closingMinutes || $endMinutes <= $startMinutes) {
             throw ValidationException::withMessages([
-                'end_time' => 'Bookings must end by 10:00 PM.',
+                'end_time' => 'The booking must end after its start time and no later than the configured closing time.',
             ]);
         }
 
         foreach (['start_time' => $startTime, 'end_time' => $endTime] as $field => $time) {
-            [$hour, $minute] = array_map('intval', explode(':', $time));
-
-            if (($minute % 15) !== 0) {
+            if (($this->timeToMinutes($time) % 15) !== 0) {
                 throw ValidationException::withMessages([
                     $field => 'Please select a valid 15-minute time interval.',
                 ]);
             }
         }
+    }
+
+    private function timeToMinutes(string $time): int
+    {
+        [$hour, $minute] = array_map('intval', explode(':', $time));
+        return ($hour * 60) + $minute;
     }
 
     /**
@@ -90,6 +98,10 @@ class BookingController extends Controller
             throw ValidationException::withMessages([
                 'end_time' => 'The end time must be later than the start time.',
             ]);
+        }
+
+        if ($end->lte($start) && $endTime === '00:00') {
+            $end->addDay();
         }
 
         $durationMinutes = $start->diffInMinutes($end);
@@ -168,10 +180,16 @@ class BookingController extends Controller
 
         $requestedStart = Carbon::createFromFormat('!H:i', $startTime);
         $requestedEnd = Carbon::createFromFormat('!H:i', $endTime);
+        if ($endTime === '00:00') {
+            $requestedEnd->addDay();
+        }
 
         foreach ($existingBookings as $existing) {
             $existingStart = Carbon::parse($existing->start_time);
             $existingEnd = Carbon::parse($existing->end_time);
+            if (substr((string) $existing->end_time, 0, 5) === '00:00') {
+                $existingEnd->addDay();
+            }
 
             $bufferedStart = $existingStart->copy()
                 ->subMinutes($bufferMinutes);
@@ -393,7 +411,8 @@ class BookingController extends Controller
 
         $this->validateOperatingHours(
             $validated['start_time'],
-            $validated['end_time']
+            $validated['end_time'],
+            $settings
         );
 
         $buffer = max(
