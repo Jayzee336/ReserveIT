@@ -661,6 +661,14 @@ export default function FacilitatorDashboard({
                 </section>
             </div>
 
+            <DashboardDrilldownModal
+                title={selectedAnalyticsDetail?.title}
+                description={selectedAnalyticsDetail?.description}
+                items={selectedAnalyticsDetail?.items ?? []}
+                mode={selectedAnalyticsDetail?.mode ?? 'bookings'}
+                onClose={() => setSelectedAnalyticsDetail(null)}
+            />
+
             {/* Booking Details Modal */}
             <BookingDetailModal
                 booking={viewBooking}
