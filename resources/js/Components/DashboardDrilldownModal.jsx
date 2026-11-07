@@ -1,5 +1,12 @@
 import { X, CalendarDays, Clock3, Building2, Mail } from 'lucide-react';
 
+function displayText(value, fallback = '—') {
+    if (value == null || value === '') return fallback;
+    if (typeof value === 'string' || typeof value === 'number') return String(value);
+    if (typeof value === 'object') return value.name ?? value.label ?? value.title ?? fallback;
+    return fallback;
+}
+
 function formatDate(value) {
     if (!value) return 'Date unavailable';
     const date = new Date(String(value).slice(0, 10) + 'T12:00:00');
@@ -105,8 +112,8 @@ export default function DashboardDrilldownModal({ title, description, items = []
                                 <article key={String(item.id || item.facility) + '-' + index} className="rounded-xl border border-stone-200 p-4">
                                     <div className="flex flex-wrap items-start justify-between gap-3">
                                         <div className="min-w-0">
-                                            <p className="font-semibold text-slate-900">{item.facility || item.facility_name || 'Facility'}</p>
-                                            <p className="mt-1 text-xs text-slate-500">{item.client || (item.user && item.user.name) || ''}</p>
+                                            <p className="font-semibold text-slate-900">{displayText(item.facility || item.facility_name, 'Facility')}</p>
+                                            <p className="mt-1 text-xs text-slate-500">{displayText(item.client, item.user?.name || '')}</p>
                                         </div>
                                         <StatusPill status={item.display_status || item.status}/>
                                     </div>
