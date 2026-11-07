@@ -17,13 +17,14 @@ class FacilitatorDashboardController extends Controller
     public function index(Request $request): Response
     {
         $user = Auth::user();
-        $selectedFacilityId = $request->query('facility_id');
 
         $filters = $request->validate([
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
+            'facility_id' => ['nullable', 'string', 'exists:facilities,id'],
             'group_by' => ['nullable', 'in:day,week,month'],
         ]);
+        $selectedFacilityId = $filters['facility_id'] ?? null;
 
         $defaultFrom = now()->subMonths(5)->startOfMonth()->toDateString();
         $defaultTo = now()->toDateString();
@@ -294,6 +295,7 @@ class FacilitatorDashboardController extends Controller
             'analyticsFilters' => [
                 'from' => $filterFrom,
                 'to' => $filterTo,
+                'facility_id' => $selectedFacilityId ?? '',
                 'group_by' => $groupBy,
             ],
             'analytics' => [
