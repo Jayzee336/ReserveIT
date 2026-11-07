@@ -461,7 +461,20 @@ export default function AdminDashboard({
                                 Oversee campus facilities, reservations, administrators, and system-wide operations.
                             </p>
                         </div>
-                        <div className="flex flex-col gap-3 sm:flex-row">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+                            <label className="flex min-w-[190px] flex-col gap-2 text-xs font-semibold text-[#FDF6F0]">
+                                Facility scope
+                                <select
+                                    value={analyticsFacility}
+                                    onChange={(event) => setAnalyticsFacility(event.target.value)}
+                                    className="min-h-12 rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-white/50"
+                                >
+                                    <option value="">All facilities</option>
+                                    {analyticsFacilities.map((facility) => (
+                                        <option key={facility.id} value={facility.id}>{facility.name}</option>
+                                    ))}
+                                </select>
+                            </label>
                             <Link
                                 href={route('schedule.index')}
                                 className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#6A535C] hover:!border-white hover:!bg-[#FFF8F2]"
@@ -500,7 +513,7 @@ export default function AdminDashboard({
                             <p className="mt-0.5 text-xs text-slate-500">{operationalAnalytics.periodLabel ?? 'Last 6 months'} · scoped to facilities you manage</p>
                         </div>
                     </div>
-                    <form onSubmit={applyAnalyticsFilters} className="mb-4 grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.2fr_0.8fr_auto_auto] lg:items-end">
+                    <form onSubmit={applyAnalyticsFilters} className="mb-4 grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_0.8fr_auto_auto] lg:items-end">
                         <label className="block text-xs font-semibold text-slate-600">
                             From
                             <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20" />
@@ -508,13 +521,6 @@ export default function AdminDashboard({
                         <label className="block text-xs font-semibold text-slate-600">
                             To
                             <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20" />
-                        </label>
-                        <label className="block text-xs font-semibold text-slate-600">
-                            Facility
-                            <select value={analyticsFacility} onChange={(event) => setAnalyticsFacility(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20">
-                                <option value="">All managed facilities</option>
-                                {analyticsFacilities.map((facility) => <option key={facility.id} value={facility.id}>{facility.name}</option>)}
-                            </select>
                         </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             Trend interval
