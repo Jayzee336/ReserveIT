@@ -251,4 +251,43 @@ class AdminDashboardAnalyticsTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_completed_bookings_are_separated_from_current_approved_bookings(): void
+    {
+        $superAdmin = User::factory()->create([
+            'role' => 'super_admin',
+            'is_active' => true,
+        ]);
+        $client = User::factory()->create(['role' => 'user']);
+        $facility = $this->createFacility('completed-status-facility', 'Completed Status Facility');
+
+        $this->createBooking($facility, $client, 'approved', [
+            'start_time' => '07:00:00',
+            'end_time' => '07:30:00',
+        ]);
+        $this->createBooking($facility, $client, 'approved', [
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+        ]);
+
+        $date = now()->toDateString();
+
+        $this->actingAs($superAdmin)
+            ->get(route('admin.dashboard', [
+                'from' => $date,
+                'to' => $date,
+                'group_by' => 'day',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('statusBreakdown.1.status', 'approved')
+                ->where('statusBreakdown.1.count', 1)
+                ->where('statusBreakdown.2.status', 'completed')
+                ->where('statusBreakdown.2.count', 1)
+                ->has('analyticsDetails.approved', 1)
+                ->has('analyticsDetails.completed', 1)
+                ->where('analyticsDetails.completed.0.display_status', 'completed')
+                ->where('analyticsDetails.approved.0.display_status', 'approved')
+            );
+    }
+
 }
