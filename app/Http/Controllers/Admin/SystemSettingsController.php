@@ -28,13 +28,17 @@ class SystemSettingsController extends Controller
             'max_booking_duration' => ['nullable', 'integer', 'min:1', 'max:24'],
             'require_consent_letter' => ['nullable', 'boolean'],
             'auto_purge_unapproved_days' => ['nullable', 'integer', 'min:0', 'max:30'],
-            'opening_time' => ['required', 'date_format:H:i'],
-            'closing_time' => ['required', 'date_format:H:i'],
-            'early_check_in_minutes' => ['required', 'integer', 'min:0', 'max:180'],
-            'overtime_grace_minutes' => ['required', 'integer', 'min:0', 'max:180'],
+            'opening_time' => ['sometimes', 'required', 'date_format:H:i'],
+            'closing_time' => ['sometimes', 'required', 'date_format:H:i'],
+            'early_check_in_minutes' => ['sometimes', 'required', 'integer', 'min:0', 'max:180'],
+            'overtime_grace_minutes' => ['sometimes', 'required', 'integer', 'min:0', 'max:180'],
         ]);
 
-        if ($data['opening_time'] === $data['closing_time']) {
+        $current = SystemSetting::current();
+        $openingTime = $data['opening_time'] ?? substr((string) $current->opening_time, 0, 5);
+        $closingTime = $data['closing_time'] ?? substr((string) $current->closing_time, 0, 5);
+
+        if ($openingTime === $closingTime) {
             return back()->withErrors(['closing_time' => 'Opening and closing times cannot be identical.']);
         }
 
