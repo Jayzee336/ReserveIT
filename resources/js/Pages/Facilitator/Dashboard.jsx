@@ -461,36 +461,37 @@ export default function FacilitatorDashboard({
                             <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6">
                                 {usageOverTime.map((item) => {
                                     const maxValue = Math.max(...usageOverTime.map((point) => point.bookings), 1);
+                                    const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
                                     return (
                                         <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
                                             <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
-                                            <div className="flex h-24 w-full items-end rounded-t-lg bg-stone-100">
-                                                <div className="w-full rounded-t-lg bg-[#846A75]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / maxValue * 100)}%` : '3px' }} />
-                                            </div>
+                                            <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`} aria-label={`View facilities booked in ${item.label}`} className={`flex h-24 w-full items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}>
+                                                <span className="block w-full rounded-t-lg bg-[#846A75]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / maxValue * 100)}%` : '3px' }} />
+                                            </button>
                                             <span className="truncate text-[10px] text-slate-500">{item.label}</span>
                                         </div>
                                     );
                                 })}
                             </div>
+                            {selectedTrend && <div className="mt-4 rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
+                                <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-sm font-bold text-[#6A535C]">{selectedTrend.label} facility activity</p><p className="text-xs text-slate-500">{selectedTrend.bookings} bookings across {(selectedTrend.facilities ?? []).length} facilities</p></div><button type="button" onClick={() => setSelectedTrendLabel(null)} className="text-xs font-semibold text-[#6A535C] hover:underline">Clear</button></div>
+                                <div className="mt-3 grid gap-2 sm:grid-cols-2">{(selectedTrend.facilities ?? []).map((facility) => <div key={facility.name} className="flex justify-between gap-3 rounded-lg bg-white px-3 py-2 text-xs"><span className="text-slate-700">{facility.name}</span><span className="font-bold text-[#6A535C]">{facility.bookings}</span></div>)}</div>
+                            </div>}
                             {usageOverTime.length === 0 && <p className="mt-4 text-sm text-slate-500">No bookings in this period.</p>}
                         </div>
                         <div className="rounded-xl border border-[var(--ri-border)] p-4">
                             <div className="flex items-center gap-2">
                                 <BarChart3 className="h-4 w-4 text-[#6A535C]"/>
-                                <h3 className="text-sm font-bold text-slate-900">Booking status breakdown</h3>
+                                <h3 className="text-sm font-bold text-[#6A535C]">Status breakdown</h3>
                             </div>
                             <div className="mt-5 space-y-4">
-                                {statusBreakdown.map((item) => (
-                                    <div key={item.status}>
-                                        <div className="mb-1 flex justify-between text-xs">
-                                            <span className="font-semibold capitalize text-slate-700">{item.status}</span>
-                                            <span className="text-slate-500">{item.count} · {item.percentage}%</span>
-                                        </div>
-                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                                            <div className={`h-full rounded-full ${item.status === 'approved' ? 'bg-emerald-500' : item.status === 'pending' ? 'bg-amber-400' : item.status === 'declined' ? 'bg-rose-500' : 'bg-slate-400'}`} style={{ width: `${item.percentage}%` }}/>
-                                        </div>
-                                    </div>
-                                ))}
+                                {statusBreakdown.map((item) => {
+                                    const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
+                                    return <button key={item.status} type="button" onClick={() => setSelectedAnalyticsDetail({title:`${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`,description:`Assigned-facility ${item.status} bookings in the selected period.`,items:statusDetails[item.status] ?? [],mode:'bookings'})} className="block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
+                                        <div className="mb-1 flex justify-between text-xs"><span className="font-semibold capitalize text-slate-700">{item.status}</span><span className="text-slate-500">{item.count} · {item.percentage}%</span></div>
+                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${item.percentage}%` }}/></div>
+                                    </button>;
+                                })}
                                 {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No booking data in this period.</p>}
                             </div>
                         </div>
