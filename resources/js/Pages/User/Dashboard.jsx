@@ -17,6 +17,8 @@ import {
     TrendingUp,
 } from 'lucide-react';
 
+const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled'];
+
 const STATUS_STYLES = {
     pending: 'border-amber-200 bg-amber-50 text-amber-800',
     approved: 'border-emerald-200 bg-emerald-50 text-emerald-800',
@@ -121,6 +123,15 @@ export default function Dashboard({
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [selectedTrendLabel, setSelectedTrendLabel] = useState(null);
     const selectedTrend = bookingTrends.find((item) => item.label === selectedTrendLabel);
+    const displayedStatusBreakdown = DASHBOARD_STATUS_ORDER.map((status) => {
+        const item = statusBreakdown.find((entry) => entry.status === status);
+        return {
+            status,
+            count: Number(item?.count ?? 0),
+            percentage: Number(item?.percentage ?? 0),
+        };
+    });
+
 
     return (
         <AuthenticatedLayout>
@@ -165,14 +176,9 @@ export default function Dashboard({
                     </div>
                 </section>
 
-                <section aria-label="Booking overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
+                <section aria-label="Booking overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <MetricCard icon={CalendarDays} label="Total bookings" value={metrics.totalBookings} detail="All requests on your account" onClick={() => setSelectedDetail({ title: 'All your bookings', description: 'Every reservation submitted from your account.', items: bookingDetails, mode: 'bookings' })} />
                     <MetricCard icon={Building2} label="Available venues" value={metrics.activeRooms} detail="Spaces currently listed" href={route('facilities.index')} />
-                    <MetricCard icon={CheckCircle2} label="Approved" value={metrics.approvedBookings} detail="Confirmed reservations" onClick={() => setSelectedDetail({ title: 'Approved bookings', description: 'Reservations that are approved and not yet completed.', items: statusDetails.approved ?? [], mode: 'bookings' })} />
-                    <MetricCard icon={Clock3} label="Pending" value={metrics.pendingRequests} detail="Awaiting a decision" onClick={() => setSelectedDetail({ title: 'Pending bookings', description: 'Requests awaiting an administrator decision.', items: statusDetails.pending ?? [], mode: 'bookings' })} />
-                    <MetricCard icon={XCircle} label="Declined" value={metrics.declinedBookings} detail="Requests not approved" onClick={() => setSelectedDetail({ title: 'Declined bookings', description: 'Requests that were declined.', items: statusDetails.declined ?? [], mode: 'bookings' })} />
-                    <MetricCard icon={Ban} label="Cancelled" value={metrics.cancelledBookings} detail="Cancelled reservations" onClick={() => setSelectedDetail({ title: 'Cancelled bookings', description: 'Reservations cancelled from your account.', items: statusDetails.cancelled ?? [], mode: 'bookings' })} />
-                    <MetricCard icon={CheckCircle2} label="Completed" value={metrics.completedBookings} detail="Finished reservations" onClick={() => setSelectedDetail({ title: 'Completed bookings', description: 'Approved reservations that have finished.', items: statusDetails.completed ?? [], mode: 'bookings' })} />
                 </section>
 
                 <section aria-label="Your booking analytics" className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.9fr)]">
@@ -235,7 +241,7 @@ export default function Dashboard({
                             </div>
                         </div>
                         <div className="mt-5 space-y-4">
-                            {statusBreakdown.map((item) => {
+                            {displayedStatusBreakdown.map((item) => {
                                 const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
                                 return (
                                     <button key={item.status} type="button"
@@ -243,10 +249,10 @@ export default function Dashboard({
                                         className="block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
                                         <div className="mb-1.5 flex justify-between gap-3 text-xs">
                                             <span className="font-semibold capitalize text-slate-700">{item.status}</span>
-                                            <span className="text-slate-500">{item.count} · {item.percentage}%</span>
+                                            <span className="text-slate-500">{item.count} · {item.percentage.toFixed(1)}%</span>
                                         </div>
                                         <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                                            <div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${item.percentage}%` }} />
+                                            <div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }} />
                                         </div>
                                     </button>
                                 );
