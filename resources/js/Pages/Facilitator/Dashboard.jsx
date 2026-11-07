@@ -241,6 +241,7 @@ export default function FacilitatorDashboard({
     const [analyticsFrom, setAnalyticsFrom] = useState(analyticsFilters.from ?? '');
     const [analyticsTo, setAnalyticsTo] = useState(analyticsFilters.to ?? '');
     const [analyticsGroupBy, setAnalyticsGroupBy] = useState(analyticsFilters.group_by ?? 'month');
+    const [analyticsFacility, setAnalyticsFacility] = useState(selectedFacilityId ?? '');
     const [processingId, setProcessingId] = useState(null);
     const [viewBooking, setViewBooking] = useState(null);
     const [confirmApproveId, setConfirmApproveId] = useState(null);
@@ -268,7 +269,7 @@ export default function FacilitatorDashboard({
     const applyAnalyticsFilters = (event) => {
         event.preventDefault();
         router.get(route('facilitator.dashboard'), {
-            facility_id: selectedFacilityId || undefined,
+            facility_id: analyticsFacility || undefined,
             from: analyticsFrom,
             to: analyticsTo,
             group_by: analyticsGroupBy,
@@ -280,17 +281,7 @@ export default function FacilitatorDashboard({
     };
 
     const handleFacilityChange = (event) => {
-        const facilityId = event.target.value;
-        router.get(route('facilitator.dashboard'), {
-            facility_id: facilityId || undefined,
-            from: analyticsFrom,
-            to: analyticsTo,
-            group_by: analyticsGroupBy,
-        }, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
+        setAnalyticsFacility(event.target.value);
     };
 
     const confirmApprove = (bookingId) => {
@@ -374,19 +365,6 @@ export default function FacilitatorDashboard({
                             </p>
                         </div>
                         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-                            <label className="flex min-w-[210px] flex-col gap-2 text-xs font-semibold text-[#FDF6F0]">
-                                Facility scope
-                                <select
-                                    value={selectedFacilityId ?? ''}
-                                    onChange={handleFacilityChange}
-                                    className="min-h-12 rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-white/50"
-                                >
-                                    <option value="">All assigned facilities</option>
-                                    {facilities.map((facility) => (
-                                        <option key={facility.id} value={facility.id}>{facility.name}</option>
-                                    ))}
-                                </select>
-                            </label>
                             <Link
                                 href={route('admin.active-bookings.page')}
                                 className="inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
@@ -430,10 +408,17 @@ export default function FacilitatorDashboard({
                 <section className="ri-panel space-y-5 p-5 sm:p-6">
                     <div>
                         <p className="ri-page-eyebrow">Assigned facility insights</p>
-                        <h2 className="mt-1 text-lg font-bold text-slate-900">Client &amp; operations analytics</h2>
+                        <h2 className="mt-1 font-semibold text-slate-900">Client &amp; operations analytics</h2>
                         <p className="mt-1 text-xs text-slate-500">{analytics.periodLabel ?? 'Last six months'} · metrics include only facilities assigned to you and the selected facility scope.</p>
                     </div>
-                    <form onSubmit={applyAnalyticsFilters} className="grid gap-3 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_0.8fr_auto_auto] xl:items-end">
+                    <form onSubmit={applyAnalyticsFilters} className="grid gap-3 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-3 sm:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_0.8fr_auto_auto] xl:items-end">
+                        <label className="block text-xs font-semibold text-slate-600">
+                            Facility scope
+                            <select value={analyticsFacility} onChange={handleFacilityChange} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700">
+                                <option value="">All assigned facilities</option>
+                                {facilities.map((facility) => <option key={facility.id} value={facility.id}>{facility.name}</option>)}
+                            </select>
+                        </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             From
                             <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700"/>
@@ -451,7 +436,7 @@ export default function FacilitatorDashboard({
                             </select>
                         </label>
                         <button type="submit" className="rounded-lg bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#533e45]">Apply</button>
-                        <button type="button" onClick={() => { setAnalyticsFrom(''); setAnalyticsTo(''); setAnalyticsGroupBy('month'); router.get(route('facilitator.dashboard'), { facility_id: selectedFacilityId || undefined }, { preserveState: true, preserveScroll: true, replace: true }); }} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-stone-100">Reset</button>
+                        <button type="button" onClick={() => { setAnalyticsFrom(''); setAnalyticsTo(''); setAnalyticsGroupBy('month'); setAnalyticsFacility(''); router.get(route('facilitator.dashboard'), {}, { preserveState: true, preserveScroll: true, replace: true }); }} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-stone-100">Reset</button>
                     </form>
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                         <Stat label="Total bookings" value={analytics.totalBookings ?? 0} onClick={() => setSelectedAnalyticsDetail({title:'Total bookings',description:'All bookings in the selected date range and assigned facility scope.',items:analyticsDetails.totalBookings ?? [],mode:'bookings'})}/>
@@ -467,7 +452,7 @@ export default function FacilitatorDashboard({
                         <div className="rounded-xl border border-[var(--ri-border)] p-4">
                             <div className="flex items-center gap-2">
                                 <TrendingUp className="h-4 w-4 text-[#6A535C]"/>
-                                <h3 className="text-sm font-bold text-slate-900">Booking volume over time</h3>
+                                <h3 className="text-sm font-semibold text-slate-900">Booking volume over time</h3>
                             </div>
                             <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6">
                                 {usageOverTime.map((item) => {
@@ -493,7 +478,7 @@ export default function FacilitatorDashboard({
                         <div className="rounded-xl border border-[var(--ri-border)] p-4">
                             <div className="flex items-center gap-2">
                                 <BarChart3 className="h-4 w-4 text-[#6A535C]"/>
-                                <h3 className="text-sm font-bold text-[#6A535C]">Status breakdown</h3>
+                                <h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3>
                             </div>
                             <div className="mt-5 space-y-4">
                                 {displayedStatusBreakdown.map((item) => {
