@@ -285,6 +285,8 @@ export default function AdminDashboard({
     const [analyticsTo, setAnalyticsTo] = useState(analyticsFilters.to ?? '');
     const [analyticsFacility, setAnalyticsFacility] = useState(analyticsFilters.facility_id ?? '');
     const [analyticsGroupBy, setAnalyticsGroupBy] = useState(analyticsFilters.group_by ?? 'month');
+    const [selectedTrendLabel, setSelectedTrendLabel] = useState(null);
+    const selectedTrend = usageOverTime.find((item) => item.label === selectedTrendLabel);
 
     const applyAnalyticsFilters = (event) => {
         event.preventDefault();
@@ -555,8 +557,14 @@ export default function AdminDashboard({
                         ))}
                     </div>
                     <div className="mt-5 rounded-xl border border-stone-200 p-4">
-                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-slate-800">Booking status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{statusBreakdown.map((item) => <div key={item.status} className="rounded-lg bg-stone-50 px-3 py-3"><div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-600">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className="h-full rounded-full bg-[#846A75]" style={{ width: `${item.percentage}%` }} /></div><p className="mt-1 text-right text-[11px] text-slate-500">{item.percentage}%</p></div>)}</div>
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
+                        <div className="space-y-3">{statusBreakdown.map((item) => {
+                            const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
+                            return <div key={item.status} className="rounded-lg bg-stone-50 px-3 py-2.5">
+                                <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage}%</span></span></div>
+                                <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${item.percentage}%` }}/></div>
+                            </div>;
+                        })}</div>
                     </div>
                 </section>
 
@@ -575,29 +583,38 @@ export default function AdminDashboard({
                         </div>
 
                         <div className="mt-6 overflow-x-auto">
-                        <div className="flex h-44 min-w-[560px] items-end gap-3">
-                            {usageOverTime.map((item) => (
-                                <div
-                                    key={item.label}
-                                    className="flex flex-1 flex-col items-center gap-2"
-                                >
-                                    <span className="text-xs font-semibold">
-                                        {item.bookings}
-                                    </span>
-                                    <div
-                                        className="w-full rounded-t-lg bg-[#846A75]"
-                                        style={{
-                                            height: `${(item.bookings / maximum) * 100}%`,
-                                            minHeight: item.bookings ? '8px' : '2px',
-                                        }}
-                                    />
-                                    <span className="text-[10px] text-slate-500">
-                                        {item.label}
-                                    </span>
+                            <div className="flex h-44 min-w-[560px] items-end gap-3">
+                                {usageOverTime.map((item) => {
+                                    const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
+                                    return (
+                                        <div key={item.label} className="flex flex-1 flex-col items-center gap-2">
+                                            <span className="text-xs font-semibold">{item.bookings}</span>
+                                            <button type="button"
+                                                onClick={() => setSelectedTrendLabel(item.label)}
+                                                title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`}
+                                                aria-label={`View facilities booked in ${item.label}`}
+                                                className={`flex w-full flex-1 items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}
+                                            >
+                                                <span className="block w-full rounded-t-lg bg-[#846A75]" style={{ height: `${(item.bookings / maximum) * 100}%`, minHeight: item.bookings ? '8px' : '2px' }}/>
+                                            </button>
+                                            <span className="text-[10px] text-slate-500">{item.label}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        {selectedTrend && (
+                            <div className="mt-4 rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div><p className="text-sm font-bold text-[#6A535C]">{selectedTrend.label} facility activity</p><p className="text-xs text-slate-500">{selectedTrend.bookings} bookings across {(selectedTrend.facilities ?? []).length} facilities</p></div>
+                                    <button type="button" onClick={() => setSelectedTrendLabel(null)} className="text-xs font-semibold text-[#6A535C] hover:underline">Clear</button>
                                 </div>
-                            ))}
-                        </div>
-                        </div>
+                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                    {(selectedTrend.facilities ?? []).map((facility) => <div key={facility.name} className="flex justify-between gap-3 rounded-lg bg-white px-3 py-2 text-xs"><span className="text-slate-700">{facility.name}</span><span className="font-bold text-[#6A535C]">{facility.bookings}</span></div>)}
+                                    {(selectedTrend.facilities ?? []).length === 0 && <p className="text-xs text-slate-500">No facility activity in this period.</p>}
+                                </div>
+                            </div>
+                        )}
                     </section>
 
                     <section className="rounded-2xl bg-white p-5 shadow-sm">
