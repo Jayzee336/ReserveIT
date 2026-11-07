@@ -294,7 +294,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'statusDetails' => $statusDetails,
             'bookingDetails' => $bookingDetailRows,
             'mostUsedFacilities' => $mostUsedFacilities,
-            'recentBookings' => $userBookings->take(5)->values(),
+            'recentBookings' => $userBookings->take(5)->map(function (Booking $booking) {
+                $booking->setAttribute(
+                    'display_status',
+                    BookingDashboardAnalytics::displayStatus($booking)
+                );
+
+                return $booking;
+            })->values(),
             'upcomingBooking' => $upcomingBooking,
         ]);
     })->middleware('role:user,super_admin,facility_admin')
