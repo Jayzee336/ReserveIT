@@ -53,10 +53,6 @@ class AdminDashboardController extends Controller
                 [$filterFrom, $filterTo]
             );
 
-        if ($filterFacilityId !== '') {
-            // The base query is already scoped to facilities assigned to this user.
-            $analyticsQuery->where('facility_id', $filterFacilityId);
-        }
 
         $bookings = $analyticsQuery->get();
 
@@ -241,7 +237,11 @@ class AdminDashboardController extends Controller
                     && (int) substr((string) ($booking['start_time'] ?? ''), 0, 2) === (int) $bookingsByHour->keys()->first()
             )->values(),
             'overtime' => $bookingDetailRows->where('overtime_minutes', '>', 0)->values(),
+            'pending' => $bookingDetailRows->where('display_status', 'pending')->values(),
+            'approved' => $bookingDetailRows->where('display_status', 'approved')->values(),
             'completed' => $bookingDetailRows->where('display_status', 'completed')->values(),
+            'declined' => $bookingDetailRows->where('display_status', 'declined')->values(),
+            'cancelled' => $bookingDetailRows->where('display_status', 'cancelled')->values(),
             'allBookings' => $bookingDetailRows,
         ];
 
