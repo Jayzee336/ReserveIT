@@ -742,8 +742,9 @@ export default function BookingModal({
                 )}
             </div>
 
-            {/* Consent Letter Upload */}
-            {isConsentRequired && (
+            {/* Consent Letter Upload. Keep this available for weekend bookings as a safeguard
+                when shared settings and server-side consent rules are temporarily out of sync. */}
+            {(isConsentRequired || isWeekendBooking) && (
                 <div className="space-y-3 border-b border-gray-100 px-6 py-5">
                     <div className="relative rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-4 hover:bg-indigo-50/40">
                         <div className="flex items-center gap-3">
@@ -754,9 +755,12 @@ export default function BookingModal({
                                     {file
                                         ? file.name
                                         : 'Click to attach Consent Form'}
+                                    {isConsentRequired && <span className="ml-1 text-red-600">*</span>}
                                 </p>
                                 <p className="text-xs text-gray-400">
-                                    PDF, DOC, or DOCX up to 5MB
+                                    {isConsentRequired
+                                        ? 'Required for this booking · PDF, DOC, or DOCX up to 5MB'
+                                        : 'Optional for this booking · PDF, DOC, or DOCX up to 5MB'}
                                 </p>
                             </div>
                         </div>
