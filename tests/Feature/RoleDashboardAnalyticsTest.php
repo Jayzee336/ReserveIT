@@ -163,7 +163,10 @@ class RoleDashboardAnalyticsTest extends TestCase
                 ->where('selectedFacilityId', $facilityA->id)
                 ->where('analytics.totalBookings', 1)
                 ->where('analytics.uniqueClients', 1)
+                ->where('analyticsFilters.facility_id', $facilityA->id)
                 ->where('analyticsFilters.group_by', 'day')
+                ->where('statusBreakdown.1.count', 1)
+                ->where('statusBreakdown.0.count', 0)
                 ->where('mostUsedFacilities.0.name', 'Filter Facility A')
                 ->has('statusDetails.approved', 1)
                 ->has('analyticsDetails.totalBookings', 1)
@@ -208,4 +211,56 @@ class RoleDashboardAnalyticsTest extends TestCase
                 ->has('recentBookings', 2)
             );
     }
+    public function test_general_user_analytics_filter_updates_cards_chart_and_status_breakdown_for_own_bookings_only(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+        $otherUser = User::factory()->create(['role' => 'user']);
+        $facility = $this->createFacility('personal-analytics-filter', 'Personal Analytics Filter Hall');
+
+        $selectedDate = now()->toDateString();
+        $outsideDate = now()->subMonths(8)->toDateString();
+
+        $this->createBooking($facility, $user, 'approved', [
+            'date' => $selectedDate,
+            'booking_date' => $selectedDate,
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+        ]);
+        $this->createBooking($facility, $user, 'pending', [
+            'date' => $outsideDate,
+            'booking_date' => $outsideDate,
+        ]);
+        $this->createBooking($facility, $otherUser, 'declined', [
+            'date' => $selectedDate,
+            'booking_date' => $selectedDate,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('user.dashboard', [
+                'from' => $selectedDate,
+                'to' => $selectedDate,
+                'group_by' => 'day',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('User/Dashboard')
+                ->where('analyticsFilters.from', $selectedDate)
+                ->where('analyticsFilters.to', $selectedDate)
+                ->where('analyticsFilters.group_by', 'day')
+                ->where('analytics.totalBookings', 1)
+                ->where('analytics.approvalRate', 100)
+                ->where('analytics.cancellationRate', 0)
+                ->has('bookingTrends', 1)
+                ->where('bookingTrends.0.bookings', 1)
+                ->where('statusBreakdown.0.count', 0)
+                ->where('statusBreakdown.1.count', 1)
+                ->where('statusBreakdown.2.count', 0)
+                ->where('statusBreakdown.3.count', 0)
+                ->where('statusBreakdown.4.count', 0)
+                ->has('analyticsDetails.totalBookings', 1)
+                ->has('statusDetails.pending', 0)
+                ->where('stats.totalBookings', 2)
+            );
+    }
+
 }
