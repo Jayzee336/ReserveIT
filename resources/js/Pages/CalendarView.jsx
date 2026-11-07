@@ -31,6 +31,9 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
     for (let minutes = openingHour * 60; minutes < closingMinutes; minutes += 60) {
         HOURS.push(`${String(Math.floor(minutes / 60)).padStart(2, '0')}:00`);
     }
+    // The final column marks the closing boundary (for example, 12:00 AM),
+    // while the last clickable hour remains the interval immediately before it.
+    const closingBoundaryLabel = formatTime(closingTime);
     const [details, setDetails] = useState(null);
     const [create, setCreate] = useState(null);
     const detailsDialogRef = useRef(null);
@@ -104,16 +107,19 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                 {availabilityOnly && <span className="font-medium text-indigo-700">You can check availability and request bookings for any facility here. Existing reservation details remain private.</span>}
                 <span className="text-slate-500">Schedule shown from {formatTime(openingTime)} to {closingTime === '00:00' ? '12:00 AM (midnight)' : formatTime(closingTime)}</span>
             </div>
-            <div className="w-full overflow-x-auto whitespace-nowrap rounded-2xl border border-[var(--ri-border)]">
-                <table className="min-w-[1580px] w-full table-fixed border-collapse">
+            <div className="w-full overflow-hidden rounded-2xl border border-[var(--ri-border)]">
+                <table className="w-full table-fixed border-collapse">
                     <thead className="bg-[var(--ri-surface-subtle)]">
                         <tr>
-                            <th className="sticky left-0 z-20 w-64 border-b border-r bg-[#fbf5ef] p-3 text-left text-sm font-semibold text-slate-700">Facility</th>
+                            <th className="sticky left-0 z-20 w-[150px] border-b border-r bg-[#fbf5ef] px-2 py-2 text-left text-xs font-semibold text-slate-700">Facility</th>
                             {HOURS.map((hour) => (
-                                <th key={hour} className="w-[94px] border-b border-r p-3 text-center text-xs font-semibold text-slate-600">
-                                    {formatTime(hour)}
+                                <th key={hour} title={formatTime(hour)} className="border-b border-r px-0.5 py-2 text-center text-[9px] font-semibold leading-tight text-slate-600">
+                                    {formatTime(hour).replace(':00', '')}
                                 </th>
                             ))}
+                            <th title={`Closing boundary: ${closingBoundaryLabel}`} className="border-b border-l-2 border-l-indigo-200 bg-indigo-50/70 px-0.5 py-2 text-center text-[9px] font-bold leading-tight text-indigo-700">
+                                {closingBoundaryLabel.replace(':00', '')}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -140,17 +146,17 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
 
                                 if (overlappingBookings.length) {
                                     cells.push(
-                                        <td key={slot} className="border-b border-r p-1.5 align-top">
+                                        <td key={slot} className="border-b border-r p-0.5 align-top">
                                             <div className="space-y-1.5">
                                                 {startingBookings.map((booking) => (
                                                     <button
                                                         key={booking.id}
                                                         type="button"
                                                         onClick={() => setDetails({ facility, bookings: [booking] })}
-                                                        className={`min-h-[64px] w-full rounded-xl bg-gradient-to-r ${statusClass(booking.status)} px-2 py-2 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
+                                                        className={`min-h-[64px] w-full rounded-xl bg-gradient-to-r ${statusClass(booking.status)} px-0.5 py-1 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
                                                     >
-                                                        <span className="block text-[10px] font-bold uppercase leading-4">{booking.status === 'approved' ? 'Confirmed' : 'Pending hold'}</span>
-                                                        <span className="mt-1 block whitespace-normal text-[10px] font-semibold leading-4">{formatTime(booking.start_time)} – {formatTime(booking.end_time)}</span>
+                                                        <span className="block text-[8px] font-bold uppercase leading-3">{booking.status === 'approved' ? 'Confirmed' : 'Pending hold'}</span>
+                                                        <span className="mt-0.5 block whitespace-normal break-words text-[8px] font-semibold leading-3">{formatTime(booking.start_time)} – {formatTime(booking.end_time)}</span>
                                                     </button>
                                                 ))}
                                                 {continuingBookings.map((booking) => (
@@ -168,13 +174,13 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                     );
                                 } else {
                                     cells.push(
-                                        <td key={slot} className="border-b border-r p-1.5">
+                                        <td key={slot} className="border-b border-r p-0.5">
                                             <button
                                                 type="button"
                                                 aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
                                                 title={`Book ${facility.name} at ${formatTime(slot)}`}
                                                 onClick={() => setCreate({ facility, startTime: slot })}
-                                                className="flex min-h-[64px] w-full items-center justify-center rounded-xl border border-dashed border-[var(--ri-border-strong)] text-lg text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]"
+                                                className="flex min-h-[52px] w-full items-center justify-center rounded-md border border-dashed border-[var(--ri-border-strong)] text-sm text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]"
                                             >
                                                 +
                                             </button>
@@ -184,11 +190,12 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                             });
                             return (
                                 <tr key={facility.id}>
-                                    <th className="sticky left-0 z-10 border-b border-r bg-white p-3 text-left align-top whitespace-normal">
-                                        <p className="text-sm font-semibold text-slate-800">{facility.name}</p>
-                                        <p className="mt-1 text-xs font-normal text-slate-500">{facility.location}</p>
+                                    <th className="sticky left-0 z-10 border-b border-r bg-white px-2 py-2 text-left align-top whitespace-normal">
+                                        <p className="text-xs font-semibold leading-tight text-slate-800">{facility.name}</p>
+                                        <p className="mt-1 text-[10px] font-normal leading-tight text-slate-500">{facility.location}</p>
                                     </th>
                                     {cells}
+                                    <td aria-label={`Closing boundary at ${closingBoundaryLabel}`} className="border-b border-l-2 border-l-indigo-100 bg-indigo-50/30 p-0.5" />
                                 </tr>
                             );
                         })}
