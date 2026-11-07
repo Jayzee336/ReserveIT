@@ -153,7 +153,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                                         key={booking.id}
                                                         type="button"
                                                         onClick={() => setDetails({ facility, bookings: [booking] })}
-                                                        className={`min-h-[64px] w-full rounded-xl bg-gradient-to-r ${statusClass(booking.status)} px-0.5 py-1 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
+                                                        className={`min-h-[52px] w-full rounded-xl bg-gradient-to-r ${statusClass(booking.status)} px-0.5 py-1 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
                                                     >
                                                         <span className="block text-[8px] font-bold uppercase leading-3">{booking.status === 'approved' ? 'Confirmed' : 'Pending hold'}</span>
                                                         <span className="mt-0.5 block whitespace-normal break-words text-[8px] font-semibold leading-3">{formatTime(booking.start_time)} – {formatTime(booking.end_time)}</span>
@@ -164,7 +164,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                                         key={`continuation-${booking.id}`}
                                                         type="button"
                                                         onClick={() => setDetails({ facility, bookings: [booking] })}
-                                                        className={`w-full rounded-lg border border-dashed px-2.5 py-2 text-left text-[10px] font-semibold leading-4 ${booking.status === 'approved' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}
+                                                        className={`w-full rounded-lg border border-dashed px-0.5 py-1 text-left text-[8px] font-semibold leading-3 ${booking.status === 'approved' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}
                                                     >
                                                         Booked
                                                     </button>
