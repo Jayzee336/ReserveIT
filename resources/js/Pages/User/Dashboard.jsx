@@ -228,15 +228,15 @@ export default function Dashboard({
                     <form onSubmit={applyAnalyticsFilters} className="grid gap-3 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_0.8fr_auto_auto] xl:items-end">
                         <label className="block text-xs font-semibold text-slate-600">
                             From
-                            <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700" />
+                            <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-[var(--ri-border)] bg-white px-3 py-2 text-sm font-normal text-slate-700" />
                         </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             To
-                            <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700" />
+                            <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-[var(--ri-border)] bg-white px-3 py-2 text-sm font-normal text-slate-700" />
                         </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             Trend interval
-                            <select value={analyticsGroupBy} onChange={(event) => setAnalyticsGroupBy(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700">
+                            <select value={analyticsGroupBy} onChange={(event) => setAnalyticsGroupBy(event.target.value)} className="mt-1 block w-full rounded-lg border border-[var(--ri-border)] bg-white px-3 py-2 text-sm font-normal text-slate-700">
                                 <option value="day">Daily</option>
                                 <option value="week">Weekly</option>
                                 <option value="month">Monthly</option>
@@ -254,7 +254,7 @@ export default function Dashboard({
                     </div>
 
                     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.9fr)]">
-                        <article className="rounded-xl border border-[var(--ri-border)] p-4">
+                        <article className="rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface)] p-4">
                             <div className="flex items-center gap-2">
                                 <TrendingUp className="h-4 w-4 text-[#6A535C]" />
                                 <h3 className="text-sm font-semibold text-slate-900">Booking volume over time</h3>
@@ -293,7 +293,7 @@ export default function Dashboard({
                             {bookingTrends.length === 0 && <p className="mt-4 text-sm text-slate-500">No booking activity in this period.</p>}
                         </article>
 
-                        <article className="rounded-xl border border-[var(--ri-border)] p-4">
+                        <article className="rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface)] p-4">
                             <div className="flex items-center gap-2">
                                 <BarChart3 className="h-4 w-4 text-[#6A535C]" />
                                 <h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3>
