@@ -1,5 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
+import { useState } from 'react';
+import DashboardDrilldownModal from '@/Components/DashboardDrilldownModal';
 import {
     ArrowRight,
     CalendarDays,
@@ -19,6 +21,7 @@ const STATUS_STYLES = {
     pending: 'border-amber-200 bg-amber-50 text-amber-800',
     approved: 'border-emerald-200 bg-emerald-50 text-emerald-800',
     declined: 'border-rose-200 bg-rose-50 text-rose-800',
+    completed: 'border-sky-200 bg-sky-50 text-sky-800',
     cancelled: 'border-slate-200 bg-slate-100 text-slate-600',
 };
 
@@ -26,6 +29,7 @@ const STATUS_LABELS = {
     pending: 'Pending review',
     approved: 'Confirmed',
     declined: 'Declined',
+    completed: 'Completed',
     cancelled: 'Cancelled',
 };
 
@@ -41,23 +45,24 @@ function StatusBadge({ status }) {
     );
 }
 
-function MetricCard({ icon: Icon, label, value, detail }) {
-    return (
-        <article className="ri-panel ri-panel-interactive min-w-0 p-5 sm:p-6">
-            <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-500">{label}</p>
-                    <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-                        {value ?? 0}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">{detail}</p>
-                </div>
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--ri-brand-soft)] text-[var(--ri-brand)]">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                </span>
+function MetricCard({ icon: Icon, label, value, detail, onClick, href }) {
+    const content = (
+        <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-500">{label}</p>
+                <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{value ?? 0}</p>
+                <p className="mt-1 text-xs text-slate-500">{detail}</p>
+                {(onClick || href) && <span className="mt-3 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-80">View details ↗</span>}
             </div>
-        </article>
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F4ECEF] text-[#6A535C]">
+                <Icon className="h-5 w-5" aria-hidden="true" />
+            </span>
+        </div>
     );
+    const classes = "ri-panel ri-panel-interactive min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2 sm:p-6";
+    if (href) return <Link href={href} className={classes}>{content}</Link>;
+    if (onClick) return <button type="button" onClick={onClick} className={`w-full ${classes}`}>{content}</button>;
+    return <article className={classes}>{content}</article>;
 }
 
 function formatDate(value) {
@@ -99,6 +104,8 @@ export default function Dashboard({
     statusBreakdown = [],
     mostUsedFacilities = [],
     recentBookings = [],
+    bookingDetails = [],
+    statusDetails = {},
 }) {
     const metrics = stats ?? {
         totalBookings: 0,
@@ -110,6 +117,9 @@ export default function Dashboard({
     };
     const trendMaximum = Math.max(...bookingTrends.map((item) => item.bookings), 1);
     const firstName = auth?.user?.name?.trim()?.split(/\s+/)[0] || 'there';
+    const [selectedDetail, setSelectedDetail] = useState(null);
+    const [selectedTrendLabel, setSelectedTrendLabel] = useState(null);
+    const selectedTrend = bookingTrends.find((item) => item.label === selectedTrendLabel);
 
     return (
         <AuthenticatedLayout>
@@ -154,13 +164,14 @@ export default function Dashboard({
                     </div>
                 </section>
 
-                <section aria-label="Booking overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-                    <MetricCard icon={CalendarDays} label="Total bookings" value={metrics.totalBookings} detail="All requests on your account" />
-                    <MetricCard icon={Building2} label="Available venues" value={metrics.activeRooms} detail="Spaces currently listed" />
-                    <MetricCard icon={CheckCircle2} label="Approved" value={metrics.approvedBookings} detail="Confirmed reservations" />
-                    <MetricCard icon={Clock3} label="Pending" value={metrics.pendingRequests} detail="Awaiting a decision" />
-                    <MetricCard icon={XCircle} label="Declined" value={metrics.declinedBookings} detail="Requests not approved" />
-                    <MetricCard icon={Ban} label="Cancelled" value={metrics.cancelledBookings} detail="Cancelled reservations" />
+                <section aria-label="Booking overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
+                    <MetricCard icon={CalendarDays} label="Total bookings" value={metrics.totalBookings} detail="All requests on your account" onClick={() => setSelectedDetail({ title: 'All your bookings', description: 'Every reservation submitted from your account.', items: bookingDetails, mode: 'bookings' })} />
+                    <MetricCard icon={Building2} label="Available venues" value={metrics.activeRooms} detail="Spaces currently listed" href={route('facilities.index')} />
+                    <MetricCard icon={CheckCircle2} label="Approved" value={metrics.approvedBookings} detail="Confirmed reservations" onClick={() => setSelectedDetail({ title: 'Approved bookings', description: 'Reservations that are approved and not yet completed.', items: statusDetails.approved ?? [], mode: 'bookings' })} />
+                    <MetricCard icon={Clock3} label="Pending" value={metrics.pendingRequests} detail="Awaiting a decision" onClick={() => setSelectedDetail({ title: 'Pending bookings', description: 'Requests awaiting an administrator decision.', items: statusDetails.pending ?? [], mode: 'bookings' })} />
+                    <MetricCard icon={XCircle} label="Declined" value={metrics.declinedBookings} detail="Requests not approved" onClick={() => setSelectedDetail({ title: 'Declined bookings', description: 'Requests that were declined.', items: statusDetails.declined ?? [], mode: 'bookings' })} />
+                    <MetricCard icon={Ban} label="Cancelled" value={metrics.cancelledBookings} detail="Cancelled reservations" onClick={() => setSelectedDetail({ title: 'Cancelled bookings', description: 'Reservations cancelled from your account.', items: statusDetails.cancelled ?? [], mode: 'bookings' })} />
+                    <MetricCard icon={CheckCircle2} label="Completed" value={metrics.completedBookings} detail="Finished reservations" onClick={() => setSelectedDetail({ title: 'Completed bookings', description: 'Approved reservations that have finished.', items: statusDetails.completed ?? [], mode: 'bookings' })} />
                 </section>
 
                 <section aria-label="Your booking analytics" className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.9fr)]">
@@ -174,46 +185,71 @@ export default function Dashboard({
                             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ri-brand-soft)] text-[var(--ri-brand)]"><TrendingUp className="h-5 w-5" /></span>
                         </div>
                         <div className="mt-6 grid grid-cols-6 items-end gap-2 sm:gap-4">
-                            {bookingTrends.map((item) => (
-                                <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
-                                    <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
-                                    <div className="flex h-32 w-full items-end rounded-t-lg bg-[var(--ri-surface-subtle)]">
-                                        <div
-                                            className="w-full rounded-t-lg bg-[var(--ri-brand)] transition-all"
-                                            style={{ height: item.bookings > 0 ? `${Math.max(8, (item.bookings / trendMaximum) * 100)}%` : '3px' }}
-                                            title={`${item.bookings} bookings`}
-                                        />
+                            {bookingTrends.map((item) => {
+                                const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
+                                return (
+                                    <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
+                                        <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
+                                        <button type="button" onClick={() => setSelectedTrendLabel(item.label)}
+                                            title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`}
+                                            aria-label={`View facilities booked in ${item.label}`}
+                                            className={`flex h-32 w-full items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}>
+                                            <span className="block w-full rounded-t-lg bg-[#846A75] transition-all"
+                                                style={{ height: item.bookings > 0 ? `${Math.max(8, (item.bookings / trendMaximum) * 100)}%` : '3px' }} />
+                                        </button>
+                                        <span className="truncate text-[10px] text-slate-500">{item.label}</span>
                                     </div>
-                                    <span className="truncate text-[10px] text-slate-500">{item.label}</span>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
+                        {selectedTrend && (
+                            <div className="mt-4 rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div>
+                                        <p className="text-sm font-bold text-[#6A535C]">{selectedTrend.label} facility activity</p>
+                                        <p className="text-xs text-slate-500">{selectedTrend.bookings} bookings across {(selectedTrend.facilities ?? []).length} facilities</p>
+                                    </div>
+                                    <button type="button" onClick={() => setSelectedTrendLabel(null)} className="text-xs font-semibold text-[#6A535C] hover:underline">Clear</button>
+                                </div>
+                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                    {(selectedTrend.facilities ?? []).map((facility) => (
+                                        <div key={facility.name} className="flex justify-between gap-3 rounded-lg bg-white px-3 py-2 text-xs">
+                                            <span className="text-slate-700">{facility.name}</span>
+                                            <span className="font-bold text-[#6A535C]">{facility.bookings}</span>
+                                        </div>
+                                    ))}
+                                    {(selectedTrend.facilities ?? []).length === 0 && <p className="text-xs text-slate-500">No bookings in this period.</p>}
+                                </div>
+                            </div>
+                        )}
                         {bookingTrends.length === 0 && <p className="mt-6 text-sm text-slate-500">No booking activity yet.</p>}
                     </article>
 
                     <article className="ri-panel p-5 sm:p-6">
                         <div className="flex items-center gap-3">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ri-brand-soft)] text-[var(--ri-brand)]"><BarChart3 className="h-5 w-5" /></span>
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F4ECEF] text-[#6A535C]"><BarChart3 className="h-5 w-5" /></span>
                             <div>
-                                <p className="ri-page-eyebrow">Your reservations</p>
-                                <h2 className="text-lg font-bold text-slate-900">Status breakdown</h2>
+                                <p className="ri-page-eyebrow !text-[#6A535C]">Your reservations</p>
+                                <h2 className="text-lg font-bold text-[#6A535C]">Status breakdown</h2>
                             </div>
                         </div>
                         <div className="mt-5 space-y-4">
-                            {statusBreakdown.map((item) => (
-                                <div key={item.status}>
-                                    <div className="mb-1.5 flex justify-between gap-3 text-xs">
-                                        <span className="font-semibold capitalize text-slate-700">{item.status}</span>
-                                        <span className="text-slate-500">{item.count} · {item.percentage}%</span>
-                                    </div>
-                                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                                        <div
-                                            className={`h-full rounded-full ${item.status === 'approved' ? 'bg-emerald-500' : item.status === 'pending' ? 'bg-amber-400' : item.status === 'declined' ? 'bg-rose-500' : 'bg-slate-400'}`}
-                                            style={{ width: `${item.percentage}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
+                            {statusBreakdown.map((item) => {
+                                const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
+                                return (
+                                    <button key={item.status} type="button"
+                                        onClick={() => setSelectedDetail({ title: `${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`, description: `Your ${item.status} reservations.`, items: statusDetails[item.status] ?? [], mode: 'bookings' })}
+                                        className="block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
+                                        <div className="mb-1.5 flex justify-between gap-3 text-xs">
+                                            <span className="font-semibold capitalize text-slate-700">{item.status}</span>
+                                            <span className="text-slate-500">{item.count} · {item.percentage}%</span>
+                                        </div>
+                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                            <div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${item.percentage}%` }} />
+                                        </div>
+                                    </button>
+                                );
+                            })}
                             {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No reservations to summarize.</p>}
                         </div>
                     </article>
@@ -226,7 +262,7 @@ export default function Dashboard({
                             {mostUsedFacilities.length ? mostUsedFacilities.map((facility) => (
                                 <div key={facility.name} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--ri-surface-subtle)] px-4 py-3 text-sm">
                                     <span className="font-medium text-slate-700">{facility.name}</span>
-                                    <span className="shrink-0 font-semibold text-[var(--ri-brand)]">{facility.bookings} bookings</span>
+                                    <span className="shrink-0 font-semibold text-[#6A535C]">{facility.bookings} bookings</span>
                                 </div>
                             )) : <p className="text-sm text-slate-500">You have not booked a facility yet.</p>}
                         </div>
@@ -234,7 +270,7 @@ export default function Dashboard({
                     <article className="ri-panel p-5 sm:p-6">
                         <div className="flex items-center justify-between gap-3">
                             <h2 className="font-bold text-slate-900">Recent booking activity</h2>
-                            <Link href={route('bookings.index')} className="text-xs font-semibold text-[var(--ri-brand)]">View all</Link>
+                            <Link href={route('bookings.index')} className="text-xs font-semibold text-[#6A535C]">View all</Link>
                         </div>
                         <div className="mt-4 space-y-3">
                             {recentBookings.length ? recentBookings.slice(0, 5).map((booking) => (
@@ -312,7 +348,7 @@ export default function Dashboard({
                                     </p>
                                     <Link
                                         href={route('facilities.index')}
-                                        className="ri-btn-primary mt-5"
+                                        className="ri-btn-primary mt-5 !border-[#6A535C] !bg-[#6A535C] hover:!border-[#533E45] hover:!bg-[#533E45]"
                                     >
                                         Explore facilities
                                         <ArrowRight className="h-4 w-4" />
@@ -366,6 +402,14 @@ export default function Dashboard({
                     </aside>
                 </section>
             </div>
+
+            <DashboardDrilldownModal
+                title={selectedDetail?.title}
+                description={selectedDetail?.description}
+                items={selectedDetail?.items ?? []}
+                mode={selectedDetail?.mode ?? 'bookings'}
+                onClose={() => setSelectedDetail(null)}
+            />
         </AuthenticatedLayout>
     );
 }
