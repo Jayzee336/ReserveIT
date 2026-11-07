@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
@@ -13,6 +13,8 @@ import {
     Search,
     SlidersHorizontal,
     Activity,
+    Sparkles,
+    ArrowRight,
 } from 'lucide-react';
 
 function formatTime(value) {
@@ -265,6 +267,8 @@ export default function AdminDashboard({
     pendingBookings = [],
     recentConcerns = [],
 }) {
+    const { auth } = usePage().props;
+    const firstName = auth?.user?.name?.trim()?.split(/\s+/)[0] || 'there';
     const [bookingsList, setBookingsList] = useState(pendingBookings);
     const [processingId, setProcessingId] = useState(null);
     const [viewBooking, setViewBooking] = useState(null);
@@ -439,32 +443,42 @@ export default function AdminDashboard({
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h1 className="text-2xl font-bold">
-                    Super Admin Dashboard
-                </h1>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Admin Dashboard" />
 
-            <div className="space-y-6 p-6">
-                {/* Dashboard quick actions */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-                    <Link
-                        href={route('schedule.index')}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Book a Facility
-                    </Link>
-                    <Link
-                        href={route('admin.active-bookings.page')}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#533e45] focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2"
-                    >
-                        <Activity className="h-4 w-4" />
-                        Active Bookings Monitor
-                    </Link>
-                </div>
+            <div className="ri-page-shell space-y-7">
+                <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#6A535C] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
+                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#846A75]/50 blur-3xl" />
+                    <div className="pointer-events-none absolute -bottom-32 right-1/3 -z-10 h-64 w-64 rounded-full bg-[#B88D59]/20 blur-3xl" />
+                    <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="max-w-2xl">
+                            <span className="ri-page-eyebrow !text-[#FDF6F0]">
+                                <Sparkles className="h-3.5 w-3.5" />
+                                System administration
+                            </span>
+                            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Welcome back, {firstName}.</h1>
+                            <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+                                Oversee campus facilities, reservations, administrators, and system-wide operations.
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                            <Link
+                                href={route('schedule.index')}
+                                className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#6A535C] hover:!border-white hover:!bg-[#FFF8F2]"
+                            >
+                                Book a Facility
+                                <ArrowRight className="h-4 w-4" />
+                            </Link>
+                            <Link
+                                href={route('admin.active-bookings.page')}
+                                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                            >
+                                <Activity className="h-4 w-4" />
+                                Active Bookings Monitor
+                            </Link>
+                        </div>
+                    </div>
+                </section>
 
                 <section>
                     <div className="mb-3">
