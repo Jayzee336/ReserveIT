@@ -17,6 +17,8 @@ import {
     ArrowRight,
 } from 'lucide-react';
 
+const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled'];
+
 function formatTime(value) {
     if (!value) return '—';
     const [hourText, minuteText] = String(value).slice(0, 5).split(':');
@@ -293,6 +295,15 @@ export default function AdminDashboard({
     const [analyticsGroupBy, setAnalyticsGroupBy] = useState(analyticsFilters.group_by ?? 'month');
     const [selectedTrendLabel, setSelectedTrendLabel] = useState(null);
     const selectedTrend = usageOverTime.find((item) => item.label === selectedTrendLabel);
+    const displayedStatusBreakdown = DASHBOARD_STATUS_ORDER.map((status) => {
+        const item = statusBreakdown.find((entry) => entry.status === status);
+        return {
+            status,
+            count: Number(item?.count ?? 0),
+            percentage: Number(item?.percentage ?? 0),
+        };
+    });
+
 
     const applyAnalyticsFilters = (event) => {
         event.preventDefault();
@@ -577,11 +588,11 @@ export default function AdminDashboard({
                     </div>
                     <div className="mt-5 rounded-xl border border-stone-200 p-4">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
-                        <div className="space-y-3">{statusBreakdown.map((item) => {
+                        <div className="space-y-3">{displayedStatusBreakdown.map((item) => {
                             const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
                             return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg bg-stone-50 px-3 py-2.5 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
-                                <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage}%</span></span></div>
-                                <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${item.percentage}%` }}/></div>
+                                <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage.toFixed(1)}%</span></span></div>
+                                <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
                                 <span className="mt-1 block text-right text-[10px] font-semibold text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details ↗</span>
                             </button>;
                         })}</div>
