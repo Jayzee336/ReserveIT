@@ -200,11 +200,16 @@ class BookingUpdateTest extends TestCase
         Notification::assertNotSentTo($unassignedAdmin, BookingOperationsNotification::class);
     }
 
-    public function test_booking_time_must_stay_within_eight_am_to_ten_pm(): void
+    public function test_booking_time_must_stay_within_configured_operating_hours(): void
     {
         $user = User::factory()->create();
         $facility = $this->createFacility();
         $booking = $this->createBooking($user, $facility, 'pending');
+
+        \\App\\Models\\SystemSetting::current()->update([
+            'opening_time' => '08:00',
+            'closing_time' => '22:00',
+        ]);
 
         $this->actingAs($user)
             ->put("/bookings/{$booking->id}", [
