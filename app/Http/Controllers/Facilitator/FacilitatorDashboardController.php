@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Facilitator;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Facility;
+use App\Support\BookingDashboardAnalytics;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -184,14 +185,36 @@ class FacilitatorDashboardController extends Controller
             fn (Booking $booking) => (int) ($booking->overtime_minutes ?? 0) > 0
         );
 
-        $statusBreakdown = collect(['pending', 'approved', 'declined', 'cancelled'])
-            ->map(fn (string $status) => [
-                'status' => $status,
-                'count' => $analyticsBookings->where('status', $status)->count(),
-                'percentage' => $analyticsBookings->isNotEmpty()
-                    ? round(($analyticsBookings->where('status', $status)->count() / $analyticsBookings->count()) * 100, 1)
-                    : 0,
-            ])->values();
+        $statusBreakdown = BookingDashboardAnalytics::statusBreakdown($analyticsBookings);
+        $analyticsBookingRows = BookingDashboardAnalytics::bookingRows($analyticsBookings);
+
+        $clientDetails = $clientGroups->map(function ($clientBookings): array {
+            $first = $clientBookings->first();
+            $latest = $clientBookings->sortByDesc(
+                fn (Booking $booking) => ($booking->booking_date ?? $booking->date)?->format('Y-m-d') ?? ''
+            )->first();
+
+            return [
+                'name' => $first->user?->name ?? $first->guest_name ?? 'Guest',
+                'email' => $first->user?->email ?? $first->guest_email,
+                'bookings' => $clientBookings->count(),
+                'lastBooking' => ($latest->booking_date ?? $latest->date)?->format('Y-m-d'),
+            ];
+        })->sortByDesc('bookings')->values();
+
+        $analyticsDetails = [
+            'totalBookings' => $analyticsBookingRows,
+            'uniqueClients' => $clientDetails->all(),
+            'returningClients' => $clientDetails->where('bookings', '>', 1)->values()->all(),
+            'approvalRate' => collect($analyticsBookingRows)->whereIn('status', ['approved', 'declined'])->values()->all(),
+            'cancellationRate' => collect($analyticsBookingRows)->where('status', 'cancelled')->values()->all(),
+            'approvalTime' => collect($analyticsBookingRows)->whereNotNull('approved_at')->values()->all(),
+            'peakHour' => collect($analyticsBookingRows)->filter(
+                fn (array $booking) => $peakHour !== null
+                    && (int) substr((string) ($booking['start_time'] ?? ''), 0, 2) === (int) $bookingsByHour->keys()->first()
+            )->values()->all(),
+            'overtimeBookings' => collect($analyticsBookingRows)->where('overtime_minutes', '>', 0)->values()->all(),
+        ];
 
         $usageOverTime = collect();
         $cursor = Carbon::parse($filterFrom)->startOfDay();
@@ -226,6 +249,7 @@ class FacilitatorDashboardController extends Controller
                         : $start->format('M Y')),
                 'bookings' => $periodBookings->count(),
                 'approved' => $periodBookings->where('status', 'approved')->count(),
+                'facilities' => BookingDashboardAnalytics::facilityBreakdown($periodBookings),
             ]);
 
             $cursor = match ($groupBy) {
@@ -281,6 +305,8 @@ class FacilitatorDashboardController extends Controller
                 'overtimeFees' => round((float) $overtimeBookings->sum('overtime_fee_amount'), 2),
             ],
             'statusBreakdown' => $statusBreakdown,
+            'analyticsDetails' => $analyticsDetails,
+            'analyticsBookingRows' => $analyticsBookingRows,
             'usageOverTime' => $usageOverTime,
             'mostUsedFacilities' => $mostUsedFacilities,
         ]);
