@@ -19,6 +19,8 @@ import {
     TrendingUp,
 } from 'lucide-react';
 
+const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled'];
+
 function formatTime(value) {
     if (!value) return '—';
     const [hourText, minuteText] = String(value).slice(0, 5).split(':');
@@ -248,6 +250,15 @@ export default function FacilitatorDashboard({
     const [selectedAnalyticsDetail, setSelectedAnalyticsDetail] = useState(null);
     const [selectedTrendLabel, setSelectedTrendLabel] = useState(null);
     const selectedTrend = usageOverTime.find((item) => item.label === selectedTrendLabel);
+    const displayedStatusBreakdown = DASHBOARD_STATUS_ORDER.map((status) => {
+        const item = statusBreakdown.find((entry) => entry.status === status);
+        return {
+            status,
+            count: Number(item?.count ?? 0),
+            percentage: Number(item?.percentage ?? 0),
+        };
+    });
+
 
     const pendingApprovals = stats?.pendingApprovals ?? 0;
     const todayBookings = stats?.todayBookings ?? 0;
@@ -377,19 +388,19 @@ export default function FacilitatorDashboard({
                                 </select>
                             </label>
                             <Link
+                                href={route('admin.active-bookings.page')}
+                                className="inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                            >
+                                <Activity className="h-4 w-4" />
+                                Active Bookings Monitor
+                            </Link>
+                            <Link
                                 href={route('schedule.index')}
                                 className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#6A535C] hover:!border-white hover:!bg-[#FFF8F2]"
                             >
                                 <Plus className="h-4 w-4" />
                                 Book a Facility
                                 <ArrowRight className="h-4 w-4" />
-                            </Link>
-                            <Link
-                                href={route('admin.active-bookings.page')}
-                                className="inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                            >
-                                <Activity className="h-4 w-4" />
-                                Active Bookings Monitor
                             </Link>
                         </div>
                     </div>
@@ -485,11 +496,11 @@ export default function FacilitatorDashboard({
                                 <h3 className="text-sm font-bold text-[#6A535C]">Status breakdown</h3>
                             </div>
                             <div className="mt-5 space-y-4">
-                                {statusBreakdown.map((item) => {
+                                {displayedStatusBreakdown.map((item) => {
                                     const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
                                     return <button key={item.status} type="button" onClick={() => setSelectedAnalyticsDetail({title:`${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`,description:`Assigned-facility ${item.status} bookings in the selected period.`,items:statusDetails[item.status] ?? [],mode:'bookings'})} className="block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
-                                        <div className="mb-1 flex justify-between text-xs"><span className="font-semibold capitalize text-slate-700">{item.status}</span><span className="text-slate-500">{item.count} · {item.percentage}%</span></div>
-                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${item.percentage}%` }}/></div>
+                                        <div className="mb-1 flex justify-between text-xs"><span className="font-semibold capitalize text-slate-700">{item.status}</span><span className="text-slate-500">{item.count} · {item.percentage.toFixed(1)}%</span></div>
+                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
                                     </button>;
                                 })}
                                 {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No booking data in this period.</p>}
