@@ -11,8 +11,6 @@ import {
 } from 'lucide-react';
 
 // Generate consistent 15-minute intervals from 8:00 AM through 9:45 PM; 10:00 PM is the closing-time end option.
-const OPENING_TIME = '08:00';
-const CLOSING_TIME = '22:00';
 const SLOT_INTERVAL_MINUTES = 15;
 
 const toMins = (time) => {
@@ -30,29 +28,7 @@ const formatTime = (time) => {
     }`;
 };
 
-const generateTimeSlots = () => {
-    const slots = [];
 
-    for (
-        let minutes = toMins(OPENING_TIME);
-        minutes < toMins(CLOSING_TIME);
-        minutes += SLOT_INTERVAL_MINUTES
-    ) {
-        const hour = Math.floor(minutes / 60);
-        const minute = minutes % 60;
-
-        slots.push(
-            `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
-        );
-    }
-
-    // Closing time is an end-time option only.
-    slots.push(CLOSING_TIME);
-
-    return slots;
-};
-
-const TIME_SLOTS = generateTimeSlots();
 const MAX_CONSENT_FILE_SIZE = 5 * 1024 * 1024;
 const CONSENT_FILE_SIZE_ERROR = 'File size exceeds the maximum limit of 5MB.';
 
@@ -99,6 +75,17 @@ export default function BookingModal({
     const { auth } = page.props;
     const user = auth?.user;
     const isAuthenticated = !!user;
+    const OPENING_TIME = String(page.props.systemSettings?.opening_time ?? '08:00').slice(0, 5);
+    const CLOSING_TIME = String(page.props.systemSettings?.closing_time ?? '00:00').slice(0, 5);
+    const closingMinutes = CLOSING_TIME === '00:00' ? 1440 : toMins(CLOSING_TIME);
+    const TIME_SLOTS = useMemo(() => {
+        const slots = [];
+        for (let minutes = toMins(OPENING_TIME); minutes < closingMinutes; minutes += SLOT_INTERVAL_MINUTES) {
+            slots.push(`${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`);
+        }
+        slots.push(CLOSING_TIME);
+        return slots;
+    }, [OPENING_TIME, CLOSING_TIME, closingMinutes]);
 
     // Read the cleanup buffer shared by HandleInertiaRequests.php.
     const configuredBuffer = Number(
@@ -266,10 +253,10 @@ export default function BookingModal({
 
         if (
             toMins(startTime) < toMins(OPENING_TIME) ||
-            toMins(endTime) > toMins(CLOSING_TIME)
+            toMins(endTime) > closingMinutes && endTime !== '00:00'
         ) {
             setConflictError(
-                `Bookings must be between ${formatTime(OPENING_TIME)} and ${formatTime(CLOSING_TIME)}.`
+                `Bookings must be between ${formatTime(OPENING_TIME)} and ${CLOSING_TIME === '00:00' ? '12:00 AM (midnight)' : formatTime(CLOSING_TIME)}.`
             );
             return;
         }
@@ -693,7 +680,7 @@ export default function BookingModal({
 
                 <p className="text-xs text-gray-400">
                     Time slots are available every 15 minutes, from 8:00 AM
-                    until the 10:00 PM closing time.
+                    until the {CLOSING_TIME === '00:00' ? '12:00 AM (midnight)' : formatTime(CLOSING_TIME)} closing time.
                 </p>
 
                 {/* Attendees */}
