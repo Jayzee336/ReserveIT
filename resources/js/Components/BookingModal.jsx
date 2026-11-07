@@ -181,7 +181,7 @@ export default function BookingModal({
         }
 
         const requestedStart = toMins(startTime);
-        const requestedEnd = toMins(endTime);
+        const requestedEnd = toEndMins(endTime);
 
         return existingBookings.some((booking) => {
             const bookingStatus = String(booking.status ?? '').toLowerCase();
@@ -248,7 +248,7 @@ export default function BookingModal({
             return;
         }
 
-        if (!startTime || !endTime || toMins(startTime) >= toMins(endTime)) {
+        if (!startTime || !endTime || toMins(startTime) >= toEndMins(endTime)) {
             setConflictError('End time must be after start time.');
             return;
         }
