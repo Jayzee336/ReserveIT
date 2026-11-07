@@ -136,11 +136,12 @@ class BookingCheckInOutController extends Controller
                     $bookingDate->format('Y-m-d') . ' ' . $lockedBooking->start_time
                 );
 
-                $earliestCheckIn = $scheduledStart->copy()->subMinutes(15);
+                $earlyMinutes = max(0, (int) (SystemSetting::current()->early_check_in_minutes ?? 15));
+                $earliestCheckIn = $scheduledStart->copy()->subMinutes($earlyMinutes);
 
                 if ($now->lt($earliestCheckIn)) {
                     throw ValidationException::withMessages([
-                        'check_in' => 'Check-in is allowed starting 15 minutes before the scheduled start time.',
+                        'check_in' => 'Check-in is allowed only within the configured early check-in window.',
                     ]);
                 }
             }
@@ -242,13 +243,13 @@ class BookingCheckInOutController extends Controller
             // are eligible for overtime charges.
             $eligibleForOvertime = $checkedInAt->lte($scheduledEnd);
 
-            $overtimeMinutes = (
-                $eligibleForOvertime && $checkoutTime->gt($scheduledEnd)
-            )
-                ? (int) $scheduledEnd->diffInMinutes($checkoutTime)
-                : 0;
-
             $settings = SystemSetting::current();
+            $graceMinutes = max(0, (int) ($settings->overtime_grace_minutes ?? 0));
+            $overtimeMinutes = (
+                $eligibleForOvertime && $checkoutTime->gt($scheduledEnd->copy()->addMinutes($graceMinutes))
+            )
+                ? (int) $scheduledEnd->copy()->addMinutes($graceMinutes)->diffInMinutes($checkoutTime)
+                : 0;
 
             $feePerHour = max(
                 0,
@@ -460,11 +461,12 @@ class BookingCheckInOutController extends Controller
 
                 $eligibleForOvertime = $checkedInAt->lte($scheduledEnd);
 
-                $isOvertime = $eligibleForOvertime
-                    && $now->gt($scheduledEnd);
+                $graceMinutes = max(0, (int) (SystemSetting::current()->overtime_grace_minutes ?? 0));
+                $overtimeStart = $scheduledEnd->copy()->addMinutes($graceMinutes);
+                $isOvertime = $eligibleForOvertime && $now->gt($overtimeStart);
 
                 $overtimeMinutes = $isOvertime
-                    ? (int) $scheduledEnd->diffInMinutes($now)
+                    ? (int) $overtimeStart->diffInMinutes($now)
                     : 0;
 
                 $overtimeFee = round(
