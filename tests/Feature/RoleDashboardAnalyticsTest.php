@@ -117,6 +117,11 @@ class RoleDashboardAnalyticsTest extends TestCase
                 ->where('statusBreakdown.2.count', 0)
                 ->where('statusBreakdown.3.status', 'declined')
                 ->where('statusBreakdown.4.count', 1)
+                ->has('statusDetails.pending', 1)
+                ->has('statusDetails.cancelled', 1)
+                ->has('analyticsDetails.totalBookings', 3)
+                ->has('analyticsDetails.uniqueClients', 2)
+                ->has('usageOverTime.0.facilities', 2)
                 ->has('mostUsedFacilities', 2)
             );
     }
@@ -154,6 +159,9 @@ class RoleDashboardAnalyticsTest extends TestCase
                 ->where('analytics.uniqueClients', 1)
                 ->where('analyticsFilters.group_by', 'day')
                 ->where('mostUsedFacilities.0.name', 'Filter Facility A')
+                ->has('statusDetails.approved', 1)
+                ->has('analyticsDetails.totalBookings', 1)
+                ->has('usageOverTime.0.facilities', 1)
             );
     }
 
