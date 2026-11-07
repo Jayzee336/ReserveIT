@@ -6,12 +6,25 @@ use App\Models\Booking;
 use App\Models\Facility;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class AdminDashboardAnalyticsTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Carbon::setTestNow(now()->startOfDay()->addHours(8));
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
 
     private function createFacility(string $id, string $name): Facility
     {
@@ -182,4 +195,60 @@ class AdminDashboardAnalyticsTest extends TestCase
                 ->where('statusBreakdown.1.count', 1)
             );
     }
+    public function test_super_admin_dashboard_scope_filters_facility_metrics_and_analytics(): void
+    {
+        $superAdmin = User::factory()->create([
+            'role' => 'super_admin',
+            'is_active' => true,
+        ]);
+        $clientA = User::factory()->create(['role' => 'user']);
+        $clientB = User::factory()->create(['role' => 'user']);
+
+        $facilityA = $this->createFacility('super-scope-a', 'Super Scope Facility A');
+        $facilityB = $this->createFacility('super-scope-b', 'Super Scope Facility B');
+
+        $this->createBooking($facilityA, $clientA, 'pending');
+        $this->createBooking($facilityB, $clientB, 'approved');
+
+        $date = now()->toDateString();
+
+        $this->actingAs($superAdmin)
+            ->get(route('admin.dashboard', [
+                'facility_id' => $facilityA->id,
+                'from' => $date,
+                'to' => $date,
+                'group_by' => 'day',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard')
+                ->where('selectedFacilityId', $facilityA->id)
+                ->where('analyticsFilters.facility_id', $facilityA->id)
+                ->where('stats.totalFacilities', 1)
+                ->where('stats.totalBookings', 1)
+                ->where('stats.pendingApprovals', 1)
+                ->where('operationalAnalytics.uniqueClients', 1)
+                ->has('mostUsedFacilities', 1)
+                ->where('mostUsedFacilities.0.name', 'Super Scope Facility A')
+                ->where('usageOverTime.0.bookings', 1)
+                ->where('usageOverTime.0.facilities.0.name', 'Super Scope Facility A')
+                ->has('pendingBookings', 1)
+            );
+    }
+
+    public function test_facility_admin_cannot_filter_admin_dashboard_to_an_unassigned_facility(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+        ]);
+        $assigned = $this->createFacility('admin-scope-assigned', 'Assigned Admin Facility');
+        $unassigned = $this->createFacility('admin-scope-unassigned', 'Unassigned Admin Facility');
+        $assigned->facilityAdmins()->attach($admin);
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard', ['facility_id' => $unassigned->id]))
+            ->assertForbidden();
+    }
+
 }
