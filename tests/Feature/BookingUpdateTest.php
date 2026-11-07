@@ -206,7 +206,7 @@ class BookingUpdateTest extends TestCase
         $facility = $this->createFacility();
         $booking = $this->createBooking($user, $facility, 'pending');
 
-        \\App\\Models\\SystemSetting::current()->update([
+        \App\Models\SystemSetting::current()->update([
             'opening_time' => '08:00',
             'closing_time' => '22:00',
         ]);
