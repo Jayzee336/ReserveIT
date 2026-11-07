@@ -221,7 +221,7 @@ export default function Dashboard({
                 <section aria-label="Client and operations analytics" className="ri-panel space-y-5 p-5 sm:p-6">
                     <div>
                         <p className="ri-page-eyebrow !text-[#6A535C]">Your reservation insights</p>
-                        <h2 className="mt-1 text-lg font-bold text-slate-900">Client &amp; operations analytics</h2>
+                        <h2 className="mt-1 font-semibold text-slate-900">Client &amp; operations analytics</h2>
                         <p className="mt-1 text-xs text-slate-500">{analytics.periodLabel ?? 'Last six months'} · all figures are limited to bookings on your account.</p>
                     </div>
 
@@ -257,7 +257,7 @@ export default function Dashboard({
                         <article className="rounded-xl border border-[var(--ri-border)] p-4">
                             <div className="flex items-center gap-2">
                                 <TrendingUp className="h-4 w-4 text-[#6A535C]" />
-                                <h3 className="text-sm font-bold text-slate-900">Booking volume over time</h3>
+                                <h3 className="text-sm font-semibold text-slate-900">Booking volume over time</h3>
                             </div>
                             <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6">
                                 {bookingTrends.map((item) => (
@@ -296,7 +296,7 @@ export default function Dashboard({
                         <article className="rounded-xl border border-[var(--ri-border)] p-4">
                             <div className="flex items-center gap-2">
                                 <BarChart3 className="h-4 w-4 text-[#6A535C]" />
-                                <h3 className="text-sm font-bold text-[#6A535C]">Status breakdown</h3>
+                                <h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3>
                             </div>
                             <div className="mt-5 space-y-4">
                                 {displayedStatusBreakdown.map((item) => {
