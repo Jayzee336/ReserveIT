@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Facility;
 use App\Models\UserConcern;
+use App\Support\BookingDashboardAnalytics;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class AdminDashboardController extends Controller
         $validatedFilters = $request->validate([
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
-            'facility_id' => ['nullable', 'string', 'max:255'],
+            'facility_id' => ['nullable', 'string', 'exists:facilities,id'],
             'group_by' => ['nullable', 'in:day,week,month'],
         ]);
         $filterFrom = $validatedFilters['from'] ?? $defaultFrom;
@@ -36,7 +37,15 @@ class AdminDashboardController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        $managedFacilityIds = $managedFacilities->pluck('id')->map(fn ($id) => (string) $id)->all();
+        if ($filterFacilityId !== '') {
+            abort_unless(in_array((string) $filterFacilityId, $managedFacilityIds, true), 403);
+        }
+
         $bookingQuery = Booking::with(['facility:id,name', 'user:id,name,email'])->forUser($user);
+        if ($filterFacilityId !== '') {
+            $bookingQuery->where('facility_id', $filterFacilityId);
+        }
 
         $analyticsQuery = (clone $bookingQuery)
             ->whereRaw(
@@ -85,6 +94,7 @@ class AdminDashboardController extends Controller
                         : $periodStart->format('M Y')),
                 'bookings' => $periodBookings->count(),
                 'approved' => $periodBookings->where('status', 'approved')->count(),
+                'facilities' => BookingDashboardAnalytics::facilityBreakdown($periodBookings),
             ]);
 
             $periodCursor = match ($groupBy) {
@@ -136,7 +146,7 @@ class AdminDashboardController extends Controller
             ->count();
 
         $decidedBookings = $bookings->whereIn('status', ['approved', 'declined']);
-        $periodApproved = $bookings->where('status', 'approved')->count();
+        $periodApproved = BookingDashboardAnalytics::filterByStatus($bookings, 'approved')->count();
         $approvalRate = $decidedBookings->isNotEmpty()
             ? round(($periodApproved / $decidedBookings->count()) * 100, 1)
             : 0.0;
@@ -194,6 +204,7 @@ class AdminDashboardController extends Controller
                 'start_time' => $booking->start_time,
                 'end_time' => $booking->end_time,
                 'status' => $booking->status,
+                'display_status' => BookingDashboardAnalytics::displayStatus($booking),
                 'approved_at' => $booking->approved_at?->toDateTimeString(),
                 'approval_minutes' => $booking->approved_at && $booking->created_at
                     ? round(max(0, $booking->approved_at->getTimestamp() - $booking->created_at->getTimestamp()) / 60, 1)
@@ -217,14 +228,7 @@ class AdminDashboardController extends Controller
             ];
         })->sortByDesc('bookings')->values();
 
-        $statusBreakdown = collect(['pending', 'approved', 'declined', 'cancelled'])
-            ->map(fn (string $status) => [
-                'status' => $status,
-                'count' => $bookings->where('status', $status)->count(),
-                'percentage' => $bookings->isNotEmpty()
-                    ? round(($bookings->where('status', $status)->count() / $bookings->count()) * 100, 1)
-                    : 0,
-            ])->values();
+        $statusBreakdown = BookingDashboardAnalytics::statusBreakdown($bookings);
 
         $analyticsDetails = [
             'clients' => $clientDetails,
@@ -237,6 +241,8 @@ class AdminDashboardController extends Controller
                     && (int) substr((string) ($booking['start_time'] ?? ''), 0, 2) === (int) $bookingsByHour->keys()->first()
             )->values(),
             'overtime' => $bookingDetailRows->where('overtime_minutes', '>', 0)->values(),
+            'completed' => $bookingDetailRows->where('display_status', 'completed')->values(),
+            'allBookings' => $bookingDetailRows,
         ];
 
         $mostUsedFacilities = $bookings->groupBy('facility_id')->map(function ($facilityBookings) {
@@ -255,7 +261,7 @@ class AdminDashboardController extends Controller
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
-                'totalFacilities' => Facility::query()->forUser($user)->count(),
+                'totalFacilities' => $filterFacilityId !== '' ? 1 : $managedFacilities->count(),
                 'totalBookings' => $totalBookings,
                 'pendingApprovals' => $pendingApprovals,
                 'pendingConcerns' => UserConcern::where('status', 'pending')->count(),
@@ -272,6 +278,7 @@ class AdminDashboardController extends Controller
             ],
             'periodComparison' => $periodComparison,
             'analyticsFacilities' => $managedFacilities,
+            'selectedFacilityId' => $filterFacilityId,
             'statusBreakdown' => $statusBreakdown,
             'analyticsDetails' => $analyticsDetails,
             'operationalAnalytics' => [
