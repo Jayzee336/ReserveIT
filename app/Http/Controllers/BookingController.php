@@ -94,14 +94,20 @@ class BookingController extends Controller
         $start = Carbon::createFromFormat('!H:i', $startTime);
         $end = Carbon::createFromFormat('!H:i', $endTime);
 
-        if (!$start || !$end || !$end->gt($start)) {
+        if (!$start || !$end) {
             throw ValidationException::withMessages([
-                'end_time' => 'The end time must be later than the start time.',
+                'end_time' => 'Please provide a valid end time.',
             ]);
         }
 
         if ($end->lte($start) && $endTime === '00:00') {
             $end->addDay();
+        }
+
+        if (!$end->gt($start)) {
+            throw ValidationException::withMessages([
+                'end_time' => 'The end time must be later than the start time.',
+            ]);
         }
 
         $durationMinutes = $start->diffInMinutes($end);
