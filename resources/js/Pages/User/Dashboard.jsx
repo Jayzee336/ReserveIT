@@ -280,7 +280,7 @@ export default function Dashboard({
                                         <p className="truncate text-sm font-semibold text-slate-800">{booking.facility?.name ?? 'Facility'}</p>
                                         <p className="text-xs text-slate-500">{formatDate(booking.booking_date ?? booking.date)} · {formatTime(booking.start_time)}</p>
                                     </div>
-                                    <StatusBadge status={booking.status} />
+                                    <StatusBadge status={booking.display_status || booking.status} />
                                 </div>
                             )) : <p className="text-sm text-slate-500">No recent booking activity.</p>}
                         </div>
