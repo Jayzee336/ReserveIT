@@ -617,7 +617,7 @@ export default function AdminDashboard({
                         )}
                     </section>
 
-<div className="mt-5 rounded-xl border border-[var(--ri-border)] p-4">
+<div className="rounded-xl border border-[var(--ri-border)] p-4">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
                         <div className="space-y-3">{displayedStatusBreakdown.map((item) => {
                             const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
