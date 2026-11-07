@@ -37,6 +37,16 @@ function StatusPill({ status }) {
 export default function DashboardDrilldownModal({ title, description, items = [], mode = 'bookings', onClose }) {
     if (!title) return null;
 
+    // Laravel props may be serialized as an array or a paginator-like object.
+    // Normalize them before rendering so an unexpected shape cannot crash the dashboard.
+    const records = Array.isArray(items)
+        ? items
+        : Array.isArray(items?.data)
+            ? items.data
+            : items && typeof items === 'object'
+                ? Object.values(items)
+                : [];
+
     return (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 p-3 sm:p-6" onClick={onClose}>
             <section
@@ -58,13 +68,13 @@ export default function DashboardDrilldownModal({ title, description, items = []
                 </header>
 
                 <div className="overflow-y-auto p-4 sm:p-6">
-                    {items.length === 0 ? (
+                    {records.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 px-4 py-10 text-center text-sm text-slate-500">
                             No records are available for this metric.
                         </div>
                     ) : mode === 'clients' ? (
                         <div className="space-y-3">
-                            {items.map((item, index) => (
+                            {records.map((item, index) => (
                                 <article key={String(item.email || item.name) + '-' + index} className="rounded-xl border border-stone-200 p-4">
                                     <div className="flex flex-wrap items-start justify-between gap-3">
                                         <div>
@@ -79,7 +89,7 @@ export default function DashboardDrilldownModal({ title, description, items = []
                         </div>
                     ) : mode === 'facilities' ? (
                         <div className="space-y-3">
-                            {items.map((item, index) => (
+                            {records.map((item, index) => (
                                 <article key={String(item.name) + '-' + index} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 p-4">
                                     <div className="flex min-w-0 items-center gap-3">
                                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F4ECEF] text-[#6A535C]"><Building2 className="h-4 w-4"/></span>
@@ -91,7 +101,7 @@ export default function DashboardDrilldownModal({ title, description, items = []
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {items.map((item, index) => (
+                            {records.map((item, index) => (
                                 <article key={String(item.id || item.facility) + '-' + index} className="rounded-xl border border-stone-200 p-4">
                                     <div className="flex flex-wrap items-start justify-between gap-3">
                                         <div className="min-w-0">
@@ -115,7 +125,7 @@ export default function DashboardDrilldownModal({ title, description, items = []
                     )}
                 </div>
                 <footer className="flex items-center justify-between border-t border-stone-200 px-5 py-3">
-                    <span className="text-xs text-slate-500">{items.length} {items.length === 1 ? 'record' : 'records'}</span>
+                    <span className="text-xs text-slate-500">{records.length} {records.length === 1 ? 'record' : 'records'}</span>
                     <button type="button" onClick={onClose} className="rounded-xl bg-[#6A535C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#533E45]">Close</button>
                 </footer>
             </section>
