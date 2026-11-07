@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import DashboardDrilldownModal from '@/Components/DashboardDrilldownModal';
 import {
     ArrowRight,
@@ -108,6 +108,9 @@ export default function Dashboard({
     recentBookings = [],
     bookingDetails = [],
     statusDetails = {},
+    analytics = {},
+    analyticsFilters = {},
+    analyticsDetails = {},
 }) {
     const metrics = stats ?? {
         totalBookings: 0,
@@ -122,6 +125,9 @@ export default function Dashboard({
     const firstName = auth?.user?.name?.trim()?.split(/\s+/)[0] || 'there';
     const [selectedDetail, setSelectedDetail] = useState(null);
     const [selectedTrendLabel, setSelectedTrendLabel] = useState(null);
+    const [analyticsFrom, setAnalyticsFrom] = useState(analyticsFilters.from ?? '');
+    const [analyticsTo, setAnalyticsTo] = useState(analyticsFilters.to ?? '');
+    const [analyticsGroupBy, setAnalyticsGroupBy] = useState(analyticsFilters.group_by ?? 'month');
     const selectedTrend = bookingTrends.find((item) => item.label === selectedTrendLabel);
     const displayedStatusBreakdown = DASHBOARD_STATUS_ORDER.map((status) => {
         const item = statusBreakdown.find((entry) => entry.status === status);
@@ -131,6 +137,37 @@ export default function Dashboard({
             percentage: Number(item?.percentage ?? 0),
         };
     });
+
+    useEffect(() => {
+        setAnalyticsFrom(analyticsFilters.from ?? '');
+        setAnalyticsTo(analyticsFilters.to ?? '');
+        setAnalyticsGroupBy(analyticsFilters.group_by ?? 'month');
+    }, [analyticsFilters.from, analyticsFilters.to, analyticsFilters.group_by]);
+
+    const applyAnalyticsFilters = (event) => {
+        event.preventDefault();
+        router.get(route('user.dashboard'), {
+            from: analyticsFrom,
+            to: analyticsTo,
+            group_by: analyticsGroupBy,
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const resetAnalyticsFilters = () => {
+        setAnalyticsFrom('');
+        setAnalyticsTo('');
+        setAnalyticsGroupBy('month');
+        setSelectedTrendLabel(null);
+        router.get(route('user.dashboard'), {}, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
 
 
     return (
@@ -181,85 +218,105 @@ export default function Dashboard({
                     <MetricCard icon={Building2} label="Available venues" value={metrics.activeRooms} detail="Spaces currently listed" href={route('facilities.index')} />
                 </section>
 
-                <section aria-label="Your booking analytics" className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.9fr)]">
-                    <article className="ri-panel min-w-0 p-5 sm:p-6">
-                        <div className="flex items-center justify-between gap-3">
-                            <div>
-                                <p className="ri-page-eyebrow !text-[#6A535C]">Your activity</p>
-                                <h2 className="mt-1 text-lg font-bold text-slate-900">Booking activity</h2>
-                                <p className="mt-1 text-xs text-slate-500">Monthly reservations over the last six months.</p>
+                <section aria-label="Client and operations analytics" className="ri-panel space-y-5 p-5 sm:p-6">
+                    <div>
+                        <p className="ri-page-eyebrow !text-[#6A535C]">Your reservation insights</p>
+                        <h2 className="mt-1 text-lg font-bold text-slate-900">Client &amp; operations analytics</h2>
+                        <p className="mt-1 text-xs text-slate-500">{analytics.periodLabel ?? 'Last six months'} · all figures are limited to bookings on your account.</p>
+                    </div>
+
+                    <form onSubmit={applyAnalyticsFilters} className="grid gap-3 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_0.8fr_auto_auto] xl:items-end">
+                        <label className="block text-xs font-semibold text-slate-600">
+                            From
+                            <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700" />
+                        </label>
+                        <label className="block text-xs font-semibold text-slate-600">
+                            To
+                            <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700" />
+                        </label>
+                        <label className="block text-xs font-semibold text-slate-600">
+                            Trend interval
+                            <select value={analyticsGroupBy} onChange={(event) => setAnalyticsGroupBy(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700">
+                                <option value="day">Daily</option>
+                                <option value="week">Weekly</option>
+                                <option value="month">Monthly</option>
+                            </select>
+                        </label>
+                        <button type="submit" className="rounded-lg bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]">Apply</button>
+                        <button type="button" onClick={resetAnalyticsFilters} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-stone-100">Reset</button>
+                    </form>
+
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <MetricCard icon={CalendarDays} label="Total bookings" value={analytics.totalBookings ?? 0} detail="Your bookings in the selected period" onClick={() => setSelectedDetail({ title: 'Bookings in selected period', description: 'Your reservations within the selected analytics date range.', items: analyticsDetails.totalBookings ?? [], mode: 'bookings' })} />
+                        <MetricCard icon={CheckCircle2} label="Approval rate" value={`${analytics.approvalRate ?? 0}%`} detail="Approved out of approved/declined decisions" onClick={() => setSelectedDetail({ title: 'Approval rate details', description: 'Your approved and declined booking decisions in the selected period.', items: analyticsDetails.approvalRate ?? [], mode: 'bookings' })} />
+                        <MetricCard icon={Ban} label="Cancellation rate" value={`${analytics.cancellationRate ?? 0}%`} detail="Cancelled out of all your requests" onClick={() => setSelectedDetail({ title: 'Cancellation details', description: 'Your cancelled reservations in the selected period.', items: analyticsDetails.cancellationRate ?? [], mode: 'bookings' })} />
+                        <MetricCard icon={Clock3} label="Average approval time" value={analytics.averageApprovalHours != null ? `${analytics.averageApprovalHours} hrs` : '—'} detail="Time from request to approval" onClick={() => setSelectedDetail({ title: 'Approval time details', description: 'Your bookings with recorded approval timestamps.', items: analyticsDetails.approvalTime ?? [], mode: 'bookings' })} />
+                    </div>
+
+                    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.9fr)]">
+                        <article className="rounded-xl border border-[var(--ri-border)] p-4">
+                            <div className="flex items-center gap-2">
+                                <TrendingUp className="h-4 w-4 text-[#6A535C]" />
+                                <h3 className="text-sm font-bold text-slate-900">Booking volume over time</h3>
                             </div>
-                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F4ECEF] text-[#6A535C]"><TrendingUp className="h-5 w-5" /></span>
-                        </div>
-                        <div className="mt-6 grid grid-cols-6 items-end gap-2 sm:gap-4">
-                            {bookingTrends.map((item) => {
-                                const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
-                                return (
+                            <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6">
+                                {bookingTrends.map((item) => (
                                     <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
                                         <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
-                                        <button type="button" onClick={() => setSelectedTrendLabel(item.label)}
-                                            title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`}
-                                            aria-label={`View facilities booked in ${item.label}`}
-                                            className={`flex h-32 w-full items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}>
-                                            <span className="block w-full rounded-t-lg bg-[#846A75] transition-all"
-                                                style={{ height: item.bookings > 0 ? `${Math.max(8, (item.bookings / trendMaximum) * 100)}%` : '3px' }} />
+                                        <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings`} aria-label={`View facilities booked in ${item.label}`} className={`flex h-24 w-full items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}>
+                                            <span className="block w-full rounded-t-lg bg-[#846A75]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / trendMaximum * 100)}%` : '3px' }} />
                                         </button>
                                         <span className="truncate text-[10px] text-slate-500">{item.label}</span>
                                     </div>
-                                );
-                            })}
-                        </div>
-                        {selectedTrend && (
-                            <div className="mt-4 rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <div>
-                                        <p className="text-sm font-bold text-[#6A535C]">{selectedTrend.label} facility activity</p>
-                                        <p className="text-xs text-slate-500">{selectedTrend.bookings} bookings across {(selectedTrend.facilities ?? []).length} facilities</p>
+                                ))}
+                            </div>
+                            {selectedTrend && (
+                                <div className="mt-4 rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <div>
+                                            <p className="text-sm font-bold text-[#6A535C]">{selectedTrend.label} booking activity</p>
+                                            <p className="text-xs text-slate-500">{selectedTrend.bookings} bookings across {(selectedTrend.facilities ?? []).length} facilities</p>
+                                        </div>
+                                        <button type="button" onClick={() => setSelectedTrendLabel(null)} className="text-xs font-semibold text-[#6A535C] hover:underline">Clear</button>
                                     </div>
-                                    <button type="button" onClick={() => setSelectedTrendLabel(null)} className="text-xs font-semibold text-[#6A535C] hover:underline">Clear</button>
+                                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                        {(selectedTrend.facilities ?? []).map((facility) => (
+                                            <div key={facility.name} className="flex justify-between gap-3 rounded-lg bg-white px-3 py-2 text-xs">
+                                                <span className="text-slate-700">{facility.name}</span>
+                                                <span className="font-bold text-[#6A535C]">{facility.bookings}</span>
+                                            </div>
+                                        ))}
+                                        {(selectedTrend.facilities ?? []).length === 0 && <p className="text-xs text-slate-500">No bookings in this period.</p>}
+                                    </div>
                                 </div>
-                                <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                                    {(selectedTrend.facilities ?? []).map((facility) => (
-                                        <div key={facility.name} className="flex justify-between gap-3 rounded-lg bg-white px-3 py-2 text-xs">
-                                            <span className="text-slate-700">{facility.name}</span>
-                                            <span className="font-bold text-[#6A535C]">{facility.bookings}</span>
-                                        </div>
-                                    ))}
-                                    {(selectedTrend.facilities ?? []).length === 0 && <p className="text-xs text-slate-500">No bookings in this period.</p>}
-                                </div>
-                            </div>
-                        )}
-                        {bookingTrends.length === 0 && <p className="mt-6 text-sm text-slate-500">No booking activity yet.</p>}
-                    </article>
+                            )}
+                            {bookingTrends.length === 0 && <p className="mt-4 text-sm text-slate-500">No booking activity in this period.</p>}
+                        </article>
 
-                    <article className="ri-panel p-5 sm:p-6">
-                        <div className="flex items-center gap-3">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F4ECEF] text-[#6A535C]"><BarChart3 className="h-5 w-5" /></span>
-                            <div>
-                                <p className="ri-page-eyebrow !text-[#6A535C]">Your reservations</p>
-                                <h2 className="text-lg font-bold text-[#6A535C]">Status breakdown</h2>
+                        <article className="rounded-xl border border-[var(--ri-border)] p-4">
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="h-4 w-4 text-[#6A535C]" />
+                                <h3 className="text-sm font-bold text-[#6A535C]">Status breakdown</h3>
                             </div>
-                        </div>
-                        <div className="mt-5 space-y-4">
-                            {displayedStatusBreakdown.map((item) => {
-                                const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
-                                return (
-                                    <button key={item.status} type="button"
-                                        onClick={() => setSelectedDetail({ title: `${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`, description: `Your ${item.status} reservations.`, items: statusDetails[item.status] ?? [], mode: 'bookings' })}
-                                        className="block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
-                                        <div className="mb-1.5 flex justify-between gap-3 text-xs">
-                                            <span className="font-semibold capitalize text-slate-700">{item.status}</span>
-                                            <span className="text-slate-500">{item.count} · {item.percentage.toFixed(1)}%</span>
-                                        </div>
-                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                                            <div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }} />
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                            {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No reservations to summarize.</p>}
-                        </div>
-                    </article>
+                            <div className="mt-5 space-y-4">
+                                {displayedStatusBreakdown.map((item) => {
+                                    const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
+                                    return (
+                                        <button key={item.status} type="button" onClick={() => setSelectedDetail({ title: `${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`, description: `Your ${item.status} reservations in the selected period.`, items: statusDetails[item.status] ?? [], mode: 'bookings' })} className="block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
+                                            <div className="mb-1 flex justify-between gap-3 text-xs">
+                                                <span className="font-semibold capitalize text-slate-700">{item.status}</span>
+                                                <span className="text-slate-500">{item.count} · {item.percentage.toFixed(1)}%</span>
+                                            </div>
+                                            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                                <div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }} />
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                                {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No bookings in this period.</p>}
+                            </div>
+                        </article>
+                    </div>
                 </section>
 
                 <section className="grid grid-cols-1 gap-5 xl:grid-cols-2">
