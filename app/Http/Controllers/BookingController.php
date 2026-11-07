@@ -649,7 +649,8 @@ class BookingController extends Controller
 
         $this->validateOperatingHours(
             $validated['start_time'],
-            $validated['end_time']
+            $validated['end_time'],
+            $settings
         );
 
         $buffer = max(
