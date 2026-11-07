@@ -232,6 +232,9 @@ class AdminDashboardAnalyticsTest extends TestCase
                 ->where('mostUsedFacilities.0.name', 'Super Scope Facility A')
                 ->where('usageOverTime.0.bookings', 1)
                 ->where('usageOverTime.0.facilities.0.name', 'Super Scope Facility A')
+                ->where('statusBreakdown.0.status', 'pending')
+                ->where('statusBreakdown.0.count', 1)
+                ->where('statusBreakdown.1.count', 0)
                 ->has('pendingBookings', 1)
             );
     }
