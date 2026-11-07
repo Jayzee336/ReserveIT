@@ -21,6 +21,7 @@ use App\Http\Controllers\Auth\SetPasswordController;
 
 use App\Models\Facility;
 use App\Models\Booking;
+use App\Support\BookingDashboardAnalytics;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -224,10 +225,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->latest()
             ->get();
 
-        $statusCounts = collect(['pending', 'approved', 'declined', 'cancelled'])
-            ->mapWithKeys(fn ($status) => [
-                $status => $userBookings->where('status', $status)->count(),
-            ]);
+        $statusBreakdown = BookingDashboardAnalytics::statusBreakdown($userBookings);
+        $statusCounts = collect($statusBreakdown)->mapWithKeys(
+            fn (array $item) => [$item['status'] => $item['count']]
+        );
+        $bookingDetailRows = BookingDashboardAnalytics::bookingRows($userBookings);
+        $statusDetails = collect(BookingDashboardAnalytics::STATUSES)->mapWithKeys(
+            fn (string $status) => [
+                $status => BookingDashboardAnalytics::bookingRows(
+                    BookingDashboardAnalytics::filterByStatus($userBookings, $status)
+                ),
+            ]
+        );
 
         $trendStart = \Carbon\Carbon::now()->subMonths(5)->startOfMonth();
         $bookingTrends = collect();
@@ -241,6 +250,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $bookingTrends->push([
                 'label' => $month->format('M Y'),
                 'bookings' => $monthBookings->count(),
+                'facilities' => BookingDashboardAnalytics::facilityBreakdown($monthBookings),
             ]);
         }
 
@@ -279,14 +289,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'cancelledBookings' => $statusCounts['cancelled'],
             ],
             'bookingTrends' => $bookingTrends,
-            'statusBreakdown' => collect(['pending', 'approved', 'declined', 'cancelled'])
-                ->map(fn ($status) => [
-                    'status' => $status,
-                    'count' => $statusCounts[$status],
-                    'percentage' => $userBookings->isNotEmpty()
-                        ? round(($statusCounts[$status] / $userBookings->count()) * 100, 1)
-                        : 0,
-                ])->values(),
+            'statusBreakdown' => $statusBreakdown,
+            'statusDetails' => $statusDetails,
+            'bookingDetails' => $bookingDetailRows,
             'mostUsedFacilities' => $mostUsedFacilities,
             'recentBookings' => $userBookings->take(5)->values(),
             'upcomingBooking' => $upcomingBooking,
