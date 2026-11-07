@@ -19,6 +19,13 @@ import {
 
 const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled'];
 
+function displayText(value, fallback = '—') {
+    if (value == null || value === '') return fallback;
+    if (typeof value === 'string' || typeof value === 'number') return String(value);
+    if (typeof value === 'object') return value.name ?? value.label ?? value.title ?? fallback;
+    return fallback;
+}
+
 function formatTime(value) {
     if (!value) return '—';
     const [hourText, minuteText] = String(value).slice(0, 5).split(':');
@@ -223,7 +230,7 @@ function AnalyticsDetailModal({ detailKey, details, facilities = [], pendingBook
                     ) : (
                         <div className="overflow-x-auto rounded-xl border border-stone-200"><table className="min-w-full divide-y divide-stone-200 text-left text-sm">
                             <thead className="bg-stone-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Facility / Client</th><th className="px-4 py-3">Date &amp; time</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Approval delay</th><th className="px-4 py-3">Overtime</th><th className="px-4 py-3">Fee / payment</th></tr></thead>
-                            <tbody className="divide-y divide-stone-100">{records.map((item) => <tr key={item.id} className="text-slate-700"><td className="px-4 py-3"><p className="font-semibold text-slate-900">{item.facility}</p><p className="text-xs text-slate-500">{item.client}</p></td><td className="whitespace-nowrap px-4 py-3">{item.date || '—'}<p className="text-xs text-slate-500">{formatTimeLabel(item.start_time)} – {formatTimeLabel(item.end_time)}</p></td><td className="px-4 py-3"><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold capitalize text-slate-700">{item.display_status || item.status}</span></td><td className="px-4 py-3">{item.approval_minutes != null ? `${item.approval_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_minutes ? `${item.overtime_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_fee_amount ? `₱${Number(item.overtime_fee_amount).toFixed(2)}` : '—'}<p className="text-xs capitalize text-slate-500">{item.overtime_payment_status?.replaceAll('_', ' ') || ''}</p></td></tr>)}</tbody>
+                            <tbody className="divide-y divide-stone-100">{records.map((item) => <tr key={item.id} className="text-slate-700"><td className="px-4 py-3"><p className="font-semibold text-slate-900">{displayText(item.facility, 'Facility')}</p><p className="text-xs text-slate-500">{displayText(item.client)}</p></td><td className="whitespace-nowrap px-4 py-3">{item.date || '—'}<p className="text-xs text-slate-500">{formatTimeLabel(item.start_time)} – {formatTimeLabel(item.end_time)}</p></td><td className="px-4 py-3"><span className="rounded-full bg-stone-100 px-2 py-1 text-xs font-semibold capitalize text-slate-700">{item.display_status || item.status}</span></td><td className="px-4 py-3">{item.approval_minutes != null ? `${item.approval_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_minutes ? `${item.overtime_minutes} min` : '—'}</td><td className="px-4 py-3">{item.overtime_fee_amount ? `₱${Number(item.overtime_fee_amount).toFixed(2)}` : '—'}<p className="text-xs capitalize text-slate-500">{item.overtime_payment_status?.replaceAll('_', ' ') || ''}</p></td></tr>)}</tbody>
                         </table></div>
                     )}
                 </div>
