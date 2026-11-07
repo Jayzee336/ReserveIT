@@ -28,13 +28,10 @@ function formatTime(value) {
     return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
 }
 
-function Stat({ label, value }) {
-    return (
-        <div className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">{label}</p>
-            <p className="mt-2 text-3xl font-bold text-[#6A535C]">{value}</p>
-        </div>
-    );
+function Stat({ label, value, onClick }) {
+    const content = <><p className="text-sm font-medium text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold tracking-tight text-[#6A535C]">{value ?? 0}</p>{onClick && <span className="mt-3 block text-[10px] font-bold uppercase tracking-wide text-[#846A75]">View details ↗</span>}</>;
+    const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2";
+    return onClick ? <button type="button" onClick={onClick} className={`w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
 }
 
 function StatusBadge({ status }) {
@@ -171,9 +168,12 @@ function BookingDetailModal({ booking, onClose }) {
     );
 }
 
-function AnalyticsDetailModal({ detailKey, details, onClose }) {
+function AnalyticsDetailModal({ detailKey, details, facilities = [], pendingBookings = [], recentConcerns = [], onClose }) {
     if (!detailKey) return null;
     const definitions = {
+        facilities: { title: 'Registered facilities', description: 'Facilities currently listed in ReserveIT.', items: facilities, type: 'facilities' },
+        allBookings: { title: 'Booking records', description: 'Booking records available in the current analytics breakdown.', items: [...(details.pending ?? []), ...(details.approved ?? []), ...(details.completed ?? []), ...(details.declined ?? []), ...(details.cancelled ?? [])], type: 'bookings' },
+        pendingConcerns: { title: 'Pending concerns', description: 'Recent concern records currently supplied to the dashboard.', items: recentConcerns.filter((item) => ['pending', 'open', 'submitted'].includes(String(item.status ?? 'pending').toLowerCase())), type: 'concerns' },
         clients: { title: 'Unique clients', description: 'Clients with at least one booking in the selected period.', items: details.clients ?? [], type: 'clients' },
         pending: { title: 'Pending bookings', description: 'Requests awaiting an administrator decision.', items: details.pending ?? [], type: 'bookings' },
         approved: { title: 'Approved bookings', description: 'Confirmed reservations that have not yet completed.', items: details.approved ?? [], type: 'bookings' },
@@ -209,6 +209,10 @@ function AnalyticsDetailModal({ detailKey, details, onClose }) {
                             <thead className="bg-stone-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Client</th><th className="px-4 py-3">Email</th><th className="px-4 py-3">Bookings</th><th className="px-4 py-3">Last booking</th></tr></thead>
                             <tbody className="divide-y divide-stone-100">{definition.items.map((item, index) => <tr key={item.email || item.name + index} className="text-slate-700"><td className="px-4 py-3 font-semibold text-slate-900">{item.name}</td><td className="px-4 py-3">{item.email || '—'}</td><td className="px-4 py-3">{item.bookings}</td><td className="px-4 py-3">{item.lastBooking || '—'}</td></tr>)}</tbody>
                         </table></div>
+                    ) : definition.type === 'facilities' ? (
+                        <div className="space-y-2">{definition.items.map((item) => <div key={item.id ?? item.name} className="rounded-xl border border-stone-200 bg-[#FFFAF7] px-4 py-3"><p className="font-semibold text-slate-900">{item.name ?? 'Facility'}</p><p className="mt-1 text-xs text-slate-500">{item.location ?? item.address ?? 'Facility listing'}</p></div>)}</div>
+                    ) : definition.type === 'concerns' ? (
+                        <div className="space-y-2">{definition.items.map((item) => <div key={item.id} className="rounded-xl border border-stone-200 bg-[#FFFAF7] px-4 py-3"><p className="text-sm text-slate-800">{item.message ?? item.subject ?? 'Concern'}</p><p className="mt-1 text-xs text-slate-500">{item.user?.name ?? item.user?.email ?? 'Submitted by user'} · {item.status ?? 'Pending'}</p></div>)}</div>
                     ) : (
                         <div className="overflow-x-auto rounded-xl border border-stone-200"><table className="min-w-full divide-y divide-stone-200 text-left text-sm">
                             <thead className="bg-stone-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Facility / Client</th><th className="px-4 py-3">Date &amp; time</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Approval delay</th><th className="px-4 py-3">Overtime</th><th className="px-4 py-3">Fee / payment</th></tr></thead>
@@ -505,14 +509,14 @@ export default function AdminDashboard({
                         <p className="mt-0.5 text-xs text-slate-500">Overall account totals. Use the analytics filters below for date- and facility-specific reporting.</p>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <Stat label="Total facilities" value={stats.totalFacilities ?? 0} />
-                    <Stat label="All bookings" value={stats.totalBookings ?? 0} />
-                    <Stat label="Pending approval" value={stats.pendingApprovals ?? 0} />
-                    <Stat label="Pending concerns" value={stats.pendingConcerns ?? 0} />
+                    <Stat label="Total facilities" value={stats.totalFacilities ?? 0} onClick={() => setAnalyticsDetailKey('facilities')} />
+                    <Stat label="All bookings" value={stats.totalBookings ?? 0} onClick={() => setAnalyticsDetailKey('allBookings')} />
+                    <Stat label="Pending approval" value={stats.pendingApprovals ?? 0} onClick={() => setAnalyticsDetailKey('pending')} />
+                    <Stat label="Pending concerns" value={stats.pendingConcerns ?? 0} onClick={() => setAnalyticsDetailKey('pendingConcerns')} />
                     </div>
                 </section>
 
-                <section className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
+                <section className="ri-panel space-y-4 p-5 sm:p-6">
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
                             <h2 className="font-semibold text-slate-900">Client &amp; operations analytics</h2>
@@ -662,7 +666,7 @@ export default function AdminDashboard({
                     </div>
 
                 </section>
-                <section className="rounded-2xl bg-white p-5 shadow-sm">
+                <section className="ri-panel p-5 sm:p-6">
                     <div className="mb-4 flex flex-col gap-4 border-b border-stone-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h2 className="font-semibold text-slate-900">
@@ -808,7 +812,7 @@ export default function AdminDashboard({
                 </section>
             </div>
 
-            <AnalyticsDetailModal detailKey={analyticsDetailKey} details={analyticsDetails} onClose={() => setAnalyticsDetailKey(null)} />
+            <AnalyticsDetailModal detailKey={analyticsDetailKey} details={analyticsDetails} facilities={analyticsFacilities} pendingBookings={pendingBookings} recentConcerns={recentConcerns} onClose={() => setAnalyticsDetailKey(null)} />
 
             <BookingDetailModal
                 booking={viewBooking}
