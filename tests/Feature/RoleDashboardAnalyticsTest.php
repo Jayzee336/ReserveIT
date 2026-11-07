@@ -97,8 +97,14 @@ class RoleDashboardAnalyticsTest extends TestCase
         ]);
         $this->createBooking($unassignedFacility, $outsideClient, 'approved');
 
+        $date = now()->toDateString();
+
         $this->actingAs($admin)
-            ->get(route('facilitator.dashboard'))
+            ->get(route('facilitator.dashboard', [
+                'from' => $date,
+                'to' => $date,
+                'group_by' => 'day',
+            ]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Facilitator/Dashboard')
