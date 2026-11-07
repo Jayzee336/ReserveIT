@@ -343,11 +343,7 @@ class BookingController extends Controller
                 'after_or_equal:today',
             ],
             'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => [
-                'required',
-                'date_format:H:i',
-                'after:start_time',
-            ],
+            'end_time' => ['required', 'date_format:H:i'],
             'attendees' => ['required', 'integer', 'min:1'],
             'needs_manpower' => ['required', 'boolean'],
             'notes' => ['nullable', 'string', 'max:10000'],
