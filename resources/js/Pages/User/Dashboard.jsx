@@ -178,11 +178,11 @@ export default function Dashboard({
                     <article className="ri-panel min-w-0 p-5 sm:p-6">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <p className="ri-page-eyebrow">Your activity</p>
+                                <p className="ri-page-eyebrow !text-[#6A535C]">Your activity</p>
                                 <h2 className="mt-1 text-lg font-bold text-slate-900">Booking activity</h2>
                                 <p className="mt-1 text-xs text-slate-500">Monthly reservations over the last six months.</p>
                             </div>
-                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ri-brand-soft)] text-[var(--ri-brand)]"><TrendingUp className="h-5 w-5" /></span>
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F4ECEF] text-[#6A535C]"><TrendingUp className="h-5 w-5" /></span>
                         </div>
                         <div className="mt-6 grid grid-cols-6 items-end gap-2 sm:gap-4">
                             {bookingTrends.map((item) => {
@@ -290,14 +290,14 @@ export default function Dashboard({
                     <article className="ri-panel min-w-0 overflow-hidden">
                         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--ri-border)] px-5 py-5 sm:px-6">
                             <div>
-                                <p className="ri-page-eyebrow">Coming up</p>
+                                <p className="ri-page-eyebrow !text-[#6A535C]">Coming up</p>
                                 <h2 className="mt-1 text-lg font-bold tracking-tight text-slate-900">
                                     Next reservation
                                 </h2>
                             </div>
                             <Link
                                 href={route('bookings.index')}
-                                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--ri-brand)] transition hover:text-[var(--ri-brand-strong)]"
+                                className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6A535C] transition hover:text-[#533E45]"
                             >
                                 View all
                                 <ArrowRight className="h-4 w-4" />
@@ -309,7 +309,7 @@ export default function Dashboard({
                                 <div className="rounded-2xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-5 sm:p-6">
                                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                         <div className="min-w-0">
-                                            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--ri-brand)]">
+                                            <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#6A535C]">
                                                 Reservation details
                                             </p>
                                             <h3 className="mt-2 break-words text-xl font-bold tracking-tight text-slate-900">
@@ -317,16 +317,16 @@ export default function Dashboard({
                                             </h3>
                                             <div className="mt-4 space-y-2.5 text-sm text-slate-600">
                                                 <p className="flex items-center gap-2">
-                                                    <CalendarDays className="h-4 w-4 shrink-0 text-[var(--ri-brand)]" />
+                                                    <CalendarDays className="h-4 w-4 shrink-0 text-[#6A535C]" />
                                                     {formatDate(upcomingBooking.date)}
                                                 </p>
                                                 <p className="flex items-center gap-2">
-                                                    <Clock3 className="h-4 w-4 shrink-0 text-[var(--ri-brand)]" />
+                                                    <Clock3 className="h-4 w-4 shrink-0 text-[#6A535C]" />
                                                     {formatTime(upcomingBooking.start_time)} – {formatTime(upcomingBooking.end_time)}
                                                 </p>
                                                 {upcomingBooking.facility?.location && (
                                                     <p className="flex items-center gap-2">
-                                                        <MapPin className="h-4 w-4 shrink-0 text-[var(--ri-brand)]" />
+                                                        <MapPin className="h-4 w-4 shrink-0 text-[#6A535C]" />
                                                         <span className="break-words">{upcomingBooking.facility.location}</span>
                                                     </p>
                                                 )}
@@ -337,7 +337,7 @@ export default function Dashboard({
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--ri-border-strong)] bg-[var(--ri-surface-subtle)] px-5 py-10 text-center">
-                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--ri-brand-soft)] text-[var(--ri-brand)]">
+                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4ECEF] text-[#6A535C]">
                                         <CalendarDays className="h-6 w-6" />
                                     </span>
                                     <h3 className="mt-4 text-base font-bold text-slate-900">
@@ -364,7 +364,7 @@ export default function Dashboard({
                                 <ShieldCheck className="h-5 w-5" />
                             </span>
                             <div>
-                                <p className="ri-page-eyebrow">Before you book</p>
+                                <p className="ri-page-eyebrow !text-[#6A535C]">Before you book</p>
                                 <h2 className="text-base font-bold text-slate-900">
                                     Helpful reminders
                                 </h2>
@@ -373,19 +373,19 @@ export default function Dashboard({
 
                         <ul className="mt-5 space-y-4">
                             <li className="flex gap-3">
-                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--ri-brand)]" />
+                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#6A535C]" />
                                 <p className="text-sm leading-6 text-slate-600">
                                     Submit requests early so the facility team has time to review them.
                                 </p>
                             </li>
                             <li className="flex gap-3">
-                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--ri-brand)]" />
+                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#6A535C]" />
                                 <p className="text-sm leading-6 text-slate-600">
                                     Review the facility requirements before sending your request.
                                 </p>
                             </li>
                             <li className="flex gap-3">
-                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--ri-brand)]" />
+                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#6A535C]" />
                                 <p className="text-sm leading-6 text-slate-600">
                                     Check your booking status for approval updates and next steps.
                                 </p>
@@ -394,7 +394,7 @@ export default function Dashboard({
 
                         <Link
                             href={route('schedule.index')}
-                            className="mt-6 flex items-center justify-between rounded-xl border border-[var(--ri-border)] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand-strong)]"
+                            className="mt-6 flex items-center justify-between rounded-xl border border-[var(--ri-border)] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#6A535C] hover:bg-[#F4ECEF] hover:text-[#533E45]"
                         >
                             View facility schedule
                             <ArrowRight className="h-4 w-4" />
