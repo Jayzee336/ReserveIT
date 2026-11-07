@@ -468,7 +468,20 @@ export default function AdminDashboard({
                                 Facility scope
                                 <select
                                     value={analyticsFacility}
-                                    onChange={(event) => setAnalyticsFacility(event.target.value)}
+                                    onChange={(event) => {
+                                        const facilityId = event.target.value;
+                                        setAnalyticsFacility(facilityId);
+                                        router.get(route('admin.dashboard'), {
+                                            from: analyticsFrom,
+                                            to: analyticsTo,
+                                            facility_id: facilityId || undefined,
+                                            group_by: analyticsGroupBy,
+                                        }, {
+                                            preserveScroll: true,
+                                            preserveState: true,
+                                            replace: true,
+                                        });
+                                    }}
                                     className="min-h-12 rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-white/50"
                                 >
                                     <option value="">All facilities</option>
