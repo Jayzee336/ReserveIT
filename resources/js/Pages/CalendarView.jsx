@@ -18,6 +18,7 @@ const statusLabel = (status) => status === 'pending'
       ? 'Approved · confirmed'
       : String(status || 'Unknown');
 const toMinutes = (time) => { const [hour, minute] = String(time).split(':').map(Number); return hour * 60 + (minute || 0); };
+const toEndMinutes = (time) => String(time).slice(0, 5) === '00:00' ? 1440 : toMinutes(time);
 const statusClass = (status) => status === 'approved' ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500';
 
 export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate, availabilityOnly = false }) {
@@ -127,7 +128,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                 const slotEnd = slotStart + 60;
                                 const overlappingBookings = bookings.filter((booking) => (
                                     toMinutes(booking.start_time) < slotEnd &&
-                                    toMinutes(booking.end_time) > slotStart
+                                    toEndMinutes(booking.end_time) > slotStart
                                 ));
                                 const startingBookings = overlappingBookings.filter((booking) => (
                                     toMinutes(booking.start_time) >= slotStart &&
