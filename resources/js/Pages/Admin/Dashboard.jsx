@@ -567,20 +567,8 @@ export default function AdminDashboard({
                             </button>
                         ))}
                     </div>
-                    <div className="mt-5 rounded-xl border border-[var(--ri-border)] p-4">
-                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
-                        <div className="space-y-3">{displayedStatusBreakdown.map((item) => {
-                            const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
-                            return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
-                                <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage.toFixed(1)}%</span></span></div>
-                                <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
-                                <span className="mt-1 block text-right text-[10px] font-semibold text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details ↗</span>
-                            </button>;
-                        })}</div>
-                    </div>
-                </section>
+                    <div className="mt-5 grid gap-5 xl:grid-cols-2">
 
-                <div className="grid gap-6 xl:grid-cols-2">
                     <section className="rounded-xl border border-[var(--ri-border)] p-4">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
@@ -629,6 +617,23 @@ export default function AdminDashboard({
                         )}
                     </section>
 
+                    <div className="mt-5 rounded-xl border border-[var(--ri-border)] p-4">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
+                        <div className="space-y-3">{displayedStatusBreakdown.map((item) => {
+                            const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
+                            return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
+                                <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage.toFixed(1)}%</span></span></div>
+                                <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
+                                <span className="mt-1 block text-right text-[10px] font-semibold text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details ↗</span>
+                            </button>;
+                        })}</div>
+                    </div>
+                </section>
+
+                    </div>
+
+                    <div className="mt-5">
+
                     <section className="rounded-xl border border-[var(--ri-border)] p-4">
                         <h2 className="text-sm font-bold text-slate-900">
                             Most used facilities
@@ -654,8 +659,10 @@ export default function AdminDashboard({
                             )}
                         </div>
                     </section>
-                </div>
 
+                    </div>
+
+                </section>
                 <section className="rounded-2xl bg-white p-5 shadow-sm">
                     <div className="mb-4 flex flex-col gap-4 border-b border-stone-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
