@@ -244,7 +244,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->values();
 
         $statusBreakdown = BookingDashboardAnalytics::statusBreakdown($analyticsBookings);
-        $statusCounts = collect($statusBreakdown)->mapWithKeys(
+        $allTimeStatusCounts = collect(BookingDashboardAnalytics::statusBreakdown($userBookings))->mapWithKeys(
             fn (array $item) => [$item['status'] => $item['count']]
         );
         $bookingDetailRows = BookingDashboardAnalytics::bookingRows($userBookings);
@@ -297,12 +297,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             };
         }
 
-        $decidedBookings = $analyticsBookings->filter(
-            fn (Booking $booking) => in_array(BookingDashboardAnalytics::displayStatus($booking), ['approved', 'declined'], true)
-        );
-        $approvedInPeriod = $analyticsBookings->filter(
-            fn (Booking $booking) => BookingDashboardAnalytics::displayStatus($booking) === 'approved'
-        )->count();
+        $decidedBookings = $analyticsBookings->whereIn('status', ['approved', 'declined']);
+        $approvedInPeriod = $decidedBookings->where('status', 'approved')->count();
         $approvalRate = $decidedBookings->isNotEmpty()
             ? round(($approvedInPeriod / $decidedBookings->count()) * 100, 1)
             : 0.0;
@@ -355,11 +351,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'stats' => [
                 'totalBookings' => $userBookings->count(),
                 'activeRooms' => Facility::count(),
-                'pendingRequests' => $statusCounts['pending'],
-                'approvedBookings' => $statusCounts['approved'],
-                'completedBookings' => $statusCounts['completed'],
-                'declinedBookings' => $statusCounts['declined'],
-                'cancelledBookings' => $statusCounts['cancelled'],
+                'pendingRequests' => $allTimeStatusCounts['pending'],
+                'approvedBookings' => $allTimeStatusCounts['approved'],
+                'completedBookings' => $allTimeStatusCounts['completed'],
+                'declinedBookings' => $allTimeStatusCounts['declined'],
+                'cancelledBookings' => $allTimeStatusCounts['cancelled'],
             ],
             'bookingTrends' => $bookingTrends,
             'analyticsFilters' => [
