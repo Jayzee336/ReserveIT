@@ -73,9 +73,11 @@ class HandleInertiaRequests extends Middleware
                     'require_consent_letter' => (bool) $settings
                         ->require_consent_letter,
 
-                    'cleanup_buffer_minutes' => (int) (
-                        $settings->cleanup_buffer_minutes ?? 30
-                    ),
+                    'cleanup_buffer_minutes' => (int) ($settings->cleanup_buffer_minutes ?? 30),
+                    'opening_time' => $settings->opening_time ?? '08:00',
+                    'closing_time' => $settings->closing_time ?? '00:00',
+                    'early_check_in_minutes' => (int) ($settings->early_check_in_minutes ?? 15),
+                    'overtime_grace_minutes' => (int) ($settings->overtime_grace_minutes ?? 0),
                 ];
             })(),
         ];
