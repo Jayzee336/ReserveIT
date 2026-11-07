@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -12,6 +12,10 @@ import {
     Calendar,
     Users,
     Plus,
+    Sparkles,
+    ArrowRight,
+    BarChart3,
+    TrendingUp,
 } from 'lucide-react';
 
 function formatTime(value) {
@@ -224,7 +228,17 @@ export default function FacilitatorDashboard({
     facilities = [],
     selectedFacilityId = null,
     todaySchedule = {},
+    analytics = {},
+    analyticsFilters = {},
+    usageOverTime = [],
+    statusBreakdown = [],
+    mostUsedFacilities = [],
 }) {
+    const { auth } = usePage().props;
+    const firstName = auth?.user?.name?.trim()?.split(/\s+/)[0] || 'there';
+    const [analyticsFrom, setAnalyticsFrom] = useState(analyticsFilters.from ?? '');
+    const [analyticsTo, setAnalyticsTo] = useState(analyticsFilters.to ?? '');
+    const [analyticsGroupBy, setAnalyticsGroupBy] = useState(analyticsFilters.group_by ?? 'month');
     const [processingId, setProcessingId] = useState(null);
     const [viewBooking, setViewBooking] = useState(null);
     const [confirmApproveId, setConfirmApproveId] = useState(null);
@@ -237,17 +251,32 @@ export default function FacilitatorDashboard({
     const weeklyUtilizationRate = stats?.weeklyUtilizationRate ?? 0;
     const activeOccupancy = stats?.activeOccupancy ?? 0;
 
+    const applyAnalyticsFilters = (event) => {
+        event.preventDefault();
+        router.get(route('facilitator.dashboard'), {
+            facility_id: selectedFacilityId || undefined,
+            from: analyticsFrom,
+            to: analyticsTo,
+            group_by: analyticsGroupBy,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
     const handleFacilityChange = (event) => {
         const facilityId = event.target.value;
-
-        router.get(
-            route('facilitator.dashboard'),
-            facilityId ? { facility_id: facilityId } : {},
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
+        router.get(route('facilitator.dashboard'), {
+            facility_id: facilityId || undefined,
+            from: analyticsFrom,
+            to: analyticsTo,
+            group_by: analyticsGroupBy,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
     const confirmApprove = (bookingId) => {
@@ -310,67 +339,58 @@ export default function FacilitatorDashboard({
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h1 className="text-2xl font-bold">
-                    Facilitator Dashboard
-                </h1>
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Facilitator Dashboard" />
 
-            <div className="space-y-6 p-6">
-                {/* Operational Command Center */}
-                <div className="flex flex-col gap-4 rounded-2xl border border-stone-100 bg-white p-5 shadow-sm lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <h2 className="text-xl font-semibold text-slate-900">
-                            Operational Command Center
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            Review approvals and monitor the day across your assigned facilities.
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                        <label className="flex flex-col gap-2 text-sm font-medium text-slate-600">
-                            Facility scope
-                            <select
-                                value={selectedFacilityId ?? ''}
-                                onChange={handleFacilityChange}
-                                className="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[#6A535C]"
+            <div className="ri-page-shell space-y-7">
+                <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#6A535C] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
+                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#846A75]/50 blur-3xl" />
+                    <div className="pointer-events-none absolute -bottom-32 right-1/3 -z-10 h-64 w-64 rounded-full bg-[#B88D59]/20 blur-3xl" />
+                    <div className="flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
+                        <div className="max-w-2xl">
+                            <span className="ri-page-eyebrow !text-[#FDF6F0]">
+                                <Sparkles className="h-3.5 w-3.5" />
+                                Facility operations
+                            </span>
+                            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                                Welcome back, {firstName}.
+                            </h1>
+                            <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+                                Manage your assigned facilities, review reservation requests, and monitor daily operations.
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+                            <label className="flex min-w-[210px] flex-col gap-2 text-xs font-semibold text-[#FDF6F0]">
+                                Facility scope
+                                <select
+                                    value={selectedFacilityId ?? ''}
+                                    onChange={handleFacilityChange}
+                                    className="min-h-12 rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-white/50"
+                                >
+                                    <option value="">All assigned facilities</option>
+                                    {facilities.map((facility) => (
+                                        <option key={facility.id} value={facility.id}>{facility.name}</option>
+                                    ))}
+                                </select>
+                            </label>
+                            <Link
+                                href={route('admin.active-bookings.page')}
+                                className="inline-flex min-h-12 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                             >
-                                <option value="">All assigned facilities</option>
-
-                                {facilities.map((facility) => (
-                                    <option
-                                        key={facility.id}
-                                        value={facility.id}
-                                    >
-                                        {facility.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-
-                        {/* Active Bookings Monitor */}
-                        <Link
-                            href={route('admin.active-bookings.page')}
-                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#533e45] focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2"
-                        >
-                            <Activity className="h-4 w-4" />
-                            Active Bookings Monitor
-                        </Link>
-
-                        {/* Book a Facility */}
-                        <Link
-                            href={route('facilities.index')}
-                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Book a Facility
-                        </Link>
+                                <Activity className="h-4 w-4" />
+                                Active Bookings Monitor
+                            </Link>
+                            <Link
+                                href={route('schedule.index')}
+                                className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#6A535C] hover:!border-white hover:!bg-[#FFF8F2]"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Book a Facility
+                                <ArrowRight className="h-4 w-4" />
+                            </Link>
+                        </div>
                     </div>
-                </div>
+                </section>
 
                 {/* Statistics */}
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -391,6 +411,110 @@ export default function FacilitatorDashboard({
                         value={activeOccupancy}
                     />
                 </div>
+
+                {/* Assigned-facility analytics */}
+                <section className="ri-panel space-y-5 p-5 sm:p-6">
+                    <div>
+                        <p className="ri-page-eyebrow">Assigned facility insights</p>
+                        <h2 className="mt-1 text-lg font-bold text-slate-900">Client &amp; operations analytics</h2>
+                        <p className="mt-1 text-xs text-slate-500">{analytics.periodLabel ?? 'Last six months'} · metrics include only facilities assigned to you and the selected facility scope.</p>
+                    </div>
+                    <form onSubmit={applyAnalyticsFilters} className="grid gap-3 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_0.8fr_auto_auto] xl:items-end">
+                        <label className="block text-xs font-semibold text-slate-600">
+                            From
+                            <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700"/>
+                        </label>
+                        <label className="block text-xs font-semibold text-slate-600">
+                            To
+                            <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700"/>
+                        </label>
+                        <label className="block text-xs font-semibold text-slate-600">
+                            Trend interval
+                            <select value={analyticsGroupBy} onChange={(event) => setAnalyticsGroupBy(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700">
+                                <option value="day">Daily</option>
+                                <option value="week">Weekly</option>
+                                <option value="month">Monthly</option>
+                            </select>
+                        </label>
+                        <button type="submit" className="rounded-lg bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#533e45]">Apply</button>
+                        <button type="button" onClick={() => { setAnalyticsFrom(''); setAnalyticsTo(''); setAnalyticsGroupBy('month'); router.get(route('facilitator.dashboard'), { facility_id: selectedFacilityId || undefined }, { preserveState: true, preserveScroll: true, replace: true }); }} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-stone-100">Reset</button>
+                    </form>
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <Stat label="Total bookings" value={analytics.totalBookings ?? 0}/>
+                        <Stat label="Unique clients" value={analytics.uniqueClients ?? 0}/>
+                        <Stat label="Returning clients" value={analytics.returningClients ?? 0}/>
+                        <Stat label="Approval rate" value={`${analytics.approvalRate ?? 0}%`}/>
+                        <Stat label="Cancellation rate" value={`${analytics.cancellationRate ?? 0}%`}/>
+                        <Stat label="Average approval time" value={analytics.averageApprovalHours != null ? `${analytics.averageApprovalHours} hrs` : '—'}/>
+                        <Stat label="Peak booking hour" value={analytics.peakHour ?? '—'}/>
+                        <Stat label="Overtime bookings" value={analytics.overtimeBookings ?? 0}/>
+                    </div>
+                    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.9fr)]">
+                        <div className="rounded-xl border border-[var(--ri-border)] p-4">
+                            <div className="flex items-center gap-2">
+                                <TrendingUp className="h-4 w-4 text-[#6A535C]"/>
+                                <h3 className="text-sm font-bold text-slate-900">Booking volume over time</h3>
+                            </div>
+                            <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6">
+                                {usageOverTime.map((item) => {
+                                    const maxValue = Math.max(...usageOverTime.map((point) => point.bookings), 1);
+                                    return (
+                                        <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
+                                            <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
+                                            <div className="flex h-24 w-full items-end rounded-t-lg bg-stone-100">
+                                                <div className="w-full rounded-t-lg bg-[#846A75]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / maxValue * 100)}%` : '3px' }} />
+                                            </div>
+                                            <span className="truncate text-[10px] text-slate-500">{item.label}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            {usageOverTime.length === 0 && <p className="mt-4 text-sm text-slate-500">No bookings in this period.</p>}
+                        </div>
+                        <div className="rounded-xl border border-[var(--ri-border)] p-4">
+                            <div className="flex items-center gap-2">
+                                <BarChart3 className="h-4 w-4 text-[#6A535C]"/>
+                                <h3 className="text-sm font-bold text-slate-900">Booking status breakdown</h3>
+                            </div>
+                            <div className="mt-5 space-y-4">
+                                {statusBreakdown.map((item) => (
+                                    <div key={item.status}>
+                                        <div className="mb-1 flex justify-between text-xs">
+                                            <span className="font-semibold capitalize text-slate-700">{item.status}</span>
+                                            <span className="text-slate-500">{item.count} · {item.percentage}%</span>
+                                        </div>
+                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                            <div className={`h-full rounded-full ${item.status === 'approved' ? 'bg-emerald-500' : item.status === 'pending' ? 'bg-amber-400' : item.status === 'declined' ? 'bg-rose-500' : 'bg-slate-400'}`} style={{ width: `${item.percentage}%` }}/>
+                                        </div>
+                                    </div>
+                                ))}
+                                {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No booking data in this period.</p>}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="rounded-xl border border-[var(--ri-border)] p-4">
+                        <h3 className="text-sm font-bold text-slate-900">Most used facilities</h3>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                            {mostUsedFacilities.map((facility) => (
+                                <div key={facility.name} className="flex items-center justify-between gap-3 rounded-lg bg-stone-50 px-3 py-2 text-sm">
+                                    <span className="truncate text-slate-700">{facility.name}</span>
+                                    <span className="shrink-0 font-semibold text-[#6A535C]">{facility.bookings}</span>
+                                </div>
+                            ))}
+                            {mostUsedFacilities.length === 0 && <p className="text-sm text-slate-500">No facility usage data in this period.</p>}
+                        </div>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="rounded-xl bg-[var(--ri-surface-subtle)] p-4">
+                            <p className="text-xs font-semibold text-slate-500">Overtime minutes</p>
+                            <p className="mt-1 text-xl font-bold text-slate-900">{analytics.overtimeMinutes ?? 0}</p>
+                        </div>
+                        <div className="rounded-xl bg-[var(--ri-surface-subtle)] p-4">
+                            <p className="text-xs font-semibold text-slate-500">Recorded overtime fees</p>
+                            <p className="mt-1 text-xl font-bold text-slate-900">₱{Number(analytics.overtimeFees ?? 0).toFixed(2)}</p>
+                        </div>
+                    </div>
+                </section>
 
                 {/* Today's Schedule */}
                 <section className="rounded-2xl bg-white p-5 shadow-sm">
