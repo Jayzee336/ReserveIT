@@ -700,4 +700,38 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
         }
     }
 
+
+    public function test_booking_can_end_at_midnight_under_configured_operating_hours(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'user',
+            'is_active' => true,
+        ]);
+        $facility = $this->createFacility('midnight-booking-test', 'Midnight Facility');
+        SystemSetting::current()->update([
+            'opening_time' => '08:00',
+            'closing_time' => '00:00',
+            'max_booking_duration' => 4,
+        ]);
+
+        $response = $this->actingAs($user)->post(route('bookings.store'), [
+            'facility_id' => $facility->id,
+            'date' => now()->addDay()->toDateString(),
+            'start_time' => '23:00',
+            'end_time' => '00:00',
+            'notes' => 'Midnight schedule boundary test',
+            'attendees' => 2,
+            'needs_manpower' => false,
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('bookings', [
+            'facility_id' => $facility->id,
+            'user_id' => $user->id,
+            'start_time' => '23:00',
+            'end_time' => '00:00',
+            'status' => 'pending',
+        ]);
+    }
+
 }
