@@ -285,6 +285,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'activeRooms' => Facility::count(),
                 'pendingRequests' => $statusCounts['pending'],
                 'approvedBookings' => $statusCounts['approved'],
+                'completedBookings' => $statusCounts['completed'],
                 'declinedBookings' => $statusCounts['declined'],
                 'cancelledBookings' => $statusCounts['cancelled'],
             ],
