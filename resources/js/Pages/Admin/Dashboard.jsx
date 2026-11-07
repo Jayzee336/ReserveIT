@@ -481,32 +481,6 @@ export default function AdminDashboard({
                             </p>
                         </div>
                         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-                            <label className="flex min-w-[190px] flex-col gap-2 text-xs font-semibold text-[#FDF6F0]">
-                                Facility scope
-                                <select
-                                    value={analyticsFacility}
-                                    onChange={(event) => {
-                                        const facilityId = event.target.value;
-                                        setAnalyticsFacility(facilityId);
-                                        router.get(route('admin.dashboard'), {
-                                            from: analyticsFrom,
-                                            to: analyticsTo,
-                                            facility_id: facilityId || undefined,
-                                            group_by: analyticsGroupBy,
-                                        }, {
-                                            preserveScroll: true,
-                                            preserveState: true,
-                                            replace: true,
-                                        });
-                                    }}
-                                    className="min-h-12 rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm font-medium text-slate-800 outline-none focus:ring-2 focus:ring-white/50"
-                                >
-                                    <option value="">All facilities</option>
-                                    {analyticsFacilities.map((facility) => (
-                                        <option key={facility.id} value={facility.id}>{facility.name}</option>
-                                    ))}
-                                </select>
-                            </label>
                             <Link
                                 href={route('schedule.index')}
                                 className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#6A535C] hover:!border-white hover:!bg-[#FFF8F2]"
@@ -545,7 +519,14 @@ export default function AdminDashboard({
                             <p className="mt-0.5 text-xs text-slate-500">{operationalAnalytics.periodLabel ?? 'Last 6 months'} · scoped to facilities you manage</p>
                         </div>
                     </div>
-                    <form onSubmit={applyAnalyticsFilters} className="mb-4 grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_0.8fr_auto_auto] lg:items-end">
+                    <form onSubmit={applyAnalyticsFilters} className="mb-4 grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_0.8fr_auto_auto] lg:items-end">
+                        <label className="block text-xs font-semibold text-slate-600">
+                            Facility scope
+                            <select value={analyticsFacility} onChange={(event) => setAnalyticsFacility(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20">
+                                <option value="">All facilities</option>
+                                {analyticsFacilities.map((facility) => <option key={facility.id} value={facility.id}>{facility.name}</option>)}
+                            </select>
+                        </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             From
                             <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20" />
@@ -586,7 +567,7 @@ export default function AdminDashboard({
                             </button>
                         ))}
                     </div>
-                    <div className="mt-5 rounded-xl border border-stone-200 p-4">
+                    <div className="mt-5 rounded-xl border border-[var(--ri-border)] p-4">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
                         <div className="space-y-3">{displayedStatusBreakdown.map((item) => {
                             const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
@@ -600,10 +581,10 @@ export default function AdminDashboard({
                 </section>
 
                 <div className="grid gap-6 xl:grid-cols-2">
-                    <section className="rounded-2xl bg-white p-5 shadow-sm">
+                    <section className="rounded-xl border border-[var(--ri-border)] p-4">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
-                                <h2 className="font-semibold text-slate-900">Booking volume over time</h2>
+                                <h2 className="text-sm font-bold text-slate-900">Booking volume over time</h2>
                                 <p className="mt-1 text-xs text-slate-500 capitalize">{analyticsFilters.group_by ?? 'month'} view</p>
                             </div>
                             <div className="rounded-lg bg-stone-50 px-3 py-2 text-right">
@@ -648,8 +629,8 @@ export default function AdminDashboard({
                         )}
                     </section>
 
-                    <section className="rounded-2xl bg-white p-5 shadow-sm">
-                        <h2 className="font-semibold text-slate-900">
+                    <section className="rounded-xl border border-[var(--ri-border)] p-4">
+                        <h2 className="text-sm font-bold text-slate-900">
                             Most used facilities
                         </h2>
 
