@@ -46,7 +46,7 @@ const bookingDestination = (role, bookingId) => {
     return route('bookings.index', params);
 };
 
-export default function NotificationIndex({ notifications, unreadCount = 0, filters = {} }) {
+export default function NotificationIndex({ notificationHistory, unreadCount = 0, filters = {} }) {
     const user = usePage().props.auth?.user;
     const [search, setSearch] = useState(filters.search ?? '');
     const [isMarkingAll, setIsMarkingAll] = useState(false);
@@ -114,6 +114,10 @@ export default function NotificationIndex({ notifications, unreadCount = 0, filt
                                 <p className="mt-2 max-w-xl text-sm leading-6 text-white/80">
                                     Review booking requests, reservation decisions, and other account updates in one place.
                                 </p>
+                                <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white">
+                                    <span className="h-2 w-2 rounded-full bg-white/90" />
+                                    {unreadCount} unread {unreadCount === 1 ? 'notification' : 'notifications'}
+                                </div>
                             </div>
                             <div className="rounded-2xl border border-white/20 bg-white/10 p-3">
                                 <BellRing className="h-7 w-7" />
@@ -184,16 +188,16 @@ export default function NotificationIndex({ notifications, unreadCount = 0, filt
                         </div>
 
                         <div className="border-t border-stone-100 pt-2">
-                            {notifications?.data?.length ? (
-                                <div className="divide-y divide-stone-100">
-                                    {notifications.data.map((notification) => {
+                            {notificationHistory?.data?.length ? (
+                                <div className="space-y-3">
+                                    {notificationHistory.data.map((notification) => {
                                         const meta = CATEGORY_STYLES[notification.category] ?? CATEGORY_STYLES.other;
                                         const Icon = meta.icon;
                                         const destination = bookingDestination(user?.role, notification.booking_id);
 
                                         return (
-                                            <article key={notification.id} className={`flex flex-col gap-4 py-5 sm:flex-row sm:items-start ${notification.read ? 'opacity-75' : ''}`}>
-                                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F0ED] text-[#6A535C]">
+                                            <article key={notification.id} className={`flex flex-col gap-4 rounded-2xl border p-4 transition sm:flex-row sm:items-start sm:p-5 ${notification.read ? 'border-stone-100 bg-white' : 'border-[#E8D8D1] bg-[#FCFAF9] shadow-sm'}`}>
+                                                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${meta.className}`}>
                                                     <Icon className="h-5 w-5" />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
@@ -244,9 +248,9 @@ export default function NotificationIndex({ notifications, unreadCount = 0, filt
                             )}
                         </div>
 
-                        {notifications?.links?.length > 3 && (
+                        {notificationHistory?.links?.length > 3 && (
                             <div className="flex flex-wrap items-center justify-center gap-2 border-t border-stone-100 pt-5">
-                                {notifications.links.map((link, index) => (
+                                {notificationHistory.links.map((link, index) => (
                                     <Link
                                         key={index}
                                         href={link.url ?? '#'}
