@@ -327,10 +327,40 @@ export default function Dashboard({
                         <h2 className="font-bold text-slate-900">Your most booked facilities</h2>
                         <div className="mt-4 space-y-3">
                             {mostUsedFacilities.length ? mostUsedFacilities.map((facility) => (
-                                <div key={facility.name} className="flex items-center justify-between gap-3 rounded-xl bg-[var(--ri-surface-subtle)] px-4 py-3 text-sm">
-                                    <span className="font-medium text-slate-700">{facility.name}</span>
+                                <button
+                                    key={facility.name}
+                                    type="button"
+                                    onClick={() => {
+                                        const facilityBookingSource = Array.isArray(analyticsDetails.totalBookings)
+                                            ? analyticsDetails.totalBookings
+                                            : Array.isArray(analyticsDetails.totalBookings?.data)
+                                                ? analyticsDetails.totalBookings.data
+                                                : Array.isArray(bookingDetails)
+                                                    ? bookingDetails
+                                                    : Array.isArray(bookingDetails?.data)
+                                                        ? bookingDetails.data
+                                                        : [];
+                                        const facilityBookings = facilityBookingSource.filter((booking) => {
+                                            const bookingFacility = booking.facility?.name
+                                                ?? booking.facility_name
+                                                ?? (typeof booking.facility === 'string' ? booking.facility : '');
+                                            return String(bookingFacility).trim().toLowerCase() === String(facility.name).trim().toLowerCase();
+                                        });
+                                        setSelectedDetail({
+                                            title: facility.name + ' bookings',
+                                            description: 'Your bookings for ' + facility.name + ' in the selected analytics period.',
+                                            items: facilityBookings,
+                                            mode: 'bookings',
+                                        });
+                                    }}
+                                    className="group flex w-full items-center justify-between gap-3 rounded-xl bg-[var(--ri-surface-subtle)] px-4 py-3 text-left text-sm transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#846A75]"
+                                >
+                                    <span className="min-w-0">
+                                        <span className="block font-medium text-slate-700">{facility.name}</span>
+                                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                    </span>
                                     <span className="shrink-0 font-semibold text-[#6A535C]">{facility.bookings} bookings</span>
-                                </div>
+                                </button>
                             )) : <p className="text-sm text-slate-500">You have not booked a facility yet.</p>}
                         </div>
                     </article>
