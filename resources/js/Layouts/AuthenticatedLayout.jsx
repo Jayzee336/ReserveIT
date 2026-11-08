@@ -18,6 +18,8 @@ import {
     CalendarCheck,
     PanelLeftClose,
     PanelLeftOpen,
+    Volume2,
+    VolumeX,
 } from 'lucide-react';
 
 const ROLE_LABELS = {
@@ -107,12 +109,102 @@ export default function AuthenticatedLayout({ header, action, children }) {
     const [isClearingNotifications, setIsClearingNotifications] =
         useState(false);
     const [viewingNotification, setViewingNotification] = useState(null);
+    const [notificationSoundEnabled, setNotificationSoundEnabled] = useState(() => {
+        if (typeof window === 'undefined') return false;
+
+        try {
+            return window.localStorage.getItem('notification_sound_enabled') === 'true';
+        } catch {
+            return false;
+        }
+    });
+    const audioContextRef = useRef(null);
+    const knownNotificationIdsRef = useRef(
+        new Set((page.props.notifications ?? []).map((notification) => String(notification.id))),
+    );
 
     const prevCountRef = useRef(
         (page.props.notifications ?? []).filter(
             (notification) => !notification.read,
         ).length,
     );
+
+    // Generate short tones locally with the Web Audio API; no audio files or paid services needed.
+    const playNotificationSound = (notification = {}, force = false) => {
+        if ((!notificationSoundEnabled && !force) || typeof window === 'undefined') return;
+
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        try {
+            if (!audioContextRef.current) {
+                audioContextRef.current = new AudioContextClass();
+            }
+
+            const context = audioContextRef.current;
+            const title = String(notification.title ?? '').toLowerCase();
+            const message = String(notification.message ?? '').toLowerCase();
+            const text = `${title} ${message}`;
+
+            let notes = [740];
+            if (text.includes('approv')) {
+                notes = [660, 880];
+            } else if (text.includes('reject') || text.includes('declin')) {
+                notes = [440, 330];
+            } else if (text.includes('cancel')) {
+                notes = [520, 390];
+            }
+
+            context.resume().then(() => {
+                const startAt = context.currentTime;
+
+                notes.forEach((frequency, index) => {
+                    const oscillator = context.createOscillator();
+                    const gain = context.createGain();
+                    const noteStart = startAt + index * 0.16;
+
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(frequency, noteStart);
+                    gain.gain.setValueAtTime(0.0001, noteStart);
+                    gain.gain.exponentialRampToValueAtTime(0.075, noteStart + 0.025);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.14);
+
+                    oscillator.connect(gain);
+                    gain.connect(context.destination);
+                    oscillator.start(noteStart);
+                    oscillator.stop(noteStart + 0.15);
+                });
+            }).catch(() => {
+                // Browsers may block audio until the user explicitly enables it.
+            });
+        } catch {
+            // Notification delivery should continue even if audio is unavailable.
+        }
+    };
+
+    const toggleNotificationSound = () => {
+        setNotificationSoundEnabled((enabled) => {
+            const nextEnabled = !enabled;
+
+            if (nextEnabled) {
+                // The button click is a user gesture, allowing the browser to unlock audio.
+                playNotificationSound({ title: 'Sound test' }, true);
+            }
+
+            return nextEnabled;
+        });
+    };
+
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(
+                'notification_sound_enabled',
+                String(notificationSoundEnabled),
+            );
+        } catch {
+            // Sound preferences remain usable for the current session.
+        }
+    }, [notificationSoundEnabled]);
 
     const unreadCount = realtimeNotifications.filter(
         (notification) => !notification.read,
@@ -123,6 +215,12 @@ export default function AuthenticatedLayout({ header, action, children }) {
         const freshNotifications = page.props.notifications ?? [];
 
         setRealtimeNotifications(freshNotifications);
+
+        freshNotifications.forEach((notification) => {
+            if (notification.id != null) {
+                knownNotificationIdsRef.current.add(String(notification.id));
+            }
+        });
 
         prevCountRef.current = freshNotifications.filter(
             (notification) => !notification.read,
@@ -146,22 +244,32 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         (notification) => !notification.read,
                     ).length;
 
-                    const previousUnreadCount = prevCountRef.current;
+                    const newNotifications = freshNotifications.filter(
+                        (notification) =>
+                            notification.id != null &&
+                            !knownNotificationIdsRef.current.has(String(notification.id)),
+                    );
 
-                    if (freshUnreadCount > previousUnreadCount) {
-                        const newNotifications =
-                            freshUnreadCount - previousUnreadCount;
-
+                    if (newNotifications.length > 0) {
                         toast.message(
-                            `${newNotifications} new notification${
-                                newNotifications > 1 ? 's' : ''
+                            `${newNotifications.length} new notification${
+                                newNotifications.length > 1 ? 's' : ''
                             }`,
                             {
                                 description:
                                     'You have unread updates. Check the bell icon.',
                             },
                         );
+
+                        // Play one sound per polling batch to avoid a burst of overlapping tones.
+                        playNotificationSound(newNotifications[0]);
                     }
+
+                    freshNotifications.forEach((notification) => {
+                        if (notification.id != null) {
+                            knownNotificationIdsRef.current.add(String(notification.id));
+                        }
+                    });
 
                     prevCountRef.current = freshUnreadCount;
                     setRealtimeNotifications(freshNotifications);
@@ -594,6 +702,22 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                             </span>
 
                                             <div className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={toggleNotificationSound}
+                                                    aria-label={notificationSoundEnabled ? 'Turn notification sounds off' : 'Turn notification sounds on'}
+                                                    aria-pressed={notificationSoundEnabled}
+                                                    title={notificationSoundEnabled ? 'Notification sound on' : 'Notification sound off'}
+                                                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-gray-600 transition hover:bg-gray-100"
+                                                >
+                                                    {notificationSoundEnabled ? (
+                                                        <Volume2 className="h-3.5 w-3.5 text-[#6A535C]" />
+                                                    ) : (
+                                                        <VolumeX className="h-3.5 w-3.5 text-gray-400" />
+                                                    )}
+                                                    Sound {notificationSoundEnabled ? 'On' : 'Off'}
+                                                </button>
+
                                                 {unreadCount > 0 && (
                                                     <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-[#6A535C]">
                                                         {unreadCount} New
