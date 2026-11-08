@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Facility;
-use App\Models\User;
 
 class DatabaseSeeder extends Seeder
 {
@@ -140,64 +139,7 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        /*
-         * Demo accounts
-         *
-         * These credentials are intended for local development and
-         * presentations only. Do not reuse them for real accounts.
-         */
-        $demoAccounts = [
-            [
-                'name' => 'ReserveIT Super Admin',
-                'email' => 'superadmin@reserveit.test',
-                'password' => 'RsvIT-Admin-2026!Demo',
-                'role' => 'super_admin',
-                'must_change_password' => false,
-                'is_active' => true,
-            ],
-            [
-                'name' => 'ReserveIT Facility Admin',
-                'email' => 'facilityadmin@reserveit.test',
-                'password' => 'RsvIT-Facility-2026!Demo',
-                'role' => 'facility_admin',
-                'must_change_password' => false,
-                'is_active' => true,
-            ],
-            [
-                'name' => 'ReserveIT Demo User',
-                'email' => 'demo.user@reserveit.test',
-                'password' => 'RsvIT-User-2026!Demo',
-                'role' => 'user',
-                'must_change_password' => false,
-                'is_active' => true,
-            ],
-        ];
-
-        foreach ($demoAccounts as $account) {
-            User::updateOrCreate(
-                ['email' => $account['email']],
-                [
-                    'name' => $account['name'],
-                    'password' => $account['password'],
-                    'role' => $account['role'],
-                    'must_change_password' => $account['must_change_password'],
-                    'is_active' => $account['is_active'],
-                ]
-            );
-        }
-
-        /*
-         * Assign the facility administrator to selected facilities.
-         * syncWithoutDetaching preserves any other facility assignments.
-         */
-        $facilityAdmin = User::where(
-            'email',
-            'facilityadmin@reserveit.test'
-        )->firstOrFail();
-
-        $facilityAdmin->managedFacilities()->syncWithoutDetaching([
-            'itdif',
-            'itrc',
-        ]);
+        // Seed the three reusable demo accounts after facilities exist.
+        $this->call(UserSeeder::class);
     }
 }
