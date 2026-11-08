@@ -39,7 +39,14 @@ class HandleInertiaRequests extends Middleware
                 ->take(10)
                 ->get()
                 ->map(function ($notification) {
-                    $data = $notification->data;
+                    $data = $notification->data ?? [];
+                    if (is_string($data)) {
+                        $decoded = json_decode($data, true);
+                        $data = is_array($decoded) ? $decoded : [];
+                    }
+                    if (!is_array($data)) {
+                        $data = [];
+                    }
 
                     return [
                         'id' => $notification->id,
