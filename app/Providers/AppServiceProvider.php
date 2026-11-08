@@ -23,8 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS asset generation if accessed via localtunnel or any proxy
-        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+        // Render terminates TLS at its proxy, so force generated application
+        // URLs to HTTPS in production to prevent mixed-content Inertia requests.
+        if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
     }
