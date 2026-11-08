@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -127,9 +128,12 @@ class NotificationController extends Controller
                     default => 'other',
                 };
 
-                $booking = !empty($data['booking_id'])
-                    ? Booking::with('facility:id,name')
-                        ->find($data['booking_id'])
+                // Booking IDs are UUIDs in production. Ignore stale or malformed
+                // IDs in older notification payloads instead of triggering a PostgreSQL
+                // invalid-UUID exception that would break the entire history page.
+                $bookingId = $data['booking_id'] ?? null;
+                $booking = is_string($bookingId) && Str::isUuid($bookingId)
+                    ? Booking::with('facility:id,name')->find($bookingId)
                     : null;
 
                 // BookingModal stores the submitted event title in the notes field:
