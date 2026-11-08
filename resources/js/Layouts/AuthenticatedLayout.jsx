@@ -20,12 +20,42 @@ import {
     PanelLeftOpen,
     Volume2,
     VolumeX,
+    ArrowUpRight,
 } from 'lucide-react';
 
 const ROLE_LABELS = {
     super_admin: 'Super Admin',
     facility_admin: 'Facility Admin',
     user: 'User',
+};
+
+const getNotificationCategory = (notification = {}) => {
+    const text = `${notification.title ?? ''} ${notification.message ?? ''}`.toLowerCase();
+    if (text.includes('cancel')) return { label: 'Cancelled', className: 'bg-amber-50 text-amber-700' };
+    if (text.includes('reject') || text.includes('declin')) return { label: 'Rejected', className: 'bg-rose-50 text-rose-700' };
+    if (text.includes('approv')) return { label: 'Approved', className: 'bg-emerald-50 text-emerald-700' };
+    if (text.includes('request') || text.includes('submitted') || text.includes('new booking')) return { label: 'Request', className: 'bg-blue-50 text-blue-700' };
+    return { label: 'Update', className: 'bg-stone-100 text-stone-600' };
+};
+
+const formatNotificationDate = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleString('en-PH', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+};
+
+const getBookingNotificationHref = (role, bookingId) => {
+    if (!bookingId) return null;
+    const params = { booking: bookingId };
+    if (role === 'super_admin') return route('admin.bookings.index', params);
+    if (role === 'facility_admin') return route('facilitator.bookings.index', params);
+    return route('bookings.index', params);
 };
 
 function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
@@ -668,7 +698,9 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 <Bell className="h-5 w-5" />
 
                                 {unreadCount > 0 && (
-                                    <span className="absolute right-2 top-2 flex h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
+                                    <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
                                 )}
                             </button>
 
@@ -715,7 +747,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                         disabled={isClearingNotifications || isLoggingOut}
                                                         className="text-[10px] font-semibold text-indigo-600 transition hover:text-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
-                                                        {isClearingNotifications ? 'Clearing…' : 'Clear all'}
+                                                        {isClearingNotifications ? 'Updating…' : 'Mark all read'}
                                                     </button>
                                                 )}
                                             </div>
@@ -754,22 +786,42 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                                 : 'bg-purple-50/60 text-gray-600'
                                                         }`}
                                                     >
-                                                        <p
-                                                            className={`font-semibold ${
-                                                                notification.read
-                                                                    ? 'text-gray-600'
-                                                                    : 'text-gray-900'
-                                                            }`}
-                                                        >
-                                                            {notification.title ?? 'System Notification'}
-                                                        </p>
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <p
+                                                                className={`font-semibold ${
+                                                                    notification.read
+                                                                        ? 'text-gray-600'
+                                                                        : 'text-gray-900'
+                                                                }`}
+                                                            >
+                                                                {notification.title ?? 'System Notification'}
+                                                            </p>
+                                                            <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${getNotificationCategory(notification).className}`}>
+                                                                {getNotificationCategory(notification).label}
+                                                            </span>
+                                                        </div>
 
                                                         <p className="mt-0.5 text-gray-500">
                                                             {notification.message ?? 'Update details received.'}
                                                         </p>
+                                                        <p className="mt-1 text-[10px] text-gray-400">
+                                                            {formatNotificationDate(notification.created_at)}
+                                                            {notification.booking_id ? ` · Booking #${String(notification.booking_id).slice(0, 8)}` : ''}
+                                                        </p>
                                                     </button>
                                                 ))
                                             )}
+                                        </div>
+
+                                        <div className="mt-3 border-t border-gray-100 pt-3">
+                                            <Link
+                                                href={route('notifications.index')}
+                                                onClick={() => setNotificationsOpen(false)}
+                                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F7F0ED] px-3 py-2.5 text-xs font-bold text-[#6A535C] transition hover:bg-[#EFE3E0]"
+                                            >
+                                                View notification history
+                                                <ArrowUpRight className="h-3.5 w-3.5" />
+                                            </Link>
                                         </div>
                                     </div>
                                 </>
@@ -831,14 +883,24 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             {viewingNotification.message ?? 'No additional details.'}
                         </p>
 
-                        <div className="mt-6 flex justify-end">
+                        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                             <button
                                 type="button"
                                 onClick={() => setViewingNotification(null)}
-                                className="rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                                className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50"
                             >
                                 Close
                             </button>
+                            {viewingNotification.booking_id && (
+                                <Link
+                                    href={getBookingNotificationHref(role, viewingNotification.booking_id)}
+                                    onClick={() => setViewingNotification(null)}
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                                >
+                                    View related booking
+                                    <ArrowUpRight className="h-4 w-4" />
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>
