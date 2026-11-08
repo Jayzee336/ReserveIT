@@ -415,6 +415,145 @@ export default function FacilitatorDashboard({
                     <Stat label="Active occupancy" value={activeOccupancy} onClick={() => setSelectedAnalyticsDetail({ title: 'Active occupancy', description: 'Currently ongoing bookings at facilities assigned to you.', items: todaySchedule?.ongoing ?? [], mode: 'bookings' })} />
                 </div>
 
+                {/* Pending Bookings List */}
+                <section className="rounded-2xl bg-white p-5 shadow-sm">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <h2 className="font-semibold text-slate-900">
+                            Bookings Awaiting Review
+                        </h2>
+
+                        <Link
+                            href={route('facilitator.bookings.index')}
+                            className="text-sm font-semibold text-[#6A535C] hover:underline"
+                        >
+                            View All Approvals
+                        </Link>
+                    </div>
+
+                    <div className="mt-4 space-y-3">
+                        {pendingBookings.length ? (
+                            pendingBookings.map((booking) => (
+                                <div
+                                    key={booking.id}
+                                    className="flex cursor-pointer flex-col gap-3 rounded-xl border border-stone-100 p-3 transition hover:border-gray-200 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                                    onClick={() => setViewBooking(booking)}
+                                >
+                                    <div>
+                                        <p className="font-medium text-stone-800">
+                                            {booking.facility?.name ?? 'Unknown Facility'}
+                                        </p>
+                                        <p className="text-xs text-slate-500">
+                                            {booking.user?.name ?? booking.guest_name ?? 'Guest'}
+                                            {' · '}
+                                            {booking.booking_date ?? booking.date ?? 'Date unavailable'}
+                                            {' · '}
+                                            {formatTime(booking.start_time)}–{formatTime(booking.end_time)}
+                                        </p>
+                                    </div>
+
+                                    <div
+                                        className="flex shrink-0 flex-wrap gap-2"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <button
+                                            type="button"
+                                            onClick={() => setViewBooking(booking)}
+                                            className="rounded-xl bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
+                                        >
+                                            <Eye className="mr-1 inline-block h-4 w-4" />
+                                            View
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setConfirmApproveId(booking.id)}
+                                            disabled={processingId === booking.id}
+                                            className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                                        >
+                                            <CheckCircle2 className="mr-1 inline-block h-4 w-4" />
+                                            Approve
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeclineClick(booking.id)}
+                                            disabled={processingId === booking.id}
+                                            className="rounded-xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                                        >
+                                            <XCircle className="mr-1 inline-block h-4 w-4" />
+                                            Decline
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-sm text-slate-500">
+                                No bookings awaiting review.
+                            </p>
+                        )}
+                    </div>
+                </section>
+                {/* Today's Schedule */}
+                <section className="ri-panel p-5 sm:p-6">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <h2 className="font-semibold text-slate-900">
+                            Today's Operational Schedule
+                        </h2>
+                        <p className="text-sm text-slate-500">
+                            Live view of ongoing, upcoming, and completed bookings.
+                        </p>
+                    </div>
+
+                    <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                        {[
+                            { key: 'ongoing', title: 'Ongoing' },
+                            { key: 'upcoming', title: 'Upcoming' },
+                            { key: 'completed', title: 'Completed' },
+                        ].map((group) => {
+                            const items = todaySchedule?.[group.key] ?? [];
+
+                            return (
+                                <div
+                                    key={group.key}
+                                    className="rounded-2xl border border-stone-100 bg-stone-50 p-4"
+                                >
+                                    <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                                        {group.title}
+                                    </h3>
+
+                                    <div className="mt-3 space-y-2">
+                                        {items.length ? (
+                                            items.map((booking) => (
+                                                <div
+                                                    key={booking.id}
+                                                    className="rounded-xl border border-white bg-white p-3"
+                                                >
+                                                    <p className="text-sm font-semibold text-slate-800">
+                                                        {booking.facility?.name ?? 'Facility'}
+                                                    </p>
+                                                    <p className="text-xs text-slate-500">
+                                                        {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
+                                                    </p>
+                                                    <p className="mt-1 text-sm text-slate-700">
+                                                        {booking.user?.name ?? booking.guest_name ?? 'Guest'}
+                                                    </p>
+                                                    <p className="text-xs text-slate-500">
+                                                        {booking.user?.email ?? booking.guest_email ?? ''}
+                                                    </p>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-slate-500">
+                                                No bookings.
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
+
                 {/* Assigned-facility analytics */}
                 <section className="ri-panel space-y-5 p-5 sm:p-6">
                     <div>
@@ -516,145 +655,6 @@ export default function FacilitatorDashboard({
                     </section>
                 </section>
 
-                {/* Today's Schedule */}
-                <section className="ri-panel p-5 sm:p-6">
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                        <h2 className="font-semibold text-slate-900">
-                            Today's Operational Schedule
-                        </h2>
-                        <p className="text-sm text-slate-500">
-                            Live view of ongoing, upcoming, and completed bookings.
-                        </p>
-                    </div>
-
-                    <div className="mt-4 grid gap-4 lg:grid-cols-3">
-                        {[
-                            { key: 'ongoing', title: 'Ongoing' },
-                            { key: 'upcoming', title: 'Upcoming' },
-                            { key: 'completed', title: 'Completed' },
-                        ].map((group) => {
-                            const items = todaySchedule?.[group.key] ?? [];
-
-                            return (
-                                <div
-                                    key={group.key}
-                                    className="rounded-2xl border border-stone-100 bg-stone-50 p-4"
-                                >
-                                    <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-                                        {group.title}
-                                    </h3>
-
-                                    <div className="mt-3 space-y-2">
-                                        {items.length ? (
-                                            items.map((booking) => (
-                                                <div
-                                                    key={booking.id}
-                                                    className="rounded-xl border border-white bg-white p-3"
-                                                >
-                                                    <p className="text-sm font-semibold text-slate-800">
-                                                        {booking.facility?.name ?? 'Facility'}
-                                                    </p>
-                                                    <p className="text-xs text-slate-500">
-                                                        {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
-                                                    </p>
-                                                    <p className="mt-1 text-sm text-slate-700">
-                                                        {booking.user?.name ?? booking.guest_name ?? 'Guest'}
-                                                    </p>
-                                                    <p className="text-xs text-slate-500">
-                                                        {booking.user?.email ?? booking.guest_email ?? ''}
-                                                    </p>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <p className="text-sm text-slate-500">
-                                                No bookings.
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </section>
-
-                {/* Pending Bookings List */}
-                <section className="rounded-2xl bg-white p-5 shadow-sm">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <h2 className="font-semibold text-slate-900">
-                            Bookings Awaiting Review
-                        </h2>
-
-                        <Link
-                            href={route('facilitator.bookings.index')}
-                            className="text-sm font-semibold text-[#6A535C] hover:underline"
-                        >
-                            View All Approvals
-                        </Link>
-                    </div>
-
-                    <div className="mt-4 space-y-3">
-                        {pendingBookings.length ? (
-                            pendingBookings.map((booking) => (
-                                <div
-                                    key={booking.id}
-                                    className="flex cursor-pointer flex-col gap-3 rounded-xl border border-stone-100 p-3 transition hover:border-gray-200 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
-                                    onClick={() => setViewBooking(booking)}
-                                >
-                                    <div>
-                                        <p className="font-medium text-stone-800">
-                                            {booking.facility?.name ?? 'Unknown Facility'}
-                                        </p>
-                                        <p className="text-xs text-slate-500">
-                                            {booking.user?.name ?? booking.guest_name ?? 'Guest'}
-                                            {' · '}
-                                            {booking.booking_date ?? booking.date ?? 'Date unavailable'}
-                                            {' · '}
-                                            {formatTime(booking.start_time)}–{formatTime(booking.end_time)}
-                                        </p>
-                                    </div>
-
-                                    <div
-                                        className="flex shrink-0 flex-wrap gap-2"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => setViewBooking(booking)}
-                                            className="rounded-xl bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
-                                        >
-                                            <Eye className="mr-1 inline-block h-4 w-4" />
-                                            View
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setConfirmApproveId(booking.id)}
-                                            disabled={processingId === booking.id}
-                                            className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-                                        >
-                                            <CheckCircle2 className="mr-1 inline-block h-4 w-4" />
-                                            Approve
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => handleDeclineClick(booking.id)}
-                                            disabled={processingId === booking.id}
-                                            className="rounded-xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
-                                        >
-                                            <XCircle className="mr-1 inline-block h-4 w-4" />
-                                            Decline
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="text-sm text-slate-500">
-                                No bookings awaiting review.
-                            </p>
-                        )}
-                    </div>
-                </section>
             </div>
 
             <DashboardDrilldownModal
