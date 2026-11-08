@@ -7,7 +7,6 @@ import {
     Activity,
     CheckCircle2,
     XCircle,
-    Eye,
     Clock,
     User as UserIcon,
     Calendar,
@@ -435,16 +434,12 @@ export default function FacilitatorDashboard({
                             pendingBookings.map((booking) => (
                                 <div
                                     key={booking.id}
-                                    className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] p-3 transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
-                                    onClick={() => setViewBooking(booking)}
+                                    className="flex flex-col gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] p-3 sm:flex-row sm:items-center sm:justify-between"
                                 >
                                     <div>
-                                        <div>
-                                            <p className="font-semibold text-[#6A535C]">
-                                                {booking.facility?.name ?? 'Unknown Facility'}
-                                            </p>
-                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
-                                        </div>
+                                        <p className="font-semibold text-[#6A535C]">
+                                            {booking.facility?.name ?? 'Unknown Facility'}
+                                        </p>
                                         <p className="text-xs text-slate-500">
                                             {booking.user?.name ?? booking.guest_name ?? 'Guest'}
                                             {' · '}
@@ -454,19 +449,7 @@ export default function FacilitatorDashboard({
                                         </p>
                                     </div>
 
-                                    <div
-                                        className="flex shrink-0 flex-wrap gap-2"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => setViewBooking(booking)}
-                                            className="rounded-xl bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
-                                        >
-                                            <Eye className="mr-1 inline-block h-4 w-4" />
-                                            View
-                                        </button>
-
+                                    <div className="flex shrink-0 flex-wrap gap-2">
                                         <button
                                             type="button"
                                             onClick={() => setConfirmApproveId(booking.id)}
@@ -518,7 +501,7 @@ export default function FacilitatorDashboard({
                             return (
                                 <div
                                     key={group.key}
-                                    className="rounded-2xl border border-[#E7DDE1] bg-[#F4ECEF] p-4"
+                                    className="rounded-2xl border border-stone-100 bg-stone-50 p-4"
                                 >
                                     <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
                                         {group.title}
@@ -527,23 +510,26 @@ export default function FacilitatorDashboard({
                                     <div className="mt-3 space-y-2">
                                         {items.length ? (
                                             items.map((booking) => (
-                                                <div
+                                                <button
                                                     key={booking.id}
-                                                    className="rounded-xl border border-[#E7DDE1] border-l-4 border-l-[#846A75] bg-white p-3"
+                                                    type="button"
+                                                    onClick={() => setViewBooking(booking)}
+                                                    className="group flex w-full flex-col gap-1 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] p-3 text-left transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#846A75]"
                                                 >
                                                     <p className="text-sm font-semibold text-[#6A535C]">
                                                         {booking.facility?.name ?? 'Facility'}
                                                     </p>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                                     <p className="text-xs text-slate-500">
                                                         {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
                                                     </p>
-                                                    <p className="mt-1 text-sm text-slate-700">
+                                                    <p className="text-sm text-slate-700">
                                                         {booking.user?.name ?? booking.guest_name ?? 'Guest'}
                                                     </p>
                                                     <p className="text-xs text-slate-500">
                                                         {booking.user?.email ?? booking.guest_email ?? ''}
                                                     </p>
-                                                </div>
+                                                </button>
                                             ))
                                         ) : (
                                             <p className="text-sm text-slate-500">
@@ -650,10 +636,38 @@ export default function FacilitatorDashboard({
                         <h3 className="text-sm font-bold text-slate-900">Most used facilities</h3>
                         <div className="mt-4 space-y-3">
                             {mostUsedFacilities.length ? mostUsedFacilities.map((facility) => (
-                                <div key={facility.name} className="flex items-center justify-between gap-3 rounded-xl border border-[#E7DDE1] bg-[#F4ECEF] px-3 py-2 text-sm">
-                                    <span className="min-w-0 truncate font-medium text-[#6A535C]">{facility.name}</span>
+                                <button
+                                    key={facility.name}
+                                    type="button"
+                                    onClick={() => {
+                                        const allBookings = Array.isArray(analyticsDetails.totalBookings)
+                                            ? analyticsDetails.totalBookings
+                                            : Array.isArray(analyticsDetails.totalBookings?.data)
+                                                ? analyticsDetails.totalBookings.data
+                                                : DASHBOARD_STATUS_ORDER.flatMap((status) => (
+                                                    Array.isArray(statusDetails?.[status]) ? statusDetails[status] : []
+                                                ));
+                                        const facilityBookings = allBookings.filter((booking) => {
+                                            const bookingFacility = booking.facility?.name
+                                                ?? booking.facility_name
+                                                ?? (typeof booking.facility === 'string' ? booking.facility : '');
+                                            return String(bookingFacility).trim().toLowerCase() === String(facility.name).trim().toLowerCase();
+                                        });
+                                        setSelectedAnalyticsDetail({
+                                            title: facility.name + ' bookings',
+                                            description: 'Bookings for ' + facility.name + ' in the selected analytics period.',
+                                            items: facilityBookings,
+                                            mode: 'bookings',
+                                        });
+                                    }}
+                                    className="group flex w-full items-center justify-between gap-3 rounded-xl bg-stone-50 px-3 py-2 text-left text-sm transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-[#846A75]"
+                                >
+                                    <span className="min-w-0 text-left">
+                                        <span className="block truncate text-slate-700">{facility.name}</span>
+                                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                    </span>
                                     <span className="shrink-0 font-semibold text-[#6A535C]">{facility.bookings} bookings</span>
-                                </div>
+                                </button>
                             )) : <p className="text-sm text-slate-500">No facility usage data in this period.</p>}
                         </div>
                     </section>
