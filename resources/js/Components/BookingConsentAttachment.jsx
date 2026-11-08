@@ -38,7 +38,7 @@ export default function BookingConsentAttachment({ booking }) {
         observer.observe(container);
 
         return () => observer.disconnect();
-    }, []);
+    }, [canShowAttachment]);
 
     // Fetch the private PDF through Laravel's authenticated route. Fetching
     // it as data prevents the browser's native PDF viewer or download manager
