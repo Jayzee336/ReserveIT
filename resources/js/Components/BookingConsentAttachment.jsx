@@ -15,12 +15,9 @@ export default function BookingConsentAttachment({ booking }) {
     const [isRendering, setIsRendering] = useState(false);
     const [previewError, setPreviewError] = useState('');
 
-    if (!booking?.consent_file_uploaded || !booking?.id) {
-        return null;
-    }
-
-    const consentUrl = route('bookings.consent', booking.id);
-    const previewUrl = `${consentUrl}?preview=1`;
+    const canShowAttachment = Boolean(booking?.consent_file_uploaded && booking?.id);
+    const consentUrl = booking?.id ? route('bookings.consent', booking.id) : '';
+    const previewUrl = consentUrl ? `${consentUrl}?preview=1` : '';
 
     // Measure the available preview width so PDF pages remain readable on
     // smaller screens and resize correctly when a modal changes size.
@@ -47,6 +44,15 @@ export default function BookingConsentAttachment({ booking }) {
     // it as data prevents the browser's native PDF viewer or download manager
     // from taking over the embedded preview.
     useEffect(() => {
+        if (!canShowAttachment) {
+            setPdfDocument(null);
+            setIsLoading(false);
+            setIsRendering(false);
+            setPreviewError('');
+            canvasRefs.current = [];
+            return undefined;
+        }
+
         let cancelled = false;
         let loadingTask = null;
         let loadedDocument = null;
@@ -117,12 +123,12 @@ export default function BookingConsentAttachment({ booking }) {
                 cleanup.catch(() => {});
             }
         };
-    }, [previewUrl]);
+    }, [canShowAttachment, previewUrl]);
 
     // Render each PDF page onto its own canvas. No iframe or browser PDF
     // navigation is involved, so this preview stays entirely inside ReserveIT.
     useEffect(() => {
-        if (!pdfDocument || !containerWidth) {
+        if (!canShowAttachment || !pdfDocument || !containerWidth) {
             return undefined;
         }
 
@@ -192,7 +198,11 @@ export default function BookingConsentAttachment({ booking }) {
             cancelled = true;
             renderTasks.forEach((task) => task.cancel());
         };
-    }, [pdfDocument, containerWidth]);
+    }, [canShowAttachment, pdfDocument, containerWidth]);
+
+    if (!canShowAttachment) {
+        return null;
+    }
 
     return (
         <section className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 sm:col-span-2">
