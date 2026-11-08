@@ -174,7 +174,7 @@ export default function BookingModal({
     const blockedBookingRanges = useMemo(() => existingBookings
         .filter((booking) => {
             const bookingStatus = String(booking.status ?? '').toLowerCase();
-            const bookingDate = String(booking.date ?? booking.booking_date ?? '').slice(0, 10);
+            const bookingDate = String(booking.date || booking.booking_date || '').slice(0, 10);
 
             return (
                 String(booking.facility_id) === String(facility?.id) &&
