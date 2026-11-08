@@ -647,42 +647,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
             default => 'application/octet-stream',
         };
 
-        // Open an HTML viewer page in a new tab. The page fetches the PDF
-        // as data and displays a blob URL, so download managers do not get a
-        // direct PDF navigation to intercept.
+        // The viewer receives authorized PDF bytes inside the Inertia page
+        // response. No PDF URL is requested or navigated to during View.
         if (request()->boolean('viewer')) {
-            return response()
-                ->view('consent-preview', [
-                    'fileName' => $downloadName,
-                    'isPdf' => $extension === 'pdf',
-                    'previewUrl' => route('bookings.consent', [
-                        'booking' => $booking->id,
-                        'preview' => 1,
-                    ]),
-                    'downloadUrl' => route('bookings.consent', [
-                        'booking' => $booking->id,
-                    ]),
-                ])
-                ->header('Cache-Control', 'private, no-store, max-age=0')
-                ->header('X-Content-Type-Options', 'nosniff')
-                ->header('Referrer-Policy', 'no-referrer');
+            $pdfDataBase64 = $extension === 'pdf'
+                ? base64_encode($disk->get($path))
+                : null;
+
+            $response = Inertia::render('ConsentPreview', [
+                'fileName' => $downloadName,
+                'fileExtension' => $extension,
+                'pdfDataBase64' => $pdfDataBase64,
+                'downloadUrl' => route('bookings.consent', [
+                    'booking' => $booking->id,
+                ]),
+            ])->toResponse(request());
+
+            $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
+            $response->headers->set('X-Content-Type-Options', 'nosniff');
+            $response->headers->set('Referrer-Policy', 'no-referrer');
+
+            return $response;
         }
 
-        // This endpoint is requested by fetch() from the HTML viewer, not
-        // navigated to directly. Keep it authorization-protected and PDF-only.
-        if (request()->boolean('preview')) {
-            abort_unless($extension === 'pdf', 415);
-
-            $safeInlineName = str_replace(["\\r", "\\n", '"'], '', $downloadName);
-
-            return response()->stream($stream, 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $safeInlineName . '"',
-                'X-Content-Type-Options' => 'nosniff',
-                'Cache-Control' => 'private, no-store, max-age=0',
-            ]);
-        }
-
+        // The regular attachment route is used only by the explicit Download button.
         return response()->streamDownload(
             $stream,
             $downloadName,
