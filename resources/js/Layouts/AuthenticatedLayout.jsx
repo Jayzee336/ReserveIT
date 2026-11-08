@@ -148,6 +148,15 @@ export default function AuthenticatedLayout({ header, action, children }) {
             return false;
         }
     });
+    const [notificationToastsEnabled, setNotificationToastsEnabled] = useState(() => {
+        if (typeof window === 'undefined') return true;
+
+        try {
+            return window.localStorage.getItem('notification_toasts_enabled') !== 'false';
+        } catch {
+            return true;
+        }
+    });
     const audioContextRef = useRef(null);
     const knownNotificationIdsRef = useRef(
         new Set((page.props.notifications ?? []).map((notification) => String(notification.id))),
@@ -233,6 +242,17 @@ export default function AuthenticatedLayout({ header, action, children }) {
         }
     }, [notificationSoundEnabled]);
 
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(
+                'notification_toasts_enabled',
+                String(notificationToastsEnabled),
+            );
+        } catch {
+            // Toast preferences remain usable for the current session.
+        }
+    }, [notificationToastsEnabled]);
+
     const unreadCount = realtimeNotifications.filter(
         (notification) => !notification.read,
     ).length;
@@ -248,7 +268,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 !knownNotificationIdsRef.current.has(String(notification.id)),
         );
 
-        if (newNotifications.length > 0) {
+        if (newNotifications.length > 0 && notificationToastsEnabled) {
             toast.message(
                 `${newNotifications.length} new notification${
                     newNotifications.length > 1 ? 's' : ''
@@ -272,7 +292,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
         prevCountRef.current = freshNotifications.filter(
             (notification) => !notification.read,
         ).length;
-    }, [page.props.notifications, notificationSoundEnabled]);
+    }, [page.props.notifications, notificationSoundEnabled, notificationToastsEnabled]);
 
     // Poll the server every 10 seconds so new notifications appear without
     // requiring a manual page refresh.
@@ -751,6 +771,20 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                     </button>
                                                 )}
                                             </div>
+                                        </div>
+
+                                        <div className="mb-2 flex items-center justify-between rounded-xl bg-stone-50 px-3 py-2">
+                                            <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                                                Alert preferences
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNotificationToastsEnabled((enabled) => !enabled)}
+                                                aria-pressed={notificationToastsEnabled}
+                                                className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold transition ${notificationToastsEnabled ? 'bg-white text-[#6A535C] shadow-sm' : 'text-gray-400 hover:bg-white'}`}
+                                            >
+                                                In-app alerts {notificationToastsEnabled ? 'On' : 'Off'}
+                                            </button>
                                         </div>
 
                                         <div className="max-h-64 space-y-1 overflow-y-auto">
