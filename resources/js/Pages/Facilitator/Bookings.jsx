@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
+import BookingConsentAttachment from '@/Components/BookingConsentAttachment';
 import {
     CheckCircle2,
     XCircle,
@@ -11,7 +12,6 @@ import {
     Calendar,
     Users,
     Search,
-    FileText,
     Trash2,
     LogIn,
     LogOut,
@@ -265,7 +265,7 @@ function BookingDetailModal({
             onClick={onClose}
         >
             <div
-                className="my-auto w-full max-w-2xl rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl"
+                className="my-auto max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="mb-6 flex items-start justify-between gap-3">
@@ -431,23 +431,7 @@ function BookingDetailModal({
                         </div>
                     )}
 
-                    {booking.consent_file_uploaded && (
-                        <div className="rounded-xl bg-indigo-50 p-4 sm:col-span-2">
-                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-indigo-600">
-                                Consent Letter
-                            </p>
-                            <a
-                                href={route('bookings.consent', booking.id)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-700 underline hover:text-indigo-900"
-                            >
-                                <FileText className="h-4 w-4" />
-                                {booking.consent_file_name ||
-                                    'Download consent letter'}
-                            </a>
-                        </div>
-                    )}
+                    <BookingConsentAttachment booking={booking} />
                 </div>
 
                 <div className="mt-6 flex justify-end">
