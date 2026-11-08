@@ -162,7 +162,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                 <input
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
-                                    placeholder="Search notification title, details, or booking ID…"
+                                    placeholder="Search event title (e.g. Test1), facility, details, or booking ID…"
                                     className="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#A98C97] focus:bg-white focus:ring-2 focus:ring-[#EADDE1]"
                                 />
                             </div>
@@ -201,14 +201,28 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex flex-wrap items-center gap-2">
-                                                        <h2 className={`text-sm ${notification.read ? 'font-semibold text-stone-700' : 'font-bold text-stone-900'}`}>
-                                                            {notification.title}
-                                                        </h2>
-                                                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${meta.className}`}>{meta.label}</span>
+                                                        <div className="min-w-0 flex-1">
+                                                            <h2 className={`break-words text-sm ${notification.read ? 'font-semibold text-stone-700' : 'font-bold text-stone-900'}`}>
+                                                                {notification.event_title || notification.title}
+                                                            </h2>
+                                                            {notification.event_title && (
+                                                                <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-stone-400">
+                                                                    {notification.title}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${meta.className}`}>{meta.label}</span>
                                                         {!notification.read && <span className="h-2 w-2 rounded-full bg-rose-500" title="Unread" />}
                                                     </div>
                                                     <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-stone-600">{notification.message}</p>
-                                                    <p className="mt-2 flex items-center gap-1.5 text-xs text-stone-400">
+                                                    {(notification.facility_name || notification.booking_date || notification.start_time) && (
+                                                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 rounded-xl bg-stone-50 px-3 py-2.5 text-xs text-stone-500">
+                                                            {notification.facility_name && <span><strong className="font-semibold text-stone-700">Facility:</strong> {notification.facility_name}</span>}
+                                                            {notification.booking_date && <span><strong className="font-semibold text-stone-700">Date:</strong> {notification.booking_date}</span>}
+                                                            {notification.start_time && notification.end_time && <span><strong className="font-semibold text-stone-700">Time:</strong> {notification.start_time.slice(0, 5)}–{notification.end_time.slice(0, 5)}</span>}
+                                                        </div>
+                                                    )}
+                                                    <p className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-stone-400">
                                                         <Clock3 className="h-3.5 w-3.5" />
                                                         {formatDate(notification.created_at)}
                                                         {notification.booking_id && <span>· Booking #{String(notification.booking_id).slice(0, 8)}</span>}
