@@ -758,7 +758,7 @@ export default function AdminDashboard({
                     </div>
                     <div className="mt-5 grid min-w-0 grid-cols-1 gap-5 xl:grid-cols-2">
 
-<section className="min-w-0 rounded-xl border border-[var(--ri-border)] p-4">
+<section className="flex min-h-[20rem] min-w-0 flex-col rounded-xl border border-[var(--ri-border)] p-4">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
                                 <h2 className="text-sm font-semibold text-slate-900">Booking volume over time</h2>
@@ -771,8 +771,8 @@ export default function AdminDashboard({
                             </div>
                         </div>
 
-                        <div className="mt-6 w-full min-w-0 overflow-x-auto">
-                            <div className="flex h-44 min-w-[420px] items-end gap-2 sm:min-w-0 sm:gap-3">
+                        <div className="mt-6 w-full min-w-0 flex-1 overflow-x-auto">
+                            <div className="flex h-full min-h-[11rem] min-w-[420px] items-end gap-2 sm:min-w-0 sm:gap-3">
                                 {usageOverTime.map((item) => {
                                     const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
                                     return (
