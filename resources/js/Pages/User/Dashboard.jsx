@@ -51,17 +51,19 @@ function MetricCard({ icon: Icon, label, value, detail, onClick, href, compact =
     const content = (
         <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-                <p className={compact ? "text-xs font-semibold text-slate-600" : "text-sm font-medium text-slate-500"}>{label}</p>
+                <div className="flex items-center justify-between gap-2">
+                    <p className={compact ? "text-xs font-semibold text-slate-600" : "text-sm font-medium text-slate-500"}>{label}</p>
+                    {(onClick || href) && <span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>}
+                </div>
                 <p className={`mt-2 font-bold tracking-tight text-[#6A535C] ${compact ? 'text-xl' : 'text-3xl'}`}>{value ?? 0}</p>
                 <p className={compact ? "mt-1 text-[11px] leading-4 text-slate-500" : "mt-1 text-xs text-slate-500"}>{detail}</p>
-                {(onClick || href) && <span className="mt-3 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-80">View details ↗</span>}
             </div>
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F4ECEF] text-[#6A535C]">
                 <Icon className="h-5 w-5" aria-hidden="true" />
             </span>
         </div>
     );
-    const classes = "ri-panel ri-panel-interactive min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2 sm:p-6";
+    const classes = "group ri-panel ri-panel-interactive min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2 sm:p-6";
     if (href) return <Link href={href} className={classes}>{content}</Link>;
     if (onClick) return <button type="button" onClick={onClick} className={`w-full ${classes}`}>{content}</button>;
     return <article className={classes}>{content}</article>;
@@ -302,7 +304,7 @@ export default function Dashboard({
                                 {displayedStatusBreakdown.map((item) => {
                                     const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
                                     return (
-                                        <button key={item.status} type="button" onClick={() => setSelectedDetail({ title: `${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`, description: `Your ${item.status} reservations in the selected period.`, items: statusDetails[item.status] ?? [], mode: 'bookings' })} className="block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
+                                        <button key={item.status} type="button" onClick={() => setSelectedDetail({ title: `${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`, description: `Your ${item.status} reservations in the selected period.`, items: statusDetails[item.status] ?? [], mode: 'bookings' })} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
                                             <div className="mb-1 flex justify-between gap-3 text-xs">
                                                 <span className="font-semibold capitalize text-slate-700">{item.status}</span>
                                                 <span className="text-slate-500">{item.count} · {item.percentage.toFixed(1)}%</span>
@@ -310,6 +312,7 @@ export default function Dashboard({
                                             <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                                                 <div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }} />
                                             </div>
+                                            <span className="mt-1 block text-right text-[10px] font-semibold text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                         </button>
                                     );
                                 })}
