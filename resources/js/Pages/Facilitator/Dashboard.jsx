@@ -31,9 +31,9 @@ function formatTime(value) {
 }
 
 function Stat({ label, value, onClick }) {
-    const content = <><p className="text-sm font-medium text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold tracking-tight text-[#6A535C]">{value}</p>{onClick && <span className="mt-3 block text-[10px] font-bold uppercase tracking-wide text-[#846A75]">View details ↗</span>}</>;
+    const content = <><span className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-slate-500">{label}</span>{onClick && <span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>}</span><p className="mt-2 text-3xl font-bold tracking-tight text-[#6A535C]">{value}</p></>;
     const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2";
-    return onClick ? <button type="button" onClick={onClick} className={`w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
+    return onClick ? <button type="button" onClick={onClick} className={`group w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
 }
 
 function AnalyticsStat({ label, value, hint, onClick }) {
@@ -45,7 +45,7 @@ function AnalyticsStat({ label, value, hint, onClick }) {
         >
             <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600">
                 <span>{label}</span>
-                <span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details ↗</span>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
             </span>
             <span className="mt-2 block break-words text-xl font-bold text-[#6A535C]">{value}</span>
             <span className="mt-1 block text-[11px] leading-4 text-slate-500">{hint}</span>
@@ -435,13 +435,16 @@ export default function FacilitatorDashboard({
                             pendingBookings.map((booking) => (
                                 <div
                                     key={booking.id}
-                                    className="flex cursor-pointer flex-col gap-3 rounded-xl border border-stone-100 p-3 transition hover:border-gray-200 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                                    className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] p-3 transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
                                     onClick={() => setViewBooking(booking)}
                                 >
                                     <div>
-                                        <p className="font-medium text-stone-800">
-                                            {booking.facility?.name ?? 'Unknown Facility'}
-                                        </p>
+                                        <div>
+                                            <p className="font-semibold text-[#6A535C]">
+                                                {booking.facility?.name ?? 'Unknown Facility'}
+                                            </p>
+                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                        </div>
                                         <p className="text-xs text-slate-500">
                                             {booking.user?.name ?? booking.guest_name ?? 'Guest'}
                                             {' · '}
@@ -478,7 +481,7 @@ export default function FacilitatorDashboard({
                                             type="button"
                                             onClick={() => handleDeclineClick(booking.id)}
                                             disabled={processingId === booking.id}
-                                            className="rounded-xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                                            className="rounded-xl bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
                                         >
                                             <XCircle className="mr-1 inline-block h-4 w-4" />
                                             Decline
@@ -515,7 +518,7 @@ export default function FacilitatorDashboard({
                             return (
                                 <div
                                     key={group.key}
-                                    className="rounded-2xl border border-stone-100 bg-stone-50 p-4"
+                                    className="rounded-2xl border border-[#E7DDE1] bg-[#F4ECEF] p-4"
                                 >
                                     <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
                                         {group.title}
@@ -526,9 +529,9 @@ export default function FacilitatorDashboard({
                                             items.map((booking) => (
                                                 <div
                                                     key={booking.id}
-                                                    className="rounded-xl border border-white bg-white p-3"
+                                                    className="rounded-xl border border-[#E7DDE1] border-l-4 border-l-[#846A75] bg-white p-3"
                                                 >
-                                                    <p className="text-sm font-semibold text-slate-800">
+                                                    <p className="text-sm font-semibold text-[#6A535C]">
                                                         {booking.facility?.name ?? 'Facility'}
                                                     </p>
                                                     <p className="text-xs text-slate-500">
@@ -636,6 +639,7 @@ export default function FacilitatorDashboard({
                                     return <button key={item.status} type="button" onClick={() => setSelectedAnalyticsDetail({title:`${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`,description:`Assigned-facility ${item.status} bookings in the selected period.`,items:statusDetails[item.status] ?? [],mode:'bookings'})} className="block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
                                         <div className="mb-1 flex justify-between text-xs"><span className="font-semibold capitalize text-slate-700">{item.status}</span><span className="text-slate-500">{item.count} · {item.percentage.toFixed(1)}%</span></div>
                                         <div className="h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
+                                         <span className="mt-1 block text-right text-[10px] font-semibold text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                     </button>;
                                 })}
                                 {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No booking data in this period.</p>}
@@ -646,8 +650,8 @@ export default function FacilitatorDashboard({
                         <h3 className="text-sm font-bold text-slate-900">Most used facilities</h3>
                         <div className="mt-4 space-y-3">
                             {mostUsedFacilities.length ? mostUsedFacilities.map((facility) => (
-                                <div key={facility.name} className="flex items-center justify-between gap-3 rounded-xl bg-stone-50 px-3 py-2 text-sm">
-                                    <span className="min-w-0 truncate text-slate-700">{facility.name}</span>
+                                <div key={facility.name} className="flex items-center justify-between gap-3 rounded-xl border border-[#E7DDE1] bg-[#F4ECEF] px-3 py-2 text-sm">
+                                    <span className="min-w-0 truncate font-medium text-[#6A535C]">{facility.name}</span>
                                     <span className="shrink-0 font-semibold text-[#6A535C]">{facility.bookings} bookings</span>
                                 </div>
                             )) : <p className="text-sm text-slate-500">No facility usage data in this period.</p>}
