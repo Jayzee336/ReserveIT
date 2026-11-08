@@ -1,28 +1,29 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\\Database\\Migrations\\Migration;
+use Illuminate\\Database\\Schema\\Blueprint;
+use Illuminate\\Support\\Facades\\Schema;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
      */
-   public function up(): void
-{
-    Schema::create('activity_logs', function (Blueprint $table) {
-        $table->id(); // This can stay as the standard auto-incrementing ID for the log itself
-        
-        // 👇 Change this to a string so it matches the string IDs in your bookings table
-        $table->string('booking_id'); 
-        $table->foreign('booking_id')->references('id')->on('bookings')->onDelete('cascade');
-        
-        $table->string('action');
-        $table->string('performed_by');
-        $table->timestamps();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('activity_logs', function (Blueprint $table) {
+            $table->id();
+
+            // Booking IDs are UUIDs, so this foreign key must also be UUID.
+            $table->foreignUuid('booking_id')
+                ->constrained('bookings')
+                ->cascadeOnDelete();
+
+            $table->string('action');
+            $table->string('performed_by');
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.
