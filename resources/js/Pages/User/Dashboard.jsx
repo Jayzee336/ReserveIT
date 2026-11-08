@@ -261,15 +261,22 @@ export default function Dashboard({
                                 <TrendingUp className="h-4 w-4 text-[#6A535C]" />
                                 <h3 className="text-sm font-semibold text-slate-900">Booking volume over time</h3>
                             </div>
-                            <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6">
-                                {bookingTrends.map((item) => (
-                                    <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
-                                        <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
-                                        <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings`} aria-label={`View facilities booked in ${item.label}`} className={`flex h-24 w-full items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}>
-                                            <span className="block w-full rounded-t-lg bg-[#846A75]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / trendMaximum * 100)}%` : '3px' }} />
-                                        </button>
-                                        <span className="truncate text-[10px] text-slate-500">{item.label}</span>
-                                    </div>
+                            {analyticsFilters.group_by === 'day' && bookingTrends.length > 8 && (
+                                <p className="mt-3 text-[10px] font-medium text-slate-400" aria-live="polite">↔ Scroll horizontally to explore all days</p>
+                            )}
+                            <div className="mt-3 min-w-0 overflow-x-auto overscroll-x-contain pb-2 [touch-action:pan-x]">
+                                <div className="grid min-h-[8rem] items-stretch gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${Math.max(bookingTrends.length, 1)}, ${analyticsFilters.group_by === 'day' ? '2.75rem' : 'minmax(0, 1fr)'})`, minWidth: analyticsFilters.group_by === 'day' ? `${Math.max(1, bookingTrends.length) * 52}px` : '100%' }}>
+                                    {bookingTrends.map((item) => (
+                                        <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
+                                            <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
+                                            <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings`} aria-label={`View facilities booked in ${item.label}`} className={`flex h-24 w-full items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}>
+                                                <span className="block w-full rounded-t-lg bg-[#846A75]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / trendMaximum * 100)}%` : '3px' }} />
+                                            </button>
+                                            <span title={item.label} className="w-full truncate text-center text-[10px] text-slate-500">{item.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                                 ))}
                             </div>
                             {selectedTrend && (
