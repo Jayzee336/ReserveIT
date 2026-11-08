@@ -277,8 +277,6 @@ export default function Dashboard({
                                     ))}
                                 </div>
                             </div>
-                                ))}
-                            </div>
                             {selectedTrend && (
                                 <div className="mt-4 rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
                                     <div className="flex flex-wrap items-center justify-between gap-2">
