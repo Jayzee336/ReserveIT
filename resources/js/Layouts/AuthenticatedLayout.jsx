@@ -21,6 +21,8 @@ import {
     Volume2,
     VolumeX,
     ArrowUpRight,
+    Menu,
+    X,
 } from 'lucide-react';
 
 const ROLE_LABELS = {
@@ -83,6 +85,13 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
 
 export default function AuthenticatedLayout({ header, action, children }) {
     const page = usePage();
+
+    // Mobile navigation drawer is separate from the persisted desktop sidebar state.
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+    useEffect(() => {
+        setMobileNavOpen(false);
+    }, [page.url]);
 
     // Collapsible sidebar state (persisted locally).
     const [collapsed, setCollapsed] = useState(() => {
@@ -445,12 +454,22 @@ export default function AuthenticatedLayout({ header, action, children }) {
     };
 
     return (
-        <div className="flex min-h-screen bg-[#FDF6F0]">
+        <div className="flex min-h-screen min-w-0 bg-[#FDF6F0]">
+            {/* Mobile navigation backdrop */}
+            {mobileNavOpen && (
+                <button
+                    type="button"
+                    aria-label="Close navigation menu"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-[2px] md:hidden"
+                />
+            )}
+
             {/* Sidebar Navigation */}
             <aside
-                className={`fixed z-20 flex h-full flex-col justify-between bg-[#6A535C] text-white shadow-xl transition-all duration-300 ${
-                    collapsed ? 'w-16' : 'w-64'
-                }`}
+                className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col justify-between bg-[#6A535C] text-white shadow-xl transition-all duration-300 md:z-20 md:translate-x-0 ${
+                    mobileNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+                } ${collapsed ? 'md:w-16' : 'md:w-64'}`}
             >
                 <div>
                     {/* App title and sidebar collapse button */}
@@ -473,7 +492,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             onClick={() => setCollapsed((current) => !current)}
                             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                            className="rounded-lg p-1.5 text-purple-100 transition-colors hover:bg-[#543F48] hover:text-white"
+                            className="hidden rounded-lg p-1.5 text-purple-100 transition-colors hover:bg-[#543F48] hover:text-white md:inline-flex"
                         >
                             {collapsed ? (
                                 <PanelLeftOpen className="h-5 w-5 shrink-0" />
@@ -702,14 +721,23 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
             {/* Main workspace */}
             <div
-                className={`flex min-h-screen flex-1 flex-col transition-all duration-300 ${
-                    collapsed ? 'ml-16' : 'ml-64'
-                }`}
+                className={`flex min-h-screen min-w-0 flex-1 flex-col transition-all duration-300 md:${collapsed ? 'ml-16' : 'ml-64'}`}
             >
-                <header className="flex items-center justify-between border-b border-gray-200/70 bg-white/80 px-4 py-4 sm:px-8">
-                    <div className="min-w-0 flex-1">{header}</div>
+                <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-gray-200/70 bg-white/90 px-3 py-3 backdrop-blur-xl sm:px-6 lg:px-8">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setMobileNavOpen(true)}
+                            aria-label="Open navigation menu"
+                            aria-expanded={mobileNavOpen}
+                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E8DDE0] bg-white text-[#6A535C] shadow-sm transition hover:bg-[#F7F0ED] md:hidden"
+                        >
+                            <Menu className="h-5 w-5" />
+                        </button>
+                        <div className="min-w-0 flex-1">{header}</div>
+                    </div>
 
-                    <div className="ml-4 flex items-center gap-4">
+                    <div className="ml-1 flex shrink-0 items-center gap-2 sm:ml-4 sm:gap-4">
                         {/* Notification bell */}
                         <div className="relative flex items-center">
                             <button
@@ -736,7 +764,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                         onClick={() => setNotificationsOpen(false)}
                                     />
 
-                                    <div className="absolute right-0 top-full z-40 mt-2 w-80 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl ring-1 ring-black/5">
+                                    <div className="absolute right-0 top-full z-40 mt-2 w-[min(20rem,calc(100vw-1.5rem))] rounded-2xl border border-gray-100 bg-white p-3 shadow-xl ring-1 ring-black/5 sm:p-4">
                                         <div className="mb-2 flex items-center justify-between border-b border-gray-100 pb-2">
                                             <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
                                                 Notifications
@@ -875,7 +903,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     </div>
                 </header>
 
-                <main className="min-w-0 flex-1 p-3 sm:p-5 lg:p-6">
+                <main className="min-w-0 flex-1 overflow-x-hidden p-3 sm:p-5 lg:p-6">
                     <motion.div
                         key={page.url}
                         className="w-full min-w-0"
@@ -955,7 +983,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     setHelpOpen(true);
                 }}
                 disabled={isLoggingOut}
-                className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#6A535C] text-xl font-semibold text-white shadow-lg transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
+                className="fixed bottom-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-[#6A535C] text-xl font-semibold text-white shadow-lg transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14"
                 aria-label="Submit a ticket"
                 title="Submit a ticket"
             >
