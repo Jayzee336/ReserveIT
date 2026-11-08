@@ -623,8 +623,11 @@ export default function FacilitatorDashboard({
                                 <TrendingUp className="h-4 w-4 text-[#6A535C]"/>
                                 <h3 className="text-sm font-semibold text-slate-900">Booking volume over time</h3>
                             </div>
-                            <div className="mt-5 min-h-[15rem] min-w-0 flex-1 overflow-x-auto pb-1">
-                                <div className="grid h-full min-h-[15rem] items-stretch gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${Math.max(usageOverTime.length, 1)}, ${analyticsGroupBy === 'day' ? '2.75rem' : 'minmax(0, 1fr)'})`, minWidth: `${Math.max(420, usageOverTime.length * (analyticsGroupBy === 'day' ? 44 : 64))}px` }}>
+                            {analyticsGroupBy === 'day' && usageOverTime.length > 8 && (
+                                <p className="mt-3 text-[10px] font-medium text-slate-400" aria-live="polite">↔ Scroll horizontally to explore all days</p>
+                            )}
+                            <div className="mt-3 min-h-[15rem] min-w-0 flex-1 overflow-x-auto overscroll-x-contain pb-2 [touch-action:pan-x]">
+                                <div className="grid h-full min-h-[15rem] items-stretch gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${Math.max(usageOverTime.length, 1)}, ${analyticsGroupBy === 'day' ? '2.75rem' : 'minmax(0, 1fr)'})`, minWidth: analyticsGroupBy === 'day' ? `${Math.max(1, usageOverTime.length) * 52}px` : '100%' }}>
                                 {usageOverTime.map((item) => {
                                     const maxValue = Math.max(...usageOverTime.map((point) => point.bookings), 1);
                                     const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
