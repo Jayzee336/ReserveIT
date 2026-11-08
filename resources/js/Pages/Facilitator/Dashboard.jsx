@@ -642,7 +642,7 @@ export default function FacilitatorDashboard({
                             </div>
                         </div>
                     </div>
-                    <section className="rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
+                    <section className="rounded-xl border border-[var(--ri-border)] p-4">
                         <h3 className="text-sm font-bold text-slate-900">Most used facilities</h3>
                         <div className="mt-4 space-y-3">
                             {mostUsedFacilities.length ? mostUsedFacilities.map((facility) => (
@@ -670,10 +670,10 @@ export default function FacilitatorDashboard({
                                             mode: 'bookings',
                                         });
                                     }}
-                                    className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#E7DDE1] bg-[#F4ECEF] px-3 py-2 text-left text-sm transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]"
+                                    className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] px-3 py-2 text-left text-sm transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]"
                                 >
                                     <span className="min-w-0 text-left">
-                                        <span className="block truncate font-medium text-[#6A535C]">{facility.name}</span>
+                                        <span className="block truncate text-slate-700">{facility.name}</span>
                                         <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                     </span>
                                     <span className="shrink-0 font-semibold text-[#6A535C]">{facility.bookings} bookings</span>
