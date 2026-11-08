@@ -14,6 +14,7 @@ import {
     XCircle,
     ArrowUpRight,
     Inbox,
+    ArrowLeft,
 } from 'lucide-react';
 
 const CATEGORY_STYLES = {
@@ -104,6 +105,15 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
             <Head title="Notification Center" />
 
             <div className="mx-auto max-w-6xl space-y-6">
+                <div className="flex items-center">
+                    <Link
+                        href={user?.role === 'super_admin' ? route('admin.dashboard') : user?.role === 'facility_admin' ? route('facilitator.dashboard') : route('user.dashboard')}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#E8D8D1] bg-white px-4 py-2 text-sm font-semibold text-[#6A535C] shadow-sm transition hover:bg-[#F9F4EF]"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to dashboard
+                    </Link>
+                </div>
                 <section className="overflow-hidden rounded-3xl border border-[#E8D8D1] bg-white shadow-sm">
                     <div className="bg-gradient-to-r from-[#6A535C] to-[#80636E] px-6 py-7 text-white sm:px-8">
                         <div className="flex flex-wrap items-start justify-between gap-4">
