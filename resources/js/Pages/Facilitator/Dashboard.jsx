@@ -3,6 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import DashboardDrilldownModal from '@/Components/DashboardDrilldownModal';
+import BookingConsentAttachment from '@/Components/BookingConsentAttachment';
 import {
     Activity,
     CheckCircle2,
@@ -80,11 +81,11 @@ function BookingDetailModal({ booking, onClose }) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/50 p-4"
             onClick={onClose}
         >
             <div
-                className="w-full max-w-2xl rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl"
+                className="my-auto max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="mb-6 flex items-start justify-between gap-3">
@@ -177,6 +178,7 @@ function BookingDetailModal({ booking, onClose }) {
                             </p>
                         </div>
                     )}
+                    <BookingConsentAttachment booking={booking} />
                 </div>
 
                 <div className="mt-6 flex justify-end">
