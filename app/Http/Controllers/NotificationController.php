@@ -154,7 +154,7 @@ class NotificationController extends Controller
 
                 return [
                     'id' => $notification->id,
-                    'title' => $title,
+                    'title' => $isTicket ? 'Support Ticket Update' : $title,
                     'message' => $message,
                     'booking_id' => $bookingId,
                     'ticket_id' => $ticketId,
