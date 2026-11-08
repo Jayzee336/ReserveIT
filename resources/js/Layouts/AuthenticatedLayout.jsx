@@ -131,9 +131,12 @@ export default function AuthenticatedLayout({ header, action, children }) {
     const isFacilityAdmin = role === 'facility_admin';
     const isUser = role === 'user';
 
-    // Notification state.
+    // Notification state. The shared bell prop must always be a list.
+    const sharedNotifications = Array.isArray(page.props.notifications)
+        ? page.props.notifications
+        : [];
     const [realtimeNotifications, setRealtimeNotifications] = useState(
-        page.props.notifications ?? [],
+        sharedNotifications,
     );
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [isClearingNotifications, setIsClearingNotifications] =
@@ -159,13 +162,11 @@ export default function AuthenticatedLayout({ header, action, children }) {
     });
     const audioContextRef = useRef(null);
     const knownNotificationIdsRef = useRef(
-        new Set((page.props.notifications ?? []).map((notification) => String(notification.id))),
+        new Set(sharedNotifications.map((notification) => String(notification.id))),
     );
 
     const prevCountRef = useRef(
-        (page.props.notifications ?? []).filter(
-            (notification) => !notification.read,
-        ).length,
+        sharedNotifications.filter((notification) => !notification.read).length,
     );
 
     // Generate short tones locally with the Web Audio API; no audio files or paid services needed.
@@ -261,7 +262,9 @@ export default function AuthenticatedLayout({ header, action, children }) {
     // Detect new IDs here (rather than inside router.reload's callback) so a
     // prop-sync render cannot mark notifications as "known" before sound plays.
     useEffect(() => {
-        const freshNotifications = page.props.notifications ?? [];
+        const freshNotifications = Array.isArray(page.props.notifications)
+            ? page.props.notifications
+            : [];
         const newNotifications = freshNotifications.filter(
             (notification) =>
                 notification.id != null &&
@@ -789,7 +792,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                             </button>
                                         </div>
 
-                                        <div className="max-h-64 space-y-1 overflow-y-auto">
+                                        <div className="max-h-[min(60vh,28rem)] space-y-2 overflow-y-auto pr-1">
                                             {realtimeNotifications.length === 0 ? (
                                                 <div className="py-6 text-center text-xs text-gray-400">
                                                     All caught up! No new notifications.
