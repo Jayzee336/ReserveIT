@@ -623,20 +623,22 @@ export default function FacilitatorDashboard({
                                 <TrendingUp className="h-4 w-4 text-[#6A535C]"/>
                                 <h3 className="text-sm font-semibold text-slate-900">Booking volume over time</h3>
                             </div>
-                            <div className="mt-5 grid min-h-[15rem] flex-1 grid-cols-3 items-stretch gap-3 sm:grid-cols-6">
+                            <div className="mt-5 min-h-[15rem] min-w-0 flex-1 overflow-x-auto pb-1">
+                                <div className="grid h-full min-h-[15rem] items-stretch gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${Math.max(usageOverTime.length, 1)}, ${analyticsGroupBy === 'day' ? '2.75rem' : 'minmax(0, 1fr)'})`, minWidth: `${Math.max(420, usageOverTime.length * (analyticsGroupBy === 'day' ? 44 : 64))}px` }}>
                                 {usageOverTime.map((item) => {
                                     const maxValue = Math.max(...usageOverTime.map((point) => point.bookings), 1);
                                     const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
                                     return (
-                                        <div key={item.label} className="flex h-full min-w-0 flex-col items-center gap-2">
+                                        <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
                                             <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
                                             <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`} aria-label={`View facilities booked in ${item.label}`} className={`flex min-h-0 w-full flex-1 items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}>
                                                 <span className="block w-full rounded-t-lg bg-[#846A75]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / maxValue * 100)}%` : '3px' }} />
                                             </button>
-                                            <span className="truncate text-[10px] text-slate-500">{item.label}</span>
+                                            <span title={item.label} className="w-full truncate text-center text-[10px] text-slate-500">{item.label}</span>
                                         </div>
                                     );
                                 })}
+                                </div>
                             </div>
                             {selectedTrend && <div className="mt-4 rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
                                 <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-sm font-bold text-[#6A535C]">{selectedTrend.label} facility activity</p><p className="text-xs text-slate-500">{selectedTrend.bookings} bookings across {(selectedTrend.facilities ?? []).length} facilities</p></div><button type="button" onClick={() => setSelectedTrendLabel(null)} className="text-xs font-semibold text-[#6A535C] hover:underline">Clear</button></div>
