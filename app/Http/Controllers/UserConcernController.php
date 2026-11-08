@@ -60,7 +60,9 @@ class UserConcernController extends Controller
 
                 $admin->notify(new BookingOperationsNotification(
                     "New support ticket #{$userConcern->id}: {$userConcern->category} — {$senderName}",
-                    $userConcern->id
+                    (string) $userConcern->id,
+                    'Support Ticket Update',
+                    'ticket'
                 ));
             });
 
@@ -225,7 +227,9 @@ class UserConcernController extends Controller
             if ($user) {
                 $user->notify(new BookingOperationsNotification(
                     "Your support ticket #{$concern->id} has received a reply from the admin team.",
-                    $concern->id
+                    (string) $concern->id,
+                    'Support Ticket Update',
+                    'ticket'
                 ));
             }
         }
