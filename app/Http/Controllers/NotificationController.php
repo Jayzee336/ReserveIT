@@ -32,59 +32,51 @@ class NotificationController extends Controller
         }
 
         if ($category !== 'all') {
-            $titlePattern = match ($category) {
-                'request' => '%request%',
-                'approved' => '%approv%',
-                'rejected' => '%reject%',
-                'cancelled' => '%cancel%',
-                default => null,
+            $patterns = match ($category) {
+                'request' => ['%request%', '%submitted%', '%new booking%'],
+                'approved' => ['%approv%'],
+                'rejected' => ['%reject%', '%declin%'],
+                'cancelled' => ['%cancel%'],
+                default => [],
             };
 
-            if ($titlePattern) {
-                $query->where(function ($categoryQuery) use ($titlePattern) {
-                    $categoryQuery
-                        ->where('data->title', 'like', $titlePattern)
-                        ->orWhere('data->message', 'like', $titlePattern);
+            if ($patterns !== []) {
+                $query->where(function ($categoryQuery) use ($patterns) {
+                    foreach ($patterns as $pattern) {
+                        $categoryQuery->orWhereRaw(
+                            'LOWER(CAST(data AS TEXT)) LIKE ?',
+                            [$pattern]
+                        );
+                    }
                 });
             } else {
-                $query->where(function ($categoryQuery) {
-                    $categoryQuery
-                        ->where(function ($titleQuery) {
-                            $titleQuery
-                                ->whereNull('data->title')
-                                ->orWhere(function ($otherTitleQuery) {
-                                    $otherTitleQuery
-                                        ->where('data->title', 'not like', '%request%')
-                                        ->where('data->title', 'not like', '%approv%')
-                                        ->where('data->title', 'not like', '%reject%')
-                                        ->where('data->title', 'not like', '%cancel%');
-                                });
-                        })
-                        ->where(function ($messageQuery) {
-                            $messageQuery
-                                ->whereNull('data->message')
-                                ->orWhere(function ($otherMessageQuery) {
-                                    $otherMessageQuery
-                                        ->where('data->message', 'not like', '%request%')
-                                        ->where('data->message', 'not like', '%submitted%')
-                                        ->where('data->message', 'not like', '%new booking%')
-                                        ->where('data->message', 'not like', '%approv%')
-                                        ->where('data->message', 'not like', '%reject%')
-                                        ->where('data->message', 'not like', '%declin%')
-                                        ->where('data->message', 'not like', '%cancel%');
-                                });
-                        });
+                // "Other" excludes all known booking lifecycle notifications.
+                $knownPatterns = [
+                    '%request%',
+                    '%submitted%',
+                    '%new booking%',
+                    '%approv%',
+                    '%reject%',
+                    '%declin%',
+                    '%cancel%',
+                ];
+
+                $query->where(function ($categoryQuery) use ($knownPatterns) {
+                    foreach ($knownPatterns as $pattern) {
+                        $categoryQuery->whereRaw(
+                            'LOWER(CAST(data AS TEXT)) NOT LIKE ?',
+                            [$pattern]
+                        );
+                    }
                 });
             }
         }
 
         if ($search !== '') {
-            $query->where(function ($searchQuery) use ($search) {
-                $searchQuery
-                    ->where('data->title', 'like', "%{$search}%")
-                    ->orWhere('data->message', 'like', "%{$search}%")
-                    ->orWhere('data->booking_id', 'like', "%{$search}%");
-            });
+            $query->whereRaw(
+                'LOWER(CAST(data AS TEXT)) LIKE ?',
+                ['%' . mb_strtolower($search) . '%']
+            );
         }
 
         $notifications = $query
