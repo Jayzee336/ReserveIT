@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DeveloperContactController;
 use App\Http\Controllers\UserConcernController;
+use App\Http\Controllers\NotificationController;
 
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\FacilityManagementController;
@@ -568,6 +569,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/admin/concerns/{concern}/reply', [UserConcernController::class, 'updateReply'])
         ->middleware('role:super_admin')
         ->name('admin.concerns.updateReply');
+
+    // Notification Center: full read/unread history with filters.
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
 
     // Notification: Mark All as Read
     Route::post('/notifications/clear', function () {
