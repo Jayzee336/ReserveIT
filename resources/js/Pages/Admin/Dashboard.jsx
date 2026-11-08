@@ -756,9 +756,9 @@ export default function AdminDashboard({
                             </button>
                         ))}
                     </div>
-                    <div className="mt-5 grid gap-5 xl:grid-cols-2">
+                    <div className="mt-5 grid min-w-0 grid-cols-1 gap-5 xl:grid-cols-2">
 
-<section className="rounded-xl border border-[var(--ri-border)] p-4">
+<section className="min-w-0 rounded-xl border border-[var(--ri-border)] p-4">
                         <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
                                 <h2 className="text-sm font-semibold text-slate-900">Booking volume over time</h2>
@@ -771,8 +771,8 @@ export default function AdminDashboard({
                             </div>
                         </div>
 
-                        <div className="mt-6 overflow-x-auto">
-                            <div className="flex h-44 min-w-[560px] items-end gap-3">
+                        <div className="mt-6 w-full min-w-0 overflow-x-auto">
+                            <div className="flex h-44 min-w-[420px] items-end gap-2 sm:min-w-0 sm:gap-3">
                                 {usageOverTime.map((item) => {
                                     const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
                                     return (
@@ -806,9 +806,9 @@ export default function AdminDashboard({
                         )}
                     </section>
 
-<div className="rounded-xl border border-[var(--ri-border)] p-4">
-                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
-                        <div className="space-y-3">{displayedStatusBreakdown.map((item) => {
+<div className="min-w-0 rounded-xl border border-[var(--ri-border)] p-4">
+                        <div className="mb-3 flex min-w-0 flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
+                        <div className="min-w-0 space-y-3">{displayedStatusBreakdown.map((item) => {
                             const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
                             return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
                                 <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage.toFixed(1)}%</span></span></div>
