@@ -11,18 +11,26 @@ class BookingOperationsNotification extends Notification
 
     public function __construct(
         private readonly string $message,
-        private readonly string $bookingId,
-        private readonly string $title = 'Booking Update'
+        private readonly string $referenceId,
+        private readonly string $title = 'Booking Update',
+        private readonly string $referenceType = 'booking'
     ) {}
 
     public function via(object $notifiable): array { return ['database']; }
 
     public function toArray(object $notifiable): array
     {
-        return [
+         $payload = [
             'title' => $this->title,
             'message' => $this->message,
-            'booking_id' => $this->bookingId,
         ];
+
+        if ($this->referenceType === 'ticket') {
+            $payload['ticket_id'] = $this->referenceId;
+        } else {
+            $payload['booking_id'] = $this->referenceId;
+        }
+
+        return $payload;
     }
 }
