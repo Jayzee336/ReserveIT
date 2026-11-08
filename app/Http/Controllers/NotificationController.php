@@ -41,17 +41,38 @@ class NotificationController extends Controller
             };
 
             if ($titlePattern) {
-                $query->where('data->title', 'like', $titlePattern);
+                $query->where(function ($categoryQuery) use ($titlePattern) {
+                    $categoryQuery
+                        ->where('data->title', 'like', $titlePattern)
+                        ->orWhere('data->message', 'like', $titlePattern);
+                });
             } else {
                 $query->where(function ($categoryQuery) {
                     $categoryQuery
-                        ->whereNull('data->title')
-                        ->orWhere(function ($otherQuery) {
-                            $otherQuery
-                                ->where('data->title', 'not like', '%request%')
-                                ->where('data->title', 'not like', '%approv%')
-                                ->where('data->title', 'not like', '%reject%')
-                                ->where('data->title', 'not like', '%cancel%');
+                        ->where(function ($titleQuery) {
+                            $titleQuery
+                                ->whereNull('data->title')
+                                ->orWhere(function ($otherTitleQuery) {
+                                    $otherTitleQuery
+                                        ->where('data->title', 'not like', '%request%')
+                                        ->where('data->title', 'not like', '%approv%')
+                                        ->where('data->title', 'not like', '%reject%')
+                                        ->where('data->title', 'not like', '%cancel%');
+                                });
+                        })
+                        ->where(function ($messageQuery) {
+                            $messageQuery
+                                ->whereNull('data->message')
+                                ->orWhere(function ($otherMessageQuery) {
+                                    $otherMessageQuery
+                                        ->where('data->message', 'not like', '%request%')
+                                        ->where('data->message', 'not like', '%submitted%')
+                                        ->where('data->message', 'not like', '%new booking%')
+                                        ->where('data->message', 'not like', '%approv%')
+                                        ->where('data->message', 'not like', '%reject%')
+                                        ->where('data->message', 'not like', '%declin%')
+                                        ->where('data->message', 'not like', '%cancel%');
+                                });
                         });
                 });
             }
