@@ -763,43 +763,47 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                         onClick={() => setNotificationsOpen(false)}
                                     />
 
-                                    <div className="absolute right-0 top-full z-40 mt-2 w-[min(20rem,calc(100vw-1.5rem))] rounded-2xl border border-gray-100 bg-white p-3 shadow-xl ring-1 ring-black/5 sm:p-4">
-                                        <div className="mb-2 flex items-center justify-between border-b border-gray-100 pb-2">
-                                            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                                                Notifications
-                                            </span>
+                                    <div className="absolute right-0 top-full z-40 mt-2 w-[min(22rem,calc(100vw-1.5rem))] rounded-2xl border border-gray-100 bg-white p-3 shadow-xl ring-1 ring-black/5 sm:p-4">
+                                        <div className="mb-3 border-b border-gray-100 pb-3">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                                                    Notifications
+                                                </span>
+                                                <span className="text-[10px] font-medium text-gray-400">
+                                                    {realtimeNotifications.length} total
+                                                </span>
+                                            </div>
 
-                                            <div className="flex items-center gap-2">
+                                            <div className="mt-3 flex flex-wrap items-center gap-2">
                                                 <button
                                                     type="button"
                                                     onClick={toggleNotificationSound}
                                                     aria-label={notificationSoundEnabled ? 'Turn notification sounds off' : 'Turn notification sounds on'}
                                                     aria-pressed={notificationSoundEnabled}
                                                     title={notificationSoundEnabled ? 'Notification sound on' : 'Notification sound off'}
-                                                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-gray-600 transition hover:bg-gray-100"
+                                                    className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${notificationSoundEnabled ? 'border-[#DCCBD2] bg-[#F7F0F3] text-[#6A535C]' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
                                                 >
                                                     {notificationSoundEnabled ? (
-                                                        <Volume2 className="h-3.5 w-3.5 text-[#6A535C]" />
+                                                        <Volume2 className="h-3.5 w-3.5" />
                                                     ) : (
-                                                        <VolumeX className="h-3.5 w-3.5 text-gray-400" />
+                                                        <VolumeX className="h-3.5 w-3.5" />
                                                     )}
                                                     Sound {notificationSoundEnabled ? 'On' : 'Off'}
                                                 </button>
 
-                                                {unreadCount > 0 && (
-                                                    <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-[#6A535C]">
-                                                        {unreadCount} New
-                                                    </span>
-                                                )}
+                                                <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1.5 text-[11px] font-bold text-[#6A535C]">
+                                                    <span className="h-1.5 w-1.5 rounded-full bg-[#8D6B7A]" />
+                                                    {unreadCount} New
+                                                </span>
 
                                                 {unreadCount > 0 && (
                                                     <button
                                                         type="button"
                                                         onClick={clearAllNotifications}
                                                         disabled={isClearingNotifications || isLoggingOut}
-                                                        className="text-[10px] font-semibold text-indigo-600 transition hover:text-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                                        className="ml-auto inline-flex min-h-8 items-center justify-center rounded-full border border-[#E8D8D1] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#6A535C] transition hover:bg-[#F9F4EF] disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
-                                                        {isClearingNotifications ? 'Updating…' : 'Mark all read'}
+                                                        {isClearingNotifications ? 'Updating…' : 'Mark all as read'}
                                                     </button>
                                                 )}
                                             </div>
