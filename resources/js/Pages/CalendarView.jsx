@@ -21,10 +21,51 @@ const toMinutes = (time) => { const [hour, minute] = String(time).split(':').map
 const toEndMinutes = (time) => String(time).slice(0, 5) === '00:00' ? 1440 : toMinutes(time);
 const statusClass = (status) => status === 'approved' ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500';
 
+// Find the earliest valid start time inside an hourly cell after applying the
+// same cleanup buffer enforced by BookingController and BookingModal.
+const findAvailableStartInHour = (slotStart, slotEnd, bookings, bufferMinutes) => {
+    let candidate = slotStart;
+
+    if (bufferMinutes <= 0) {
+        return { availableStart: candidate, blockedUntil: null };
+    }
+
+    // A short loop handles overlapping cleanup buffers from adjacent bookings.
+    for (let attempt = 0; attempt <= bookings.length; attempt += 1) {
+        const blockingEnds = bookings
+            .filter((booking) => ['pending', 'approved'].includes(String(booking.status ?? '').toLowerCase()))
+            .map((booking) => ({
+                start: toMinutes(booking.start_time) - bufferMinutes,
+                end: toEndMinutes(booking.end_time) + bufferMinutes,
+            }))
+            .filter((interval) => candidate >= interval.start && candidate < interval.end)
+            .map((interval) => interval.end);
+
+        if (blockingEnds.length === 0) {
+            break;
+        }
+
+        candidate = Math.max(...blockingEnds);
+    }
+
+    if (candidate >= slotEnd) {
+        return { availableStart: null, blockedUntil: candidate };
+    }
+
+    return {
+        availableStart: candidate,
+        blockedUntil: candidate > slotStart ? candidate : null,
+    };
+};
+
 export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate, availabilityOnly = false }) {
     const { systemSettings = {} } = usePage().props;
     const openingTime = String(systemSettings.opening_time ?? '08:00').slice(0, 5);
     const closingTime = String(systemSettings.closing_time ?? '00:00').slice(0, 5);
+    const configuredCleanupBuffer = Number(systemSettings.cleanup_buffer_minutes ?? 30);
+    const cleanupBufferMinutes = Number.isFinite(configuredCleanupBuffer)
+        ? Math.max(0, configuredCleanupBuffer)
+        : 30;
     const openingHour = Math.floor(Number(openingTime.split(':')[0]));
     const closingMinutes = closingTime === '00:00' ? 1440 : toMinutes(closingTime);
     const HOURS = [];
@@ -167,26 +208,60 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                                         onClick={() => setDetails({ facility, bookings: [booking] })}
                                                         className={`w-full rounded-lg border border-dashed px-0.5 py-1 text-left text-[8px] font-semibold leading-3 ${booking.status === 'approved' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}
                                                     >
-                                                        Booked
+                                                        {booking.status === 'approved' ? 'Confirmed' : 'Pending hold'}
                                                     </button>
                                                 ))}
                                             </div>
                                         </td>
                                     );
                                 } else {
-                                    cells.push(
-                                        <td key={slot} className="border-b border-r p-0.5">
-                                            <button
-                                                type="button"
-                                                aria-label={`Create a booking for ${facility.name} at ${formatTime(slot)}`}
-                                                title={`Book ${facility.name} at ${formatTime(slot)}`}
-                                                onClick={() => setCreate({ facility, startTime: slot })}
-                                                className="flex min-h-[52px] w-full items-center justify-center rounded-md border border-dashed border-[var(--ri-border-strong)] text-sm text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]"
-                                            >
-                                                +
-                                            </button>
-                                        </td>
+                                    const { availableStart, blockedUntil } = findAvailableStartInHour(
+                                        slotStart,
+                                        slotEnd,
+                                        bookings,
+                                        cleanupBufferMinutes
                                     );
+
+                                    if (availableStart === null) {
+                                        cells.push(
+                                            <td key={slot} className="border-b border-r p-0.5">
+                                                <div
+                                                    title={`Cleanup buffer in effect until ${formatTime(`${String(Math.floor(blockedUntil / 60) % 24).padStart(2, '0')}:${String(blockedUntil % 60).padStart(2, '0')}`)}`}
+                                                    className="flex min-h-[52px] w-full flex-col items-center justify-center rounded-md border border-dashed border-amber-200 bg-amber-50 px-0.5 py-1 text-center text-[8px] font-semibold leading-3 text-amber-800"
+                                                >
+                                                    <span>Cleanup</span>
+                                                    <span>buffer</span>
+                                                    <span>until {formatTime(`${String(Math.floor(blockedUntil / 60) % 24).padStart(2, '0')}:${String(blockedUntil % 60).padStart(2, '0')}`)}</span>
+                                                </div>
+                                            </td>
+                                        );
+                                    } else {
+                                        const availableTime = `${String(Math.floor(availableStart / 60) % 24).padStart(2, '0')}:${String(availableStart % 60).padStart(2, '0')}`;
+                                        const startsAfterBuffer = availableStart > slotStart;
+
+                                        cells.push(
+                                            <td key={slot} className="border-b border-r p-0.5">
+                                                <button
+                                                    type="button"
+                                                    aria-label={`Create a booking for ${facility.name} starting at ${formatTime(availableTime)}`}
+                                                    title={startsAfterBuffer
+                                                        ? `Book ${facility.name} from ${formatTime(availableTime)} after the cleanup buffer`
+                                                        : `Book ${facility.name} at ${formatTime(availableTime)}`}
+                                                    onClick={() => setCreate({ facility, startTime: availableTime })}
+                                                    className={`flex min-h-[52px] w-full flex-col items-center justify-center rounded-md border border-dashed text-sm transition ${startsAfterBuffer
+                                                        ? 'border-amber-300 bg-amber-50 text-amber-800 hover:border-amber-400 hover:bg-amber-100'
+                                                        : 'border-[var(--ri-border-strong)] text-slate-400 hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]'}`}
+                                                >
+                                                    <span>+</span>
+                                                    {startsAfterBuffer && (
+                                                        <span className="text-[8px] font-semibold leading-3">
+                                                            From {formatTime(availableTime)}
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            </td>
+                                        );
+                                    }
                                 }
                             });
                             return (
