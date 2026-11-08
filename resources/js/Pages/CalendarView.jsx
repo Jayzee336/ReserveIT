@@ -66,15 +66,47 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
     const cleanupBufferMinutes = Number.isFinite(configuredCleanupBuffer)
         ? Math.max(0, configuredCleanupBuffer)
         : 30;
-    const openingHour = Math.floor(Number(openingTime.split(':')[0]));
+    const openingMinutes = toMinutes(openingTime);
     const closingMinutes = closingTime === '00:00' ? 1440 : toMinutes(closingTime);
-    const HOURS = [];
-    for (let minutes = openingHour * 60; minutes < closingMinutes; minutes += 60) {
-        HOURS.push(`${String(Math.floor(minutes / 60)).padStart(2, '0')}:00`);
+    const SLOT_INTERVAL_MINUTES = 15;
+    const timeSlots = [];
+
+    for (
+        let minutes = openingMinutes;
+        minutes < closingMinutes;
+        minutes += SLOT_INTERVAL_MINUTES
+    ) {
+        timeSlots.push({
+            key: String(minutes),
+            start: minutes,
+            end: Math.min(minutes + SLOT_INTERVAL_MINUTES, closingMinutes),
+        });
     }
-    // The final column marks the closing boundary (for example, 12:00 AM),
-    // while the last clickable hour remains the interval immediately before it.
-    const closingBoundaryLabel = formatTime(closingTime);
+
+    // Group the quarter-hour columns beneath readable hourly headings.
+    const hourGroups = [];
+    timeSlots.forEach((slot) => {
+        const hourStart = Math.floor(slot.start / 60) * 60;
+        const lastGroup = hourGroups[hourGroups.length - 1];
+
+        if (lastGroup && lastGroup.hourStart === hourStart) {
+            lastGroup.colSpan += 1;
+        } else {
+            hourGroups.push({ hourStart, colSpan: 1 });
+        }
+    });
+
+    const formatMinutes = (minutes) => {
+        const normalized = ((minutes % 1440) + 1440) % 1440;
+        const hour = Math.floor(normalized / 60);
+        const minute = normalized % 60;
+        return formatTime(
+            `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+        );
+    };
+
+    // The closing boundary is an end-time marker, not a selectable slot.
+    const closingBoundaryLabel = formatMinutes(closingMinutes);
     const [details, setDetails] = useState(null);
     const [create, setCreate] = useState(null);
     const detailsDialogRef = useRef(null);
@@ -149,129 +181,227 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                 <span className="text-slate-500">Schedule shown from {formatTime(openingTime)} to {closingTime === '00:00' ? '12:00 AM (midnight)' : formatTime(closingTime)}</span>
             </div>
             <div className="w-full overflow-x-auto overflow-y-hidden rounded-2xl border border-[var(--ri-border)]">
-                <table className="min-w-[1850px] w-full table-fixed border-collapse">
+                <table className="min-w-[2820px] w-full table-fixed border-collapse">
+                    <colgroup>
+                        <col style={{ width: '190px' }} />
+                        {timeSlots.map((slot) => (
+                            <col key={slot.key} style={{ width: '40px' }} />
+                        ))}
+                        <col style={{ width: '64px' }} />
+                    </colgroup>
                     <thead className="bg-[var(--ri-surface-subtle)]">
                         <tr>
-                            <th className="sticky left-0 z-20 w-[190px] min-w-[190px] border-b border-r bg-[#fbf5ef] px-2 py-2 text-left text-xs font-semibold text-slate-700">Facility</th>
-                            {HOURS.map((hour) => (
-                                <th key={hour} title={formatTime(hour)} className="w-[72px] min-w-[72px] border-b border-r px-0.5 py-2 text-center text-[9px] font-semibold leading-tight text-slate-600">
-                                    {formatTime(hour).replace(':00', '')}
+                            <th
+                                rowSpan={2}
+                                className="sticky left-0 z-30 w-[190px] min-w-[190px] border-b border-r bg-[#fbf5ef] px-2 py-2 text-left text-xs font-semibold text-slate-700"
+                            >
+                                Facility
+                            </th>
+                            {hourGroups.map((group) => (
+                                <th
+                                    key={group.hourStart}
+                                    colSpan={group.colSpan}
+                                    className="border-b border-r border-slate-200 bg-slate-100 px-1 py-2 text-center text-[10px] font-bold text-slate-700"
+                                >
+                                    {formatMinutes(group.hourStart).replace(':00', '')}
                                 </th>
                             ))}
-                            <th title={`Closing boundary: ${closingBoundaryLabel} — end time only`} className="w-[82px] min-w-[82px] border-b border-l-2 border-l-indigo-200 bg-indigo-50/70 px-0.5 py-2 text-center text-[9px] font-bold leading-tight text-indigo-700">
-                                <span className="block">{closingBoundaryLabel.replace(':00', '')}</span>
-                                <span className="block text-[8px] font-medium text-indigo-500">End only</span>
+                            <th
+                                rowSpan={2}
+                                title={`Closing boundary: ${closingBoundaryLabel} — end time only`}
+                                className="w-[64px] min-w-[64px] border-b border-l-2 border-l-indigo-200 bg-indigo-50/70 px-1 py-2 text-center text-[9px] font-bold leading-tight text-indigo-700"
+                            >
+                                <span className="block">End</span>
+                                <span className="mt-1 block text-[8px] font-medium">{closingBoundaryLabel}</span>
                             </th>
+                        </tr>
+                        <tr>
+                            {timeSlots.map((slot) => (
+                                <th
+                                    key={slot.key}
+                                    title={formatMinutes(slot.start)}
+                                    className="h-7 w-[40px] min-w-[40px] border-b border-r border-slate-200 bg-white px-0 py-1 text-center text-[8px] font-semibold tabular-nums text-slate-500"
+                                >
+                                    {String(slot.start % 60).padStart(2, '0')}
+                                </th>
+                            ))}
                         </tr>
                     </thead>
                     <tbody>
                         {serverFacilities.map((facility) => {
                             const bookings = serverBookings
-                                .filter((booking) => booking.facility_id === facility.id)
-                                .sort((a, b) => toMinutes(a.start_time) - toMinutes(b.start_time));
+                                .filter((booking) => (
+                                    String(booking.facility_id) === String(facility.id) &&
+                                    ['pending', 'approved'].includes(String(booking.status ?? '').toLowerCase())
+                                ))
+                                .map((booking) => ({
+                                    booking,
+                                    start: Math.max(openingMinutes, toMinutes(booking.start_time)),
+                                    end: Math.min(closingMinutes, toEndMinutes(booking.end_time)),
+                                }))
+                                .filter((range) => range.end > range.start)
+                                .sort((a, b) => a.start - b.start);
+
+                            const activeBookingsAt = (slot) => bookings.filter((range) => (
+                                range.start < slot.end && range.end > slot.start
+                            ));
+
+                            // The server blocks a new start until the previous booking's
+                            // cleanup buffer expires. Mirror that rule in the visible grid.
+                            const cleanupBookingsAt = (slot) => cleanupBufferMinutes > 0
+                                ? bookings.filter((range) => (
+                                    range.end <= slot.start &&
+                                    slot.start < range.end + cleanupBufferMinutes
+                                ))
+                                : [];
+
+                            const rangeSignature = (ranges) => ranges
+                                .map((range) => String(range.booking.id))
+                                .sort()
+                                .join('|');
+
                             const cells = [];
+                            let slotIndex = 0;
 
-                            HOURS.forEach((slot) => {
-                                const slotStart = toMinutes(slot);
-                                const slotEnd = slotStart + 60;
-                                const overlappingBookings = bookings.filter((booking) => (
-                                    toMinutes(booking.start_time) < slotEnd &&
-                                    toEndMinutes(booking.end_time) > slotStart
-                                ));
-                                const startingBookings = overlappingBookings.filter((booking) => (
-                                    toMinutes(booking.start_time) >= slotStart &&
-                                    toMinutes(booking.start_time) < slotEnd
-                                ));
-                                const continuingBookings = overlappingBookings.filter((booking) => (
-                                    toMinutes(booking.start_time) < slotStart
-                                ));
+                            while (slotIndex < timeSlots.length) {
+                                const slot = timeSlots[slotIndex];
+                                const activeBookings = activeBookingsAt(slot);
 
-                                if (overlappingBookings.length) {
+                                if (activeBookings.length > 0) {
+                                    const signature = rangeSignature(activeBookings);
+                                    let span = 1;
+
+                                    while (slotIndex + span < timeSlots.length) {
+                                        const nextActive = activeBookingsAt(timeSlots[slotIndex + span]);
+                                        if (rangeSignature(nextActive) !== signature) break;
+                                        span += 1;
+                                    }
+
+                                    const spanEnd = timeSlots[slotIndex + span - 1].end;
+
                                     cells.push(
-                                        <td key={slot} className="border-b border-r p-0.5 align-top">
-                                            <div className="space-y-1.5">
-                                                {startingBookings.map((booking) => (
-                                                    <button
-                                                        key={booking.id}
-                                                        type="button"
-                                                        onClick={() => setDetails({ facility, bookings: [booking] })}
-                                                        className={`min-h-[52px] w-full rounded-xl bg-gradient-to-r ${statusClass(booking.status)} px-0.5 py-1 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
-                                                    >
-                                                        <span className="block text-[8px] font-bold uppercase leading-3">{booking.status === 'approved' ? 'Confirmed' : 'Pending hold'}</span>
-                                                        <span className="mt-0.5 block whitespace-normal break-words text-[8px] font-semibold leading-3">{formatTime(booking.start_time)} – {formatTime(booking.end_time)}</span>
-                                                    </button>
-                                                ))}
-                                                {continuingBookings.map((booking) => (
-                                                    <button
-                                                        key={`continuation-${booking.id}`}
-                                                        type="button"
-                                                        onClick={() => setDetails({ facility, bookings: [booking] })}
-                                                        className={`w-full rounded-lg border border-dashed px-0.5 py-1 text-left text-[8px] font-semibold leading-3 ${booking.status === 'approved' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}
-                                                    >
-                                                        {booking.status === 'approved' ? 'Confirmed' : 'Pending hold'}
-                                                    </button>
-                                                ))}
+                                        <td
+                                            key={`booking-${slot.key}`}
+                                            colSpan={span}
+                                            className="border-b border-r border-slate-200 p-0.5 align-middle"
+                                        >
+                                            <div className="flex min-h-[52px] flex-col justify-center gap-1">
+                                                {activeBookings.map((range) => {
+                                                    const booking = range.booking;
+                                                    const visibleStart = Math.max(range.start, slot.start);
+                                                    const visibleEnd = Math.min(range.end, spanEnd);
+                                                    const visibleIntervals = Math.max(
+                                                        1,
+                                                        Math.ceil((visibleEnd - visibleStart) / SLOT_INTERVAL_MINUTES)
+                                                    );
+                                                    const isApproved = booking.status === 'approved';
+                                                    const shortLabel = isApproved ? 'APP' : 'PEND';
+                                                    const fullLabel = isApproved ? 'CONFIRMED' : 'PENDING';
+
+                                                    return (
+                                                        <button
+                                                            key={booking.id}
+                                                            type="button"
+                                                            aria-label={`${fullLabel} booking for ${facility.name}, ${formatTime(booking.start_time)} to ${formatTime(booking.end_time)}`}
+                                                            title={`${fullLabel} · ${formatTime(booking.start_time)} – ${formatTime(booking.end_time)}`}
+                                                            onClick={() => setDetails({ facility, bookings: [booking] })}
+                                                            className={`flex min-h-[46px] w-full flex-col justify-center overflow-hidden rounded-lg bg-gradient-to-r ${statusClass(booking.status)} px-2 py-1 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
+                                                        >
+                                                            <span className="block truncate text-[9px] font-extrabold uppercase leading-3 tracking-wide">
+                                                                {visibleIntervals === 1 ? shortLabel : fullLabel}
+                                                            </span>
+                                                            {visibleIntervals >= 3 && (
+                                                                <span className="mt-0.5 block truncate text-[9px] font-semibold leading-3 tabular-nums">
+                                                                    {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
+                                                                </span>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
                                         </td>
                                     );
-                                } else {
-                                    const { availableStart, blockedUntil } = findAvailableStartInHour(
-                                        slotStart,
-                                        slotEnd,
-                                        bookings,
-                                        cleanupBufferMinutes
+
+                                    slotIndex += span;
+                                    continue;
+                                }
+
+                                const cleanupBookings = cleanupBookingsAt(slot);
+
+                                if (cleanupBookings.length > 0) {
+                                    const signature = rangeSignature(cleanupBookings);
+                                    let span = 1;
+
+                                    while (slotIndex + span < timeSlots.length) {
+                                        const nextCleanup = cleanupBookingsAt(timeSlots[slotIndex + span]);
+                                        if (rangeSignature(nextCleanup) !== signature) break;
+                                        span += 1;
+                                    }
+
+                                    const blockedUntil = Math.max(
+                                        ...cleanupBookings.map((range) => range.end + cleanupBufferMinutes)
                                     );
 
-                                    if (availableStart === null) {
-                                        cells.push(
-                                            <td key={slot} className="border-b border-r p-0.5">
-                                                <div
-                                                    title={`Cleanup buffer in effect until ${formatTime(`${String(Math.floor(blockedUntil / 60) % 24).padStart(2, '0')}:${String(blockedUntil % 60).padStart(2, '0')}`)}`}
-                                                    className="flex min-h-[52px] w-full flex-col items-center justify-center rounded-md border border-dashed border-amber-200 bg-amber-50 px-0.5 py-1 text-center text-[8px] font-semibold leading-3 text-amber-800"
-                                                >
-                                                    <span>Cleanup</span>
-                                                    <span>buffer</span>
-                                                    <span>until {formatTime(`${String(Math.floor(blockedUntil / 60) % 24).padStart(2, '0')}:${String(blockedUntil % 60).padStart(2, '0')}`)}</span>
-                                                </div>
-                                            </td>
-                                        );
-                                    } else {
-                                        const availableTime = `${String(Math.floor(availableStart / 60) % 24).padStart(2, '0')}:${String(availableStart % 60).padStart(2, '0')}`;
-                                        const startsAfterBuffer = availableStart > slotStart;
+                                    cells.push(
+                                        <td
+                                            key={`buffer-${slot.key}`}
+                                            colSpan={span}
+                                            className="border-b border-r border-slate-200 p-0.5 align-middle"
+                                        >
+                                            <div
+                                                title={`Cleanup buffer after reservation until ${formatMinutes(blockedUntil)}`}
+                                                aria-label={`Cleanup buffer until ${formatMinutes(blockedUntil)}`}
+                                                className="flex min-h-[46px] w-full flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-100 px-1 py-1 text-center text-slate-600"
+                                            >
+                                                <span className="truncate text-[8px] font-bold uppercase tracking-wide">
+                                                    {span >= 3 ? 'Cleanup buffer' : 'Buffer'}
+                                                </span>
+                                                {span >= 2 && (
+                                                    <span className="truncate text-[8px] tabular-nums">
+                                                        Until {formatMinutes(blockedUntil)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                    );
 
-                                        cells.push(
-                                            <td key={slot} className="border-b border-r p-0.5">
-                                                <button
-                                                    type="button"
-                                                    aria-label={`Create a booking for ${facility.name} starting at ${formatTime(availableTime)}`}
-                                                    title={startsAfterBuffer
-                                                        ? `Book ${facility.name} from ${formatTime(availableTime)} after the cleanup buffer`
-                                                        : `Book ${facility.name} at ${formatTime(availableTime)}`}
-                                                    onClick={() => setCreate({ facility, startTime: availableTime })}
-                                                    className={`flex min-h-[52px] w-full flex-col items-center justify-center rounded-md border border-dashed text-sm transition ${startsAfterBuffer
-                                                        ? 'border-amber-300 bg-amber-50 text-amber-800 hover:border-amber-400 hover:bg-amber-100'
-                                                        : 'border-[var(--ri-border-strong)] text-slate-400 hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)]'}`}
-                                                >
-                                                    <span>+</span>
-                                                    {startsAfterBuffer && (
-                                                        <span className="text-[8px] font-semibold leading-3">
-                                                            From {formatTime(availableTime)}
-                                                        </span>
-                                                    )}
-                                                </button>
-                                            </td>
-                                        );
-                                    }
+                                    slotIndex += span;
+                                    continue;
                                 }
-                            });
+
+                                const startTime = `${String(Math.floor(slot.start / 60) % 24).padStart(2, '0')}:${String(slot.start % 60).padStart(2, '0')}`;
+
+                                cells.push(
+                                    <td
+                                        key={`available-${slot.key}`}
+                                        className="border-b border-r border-slate-100 p-0.5"
+                                    >
+                                        <button
+                                            type="button"
+                                            aria-label={`Create a booking for ${facility.name} at ${formatMinutes(slot.start)}`}
+                                            title={`Book ${facility.name} at ${formatMinutes(slot.start)}`}
+                                            onClick={() => setCreate({ facility, startTime })}
+                                            className="flex min-h-[46px] w-full items-center justify-center rounded-md border border-dashed border-[var(--ri-border-strong)] text-[11px] font-medium text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                        >
+                                            +
+                                        </button>
+                                    </td>
+                                );
+
+                                slotIndex += 1;
+                            }
+
                             return (
                                 <tr key={facility.id}>
-                                    <th className="sticky left-0 z-10 border-b border-r bg-white px-2 py-2 text-left align-top whitespace-normal">
+                                    <th className="sticky left-0 z-20 border-b border-r border-slate-200 bg-white px-2 py-2 text-left align-top whitespace-normal">
                                         <p className="text-xs font-semibold leading-tight text-slate-800">{facility.name}</p>
                                         <p className="mt-1 text-[10px] font-normal leading-tight text-slate-500">{facility.location}</p>
                                     </th>
                                     {cells}
-                                    <td aria-label={`Closing boundary at ${closingBoundaryLabel}`} className="border-b border-l-2 border-l-indigo-100 bg-indigo-50/30 p-0.5" />
+                                    <td
+                                        aria-label={`Closing boundary at ${closingBoundaryLabel}`}
+                                        className="border-b border-l-2 border-l-indigo-100 bg-indigo-50/30 p-0.5"
+                                    />
                                 </tr>
                             );
                         })}
