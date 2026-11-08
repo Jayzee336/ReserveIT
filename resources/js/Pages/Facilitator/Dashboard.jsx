@@ -41,7 +41,7 @@ function AnalyticsStat({ label, value, hint, onClick }) {
         <button
             type="button"
             onClick={onClick}
-            className="group min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#846A75] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2"
+            className="group min-w-0 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#846A75] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2"
         >
             <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600">
                 <span>{label}</span>
@@ -416,7 +416,7 @@ export default function FacilitatorDashboard({
                 </div>
 
                 {/* Pending Bookings List */}
-                <section className="rounded-2xl bg-white p-5 shadow-sm">
+                <section className="ri-panel p-5 sm:p-6">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <h2 className="font-semibold text-slate-900">
                             Bookings Awaiting Review
@@ -561,7 +561,7 @@ export default function FacilitatorDashboard({
                         <h2 className="mt-1 font-semibold text-slate-900">Client &amp; operations analytics</h2>
                         <p className="mt-1 text-xs text-slate-500">{analytics.periodLabel ?? 'Last six months'} · metrics include only facilities assigned to you and the selected facility scope.</p>
                     </div>
-                    <form onSubmit={applyAnalyticsFilters} className="grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_0.8fr_auto_auto] xl:items-end">
+                    <form onSubmit={applyAnalyticsFilters} className="grid gap-3 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-3 sm:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_0.8fr_auto_auto] xl:items-end">
                         <label className="block text-xs font-semibold text-slate-600">
                             Facility scope
                             <select value={analyticsFacility} onChange={handleFacilityChange} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700">
