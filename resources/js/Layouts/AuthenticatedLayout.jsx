@@ -268,17 +268,19 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 !knownNotificationIdsRef.current.has(String(notification.id)),
         );
 
-        if (newNotifications.length > 0 && notificationToastsEnabled) {
-            toast.message(
-                `${newNotifications.length} new notification${
-                    newNotifications.length > 1 ? 's' : ''
-                }`,
-                {
-                    description: 'You have unread updates. Check the bell icon.',
-                },
-            );
+        if (newNotifications.length > 0) {
+            if (notificationToastsEnabled) {
+                toast.message(
+                    `${newNotifications.length} new notification${
+                        newNotifications.length > 1 ? 's' : ''
+                    }`,
+                    {
+                        description: 'You have unread updates. Check the bell icon.',
+                    },
+                );
+            }
 
-            // One louder sound per incoming batch.
+            // Sound preference is independent from the in-app toast preference.
             playNotificationSound(newNotifications[0]);
         }
 
