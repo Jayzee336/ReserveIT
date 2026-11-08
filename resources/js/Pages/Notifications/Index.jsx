@@ -1,0 +1,267 @@
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+import {
+    Bell,
+    BellRing,
+    CalendarCheck,
+    CalendarClock,
+    CalendarX,
+    CheckCircle2,
+    CheckCheck,
+    Clock3,
+    Search,
+    SlidersHorizontal,
+    XCircle,
+    ArrowUpRight,
+    Inbox,
+} from 'lucide-react';
+
+const CATEGORY_STYLES = {
+    request: { label: 'Booking request', className: 'bg-blue-50 text-blue-700', icon: CalendarClock },
+    approved: { label: 'Approved', className: 'bg-emerald-50 text-emerald-700', icon: CheckCircle2 },
+    rejected: { label: 'Rejected', className: 'bg-rose-50 text-rose-700', icon: XCircle },
+    cancelled: { label: 'Cancelled', className: 'bg-amber-50 text-amber-700', icon: CalendarX },
+    other: { label: 'Update', className: 'bg-stone-100 text-stone-600', icon: Bell },
+};
+
+const formatDate = (value) => {
+    if (!value) return 'Date unavailable';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Date unavailable';
+    return date.toLocaleString('en-PH', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+    });
+};
+
+const bookingDestination = (role, bookingId) => {
+    if (!bookingId) return null;
+    const params = { booking: bookingId };
+    if (role === 'super_admin') return route('admin.bookings.index', params);
+    if (role === 'facility_admin') return route('facilitator.bookings.index', params);
+    return route('bookings.index', params);
+};
+
+export default function NotificationIndex({ notifications, filters = {} }) {
+    const user = usePage().props.auth?.user;
+    const [search, setSearch] = useState(filters.search ?? '');
+    const [isMarkingAll, setIsMarkingAll] = useState(false);
+
+    const applyFilters = (next = {}) => {
+        router.get(route('notifications.index'), {
+            status: next.status ?? filters.status ?? 'all',
+            category: next.category ?? filters.category ?? 'all',
+            search: next.search ?? search,
+        }, {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const markAllRead = () => {
+        if (isMarkingAll || !notifications?.data?.some((item) => !item.read)) return;
+        setIsMarkingAll(true);
+        router.post(route('notifications.clear'), {}, {
+            preserveScroll: true,
+            onFinish: () => setIsMarkingAll(false),
+        });
+    };
+
+    const openNotification = (notification) => {
+        const destination = bookingDestination(user?.role, notification.booking_id);
+        if (destination) {
+            router.post(route('notifications.read', notification.id), {}, {
+                preserveScroll: true,
+                onSuccess: () => router.visit(destination),
+            });
+        } else if (!notification.read) {
+            router.post(route('notifications.read', notification.id), {}, {
+                preserveScroll: true,
+            });
+        }
+    };
+
+    const statusOptions = [
+        { value: 'all', label: 'All' },
+        { value: 'unread', label: 'Unread' },
+        { value: 'read', label: 'Read' },
+    ];
+    const categoryOptions = [
+        { value: 'all', label: 'All types' },
+        { value: 'request', label: 'Requests' },
+        { value: 'approved', label: 'Approved' },
+        { value: 'rejected', label: 'Rejected' },
+        { value: 'cancelled', label: 'Cancelled' },
+        { value: 'other', label: 'Other' },
+    ];
+
+    return (
+        <AuthenticatedLayout header="Notification Center">
+            <Head title="Notification Center" />
+
+            <div className="mx-auto max-w-6xl space-y-6">
+                <section className="overflow-hidden rounded-3xl border border-[#E8D8D1] bg-white shadow-sm">
+                    <div className="bg-gradient-to-r from-[#6A535C] to-[#80636E] px-6 py-7 text-white sm:px-8">
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/70">ReserveIT updates</p>
+                                <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Notification Center</h1>
+                                <p className="mt-2 max-w-xl text-sm leading-6 text-white/80">
+                                    Review booking requests, reservation decisions, and other account updates in one place.
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-white/20 bg-white/10 p-3">
+                                <BellRing className="h-7 w-7" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-5 p-5 sm:p-7">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex flex-wrap gap-2">
+                                {statusOptions.map((option) => (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => applyFilters({ status: option.value })}
+                                        className={`rounded-full px-4 py-2 text-xs font-semibold transition ${(filters.status ?? 'all') === option.value ? 'bg-[#6A535C] text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={markAllRead}
+                                disabled={isMarkingAll || !notifications?.data?.some((item) => !item.read)}
+                                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#E8D8D1] px-4 py-2.5 text-xs font-semibold text-[#6A535C] transition hover:bg-[#F9F4EF] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                <CheckCheck className="h-4 w-4" />
+                                {isMarkingAll ? 'Marking read…' : 'Mark all as read'}
+                            </button>
+                        </div>
+
+                        <form
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                applyFilters({ search });
+                            }}
+                            className="flex flex-col gap-3 sm:flex-row"
+                        >
+                            <div className="relative flex-1">
+                                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                                <input
+                                    value={search}
+                                    onChange={(event) => setSearch(event.target.value)}
+                                    placeholder="Search notification title, details, or booking ID…"
+                                    className="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#A98C97] focus:bg-white focus:ring-2 focus:ring-[#EADDE1]"
+                                />
+                            </div>
+                            <button type="submit" className="rounded-xl bg-[#6A535C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#533e45]">
+                                Search
+                            </button>
+                        </form>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            <SlidersHorizontal className="h-4 w-4 text-stone-400" />
+                            <span className="mr-1 text-xs font-semibold text-stone-500">Type:</span>
+                            {categoryOptions.map((option) => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    onClick={() => applyFilters({ category: option.value })}
+                                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${(filters.category ?? 'all') === option.value ? 'bg-[#F0E7E8] text-[#6A535C]' : 'text-stone-500 hover:bg-stone-100'}`}
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="border-t border-stone-100 pt-2">
+                            {notifications?.data?.length ? (
+                                <div className="divide-y divide-stone-100">
+                                    {notifications.data.map((notification) => {
+                                        const meta = CATEGORY_STYLES[notification.category] ?? CATEGORY_STYLES.other;
+                                        const Icon = meta.icon;
+                                        const destination = bookingDestination(user?.role, notification.booking_id);
+
+                                        return (
+                                            <article key={notification.id} className={`flex flex-col gap-4 py-5 sm:flex-row sm:items-start ${notification.read ? 'opacity-75' : ''}`}>
+                                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F7F0ED] text-[#6A535C]">
+                                                    <Icon className="h-5 w-5" />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <h2 className={`text-sm ${notification.read ? 'font-semibold text-stone-700' : 'font-bold text-stone-900'}`}>
+                                                            {notification.title}
+                                                        </h2>
+                                                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${meta.className}`}>{meta.label}</span>
+                                                        {!notification.read && <span className="h-2 w-2 rounded-full bg-rose-500" title="Unread" />}
+                                                    </div>
+                                                    <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-stone-600">{notification.message}</p>
+                                                    <p className="mt-2 flex items-center gap-1.5 text-xs text-stone-400">
+                                                        <Clock3 className="h-3.5 w-3.5" />
+                                                        {formatDate(notification.created_at)}
+                                                        {notification.booking_id && <span>· Booking #{String(notification.booking_id).slice(0, 8)}</span>}
+                                                    </p>
+                                                </div>
+                                                {destination && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openNotification(notification)}
+                                                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#533e45]"
+                                                    >
+                                                        View booking <ArrowUpRight className="h-3.5 w-3.5" />
+                                                    </button>
+                                                )}
+                                                {!destination && !notification.read && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openNotification(notification)}
+                                                        className="shrink-0 rounded-xl border border-stone-200 px-4 py-2.5 text-xs font-semibold text-stone-600 hover:bg-stone-50"
+                                                    >
+                                                        Mark as read
+                                                    </button>
+                                                )}
+                                            </article>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="py-16 text-center">
+                                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-400">
+                                        <Inbox className="h-7 w-7" />
+                                    </div>
+                                    <h2 className="mt-4 text-base font-semibold text-stone-800">No notifications found</h2>
+                                    <p className="mt-1 text-sm text-stone-500">Try changing your filters, or check back when you receive an update.</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {notifications?.links?.length > 3 && (
+                            <div className="flex flex-wrap items-center justify-center gap-2 border-t border-stone-100 pt-5">
+                                {notifications.links.map((link, index) => (
+                                    <Link
+                                        key={index}
+                                        href={link.url ?? '#'}
+                                        preserveScroll
+                                        className={`rounded-lg px-3 py-2 text-xs font-semibold ${link.active ? 'bg-[#6A535C] text-white' : link.url ? 'bg-stone-100 text-stone-600 hover:bg-stone-200' : 'cursor-not-allowed text-stone-300'}`}
+                                        aria-disabled={!link.url}
+                                    >
+                                        <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </section>
+            </div>
+        </AuthenticatedLayout>
+    );
+}
