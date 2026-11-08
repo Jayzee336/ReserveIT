@@ -3,7 +3,9 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -15,6 +17,48 @@ class AuthenticationTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertStatus(200);
+    }
+
+    public function test_demo_accounts_are_seeded_and_accept_username_or_email_login(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $accounts = [
+            ['username' => 'user', 'email' => 'user@test.com', 'role' => 'user'],
+            ['username' => 'facility', 'email' => 'facility@test.com', 'role' => 'facility_admin'],
+            ['username' => 'admin', 'email' => 'admin@test.com', 'role' => 'super_admin'],
+        ];
+
+        foreach ($accounts as $account) {
+            $user = User::query()
+                ->where('username', $account['username'])
+                ->firstOrFail();
+
+            $this->assertSame($account['email'], $user->email);
+            $this->assertSame($account['role'], $user->role);
+            $this->assertTrue(Hash::check('password', $user->password));
+            $this->assertTrue($user->is_active);
+
+            // Verify login by username.
+            $this->post('/login', [
+                'email' => $account['username'],
+                'password' => 'password',
+            ])->assertRedirect(route('dashboard', absolute: false));
+
+            $this->assertAuthenticatedAs($user);
+            $this->post('/logout');
+            $this->assertGuest();
+
+            // Verify login by email.
+            $this->post('/login', [
+                'email' => $account['email'],
+                'password' => 'password',
+            ])->assertRedirect(route('dashboard', absolute: false));
+
+            $this->assertAuthenticatedAs($user);
+            $this->post('/logout');
+            $this->assertGuest();
+        }
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
