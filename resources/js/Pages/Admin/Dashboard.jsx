@@ -194,7 +194,14 @@ function AnalyticsDetailModal({ detailKey, details, facilities = [], pendingBook
         peakHour: { title: 'Peak-hour bookings', description: 'Bookings that started during the busiest hour.', items: details.peakHour ?? [], type: 'bookings' },
         overtime: { title: 'Overtime details', description: 'Bookings with recorded overtime minutes and charges.', items: details.overtime ?? [], type: 'bookings' },
     };
-    const definition = definitions[detailKey];
+    const definition = typeof detailKey === 'object' && detailKey?.type === 'facility'
+        ? {
+            title: detailKey.name + ' bookings',
+            description: 'Bookings for ' + detailKey.name + ' in the selected analytics period.',
+            items: detailKey.items ?? [],
+            type: 'bookings',
+        }
+        : definitions[detailKey];
     if (!definition) return null;
     const records = Array.isArray(definition.items)
         ? definition.items
@@ -593,16 +600,12 @@ export default function AdminDashboard({
                             filteredAndSortedBookings.map((booking) => (
                                 <div
                                     key={booking.id}
-                                    className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] p-3 transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
-                                    onClick={() => setViewBooking(booking)}
+                                    className="flex flex-col gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] p-3 sm:flex-row sm:items-center sm:justify-between"
                                 >
                                     <div>
-                                        <div>
-                                            <p className="font-semibold text-[#6A535C]">
-                                                {booking.facility?.name}
-                                            </p>
-                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
-                                        </div>
+                                        <p className="font-semibold text-[#6A535C]">
+                                            {booking.facility?.name}
+                                        </p>
                                         <p className="text-xs text-slate-500">
                                             {booking.user?.name ?? booking.guest_name ?? 'Guest'} ·{' '}
                                             {booking.booking_date ?? booking.date} · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}
@@ -807,15 +810,40 @@ export default function AdminDashboard({
                         <div className="mt-4 space-y-3">
                             {mostUsedFacilities.length ? (
                                 mostUsedFacilities.map((facility) => (
-                                    <div
+                                    <button
                                         key={facility.name}
-                                        className="flex justify-between rounded-xl bg-[var(--ri-surface-subtle)] px-3 py-2 text-sm"
+                                        type="button"
+                                        onClick={() => {
+                                            const allBookings = [
+                                                ...(analyticsDetails.pending ?? []),
+                                                ...(analyticsDetails.approved ?? []),
+                                                ...(analyticsDetails.completed ?? []),
+                                                ...(analyticsDetails.declined ?? []),
+                                                ...(analyticsDetails.cancelled ?? []),
+                                            ];
+                                            const facilityBookings = allBookings.filter((booking) => {
+                                                const bookingFacility = booking.facility?.name
+                                                    ?? booking.facility_name
+                                                    ?? (typeof booking.facility === 'string' ? booking.facility : '');
+                                                return String(bookingFacility).trim().toLowerCase()
+                                                    === String(facility.name).trim().toLowerCase();
+                                            });
+                                            setAnalyticsDetailKey({
+                                                type: 'facility',
+                                                name: facility.name,
+                                                items: facilityBookings,
+                                            });
+                                        }}
+                                        className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] px-3 py-2 text-left text-sm transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]"
                                     >
-                                        <span>{facility.name}</span>
-                                        <span className="font-semibold text-[#6A535C]">
+                                        <span className="min-w-0 text-left">
+                                            <span className="block truncate text-slate-700">{facility.name}</span>
+                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                        </span>
+                                        <span className="shrink-0 font-semibold text-[#6A535C]">
                                             {facility.bookings} bookings
                                         </span>
-                                    </div>
+                                    </button>
                                 ))
                             ) : (
                                 <p className="text-sm text-slate-500">
