@@ -22,7 +22,6 @@ import {
     VolumeX,
     ArrowUpRight,
     Menu,
-    X,
 } from 'lucide-react';
 
 const ROLE_LABELS = {
@@ -721,7 +720,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
             {/* Main workspace */}
             <div
-                className={`flex min-h-screen min-w-0 flex-1 flex-col transition-all duration-300 md:${collapsed ? 'ml-16' : 'ml-64'}`}
+                className={`flex min-h-screen min-w-0 flex-1 flex-col transition-all duration-300 ${collapsed ? 'md:ml-16' : 'md:ml-64'}`}
             >
                 <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-gray-200/70 bg-white/90 px-3 py-3 backdrop-blur-xl sm:px-6 lg:px-8">
                     <div className="flex min-w-0 flex-1 items-center gap-3">
