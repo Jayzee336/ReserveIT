@@ -270,7 +270,6 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
 
         try {
             saveHandlePromise = window.showSaveFilePicker({
-                id: 'reserveit-consent-letter',
                 suggestedName: fileName || 'consent-letter',
                 startIn: 'downloads',
                 types: [selectedType],
