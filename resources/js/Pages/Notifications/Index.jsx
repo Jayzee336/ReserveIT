@@ -46,7 +46,7 @@ const bookingDestination = (role, bookingId) => {
     return route('bookings.index', params);
 };
 
-export default function NotificationIndex({ notifications, filters = {} }) {
+export default function NotificationIndex({ notifications, unreadCount = 0, filters = {} }) {
     const user = usePage().props.auth?.user;
     const [search, setSearch] = useState(filters.search ?? '');
     const [isMarkingAll, setIsMarkingAll] = useState(false);
@@ -64,7 +64,7 @@ export default function NotificationIndex({ notifications, filters = {} }) {
     };
 
     const markAllRead = () => {
-        if (isMarkingAll || !notifications?.data?.some((item) => !item.read)) return;
+        if (isMarkingAll || unreadCount < 1) return;
         setIsMarkingAll(true);
         router.post(route('notifications.clear'), {}, {
             preserveScroll: true,
@@ -139,7 +139,7 @@ export default function NotificationIndex({ notifications, filters = {} }) {
                             <button
                                 type="button"
                                 onClick={markAllRead}
-                                disabled={isMarkingAll || !notifications?.data?.some((item) => !item.read)}
+                                disabled={isMarkingAll || unreadCount < 1}
                                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#E8D8D1] px-4 py-2.5 text-xs font-semibold text-[#6A535C] transition hover:bg-[#F9F4EF] disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 <CheckCheck className="h-4 w-4" />
