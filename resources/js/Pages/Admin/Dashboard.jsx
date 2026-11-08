@@ -771,12 +771,12 @@ export default function AdminDashboard({
                             </div>
                         </div>
 
-                        <div className="mt-6 w-full min-w-0 flex-1 overflow-x-auto">
-                            <div className="flex h-full min-h-[11rem] min-w-[420px] items-end gap-2 sm:min-w-0 sm:gap-3">
+                        <div className="mt-6 w-full min-w-0 flex-1 overflow-x-auto pb-1">
+                            <div className="grid h-full min-h-[11rem] items-stretch gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${Math.max(usageOverTime.length, 1)}, ${analyticsFilters.group_by === 'day' ? '2.75rem' : 'minmax(0, 1fr)'})`, minWidth: `${Math.max(420, usageOverTime.length * (analyticsFilters.group_by === 'day' ? 44 : 64))}px` }}>
                                 {usageOverTime.map((item) => {
                                     const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
                                     return (
-                                        <div key={item.label} className="flex flex-1 flex-col items-center gap-2">
+                                        <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
                                             <span className="text-xs font-semibold">{item.bookings}</span>
                                             <button type="button"
                                                 onClick={() => setSelectedTrendLabel(item.label)}
@@ -786,7 +786,7 @@ export default function AdminDashboard({
                                             >
                                                 <span className="block w-full rounded-t-lg bg-[#846A75]" style={{ height: `${(item.bookings / maximum) * 100}%`, minHeight: item.bookings ? '8px' : '2px' }}/>
                                             </button>
-                                            <span className="text-[10px] text-slate-500">{item.label}</span>
+                                            <span title={item.label} className="w-full truncate text-center text-[10px] text-slate-500">{item.label}</span>
                                         </div>
                                     );
                                 })}
