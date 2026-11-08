@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Facility;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -78,9 +79,13 @@ class UserSeeder extends Seeder
             ->where('email', 'facility@test.com')
             ->firstOrFail();
 
-        $facilityAdmin->managedFacilities()->syncWithoutDetaching([
-            'itdif',
-            'itrc',
-        ]);
+        $facilityIds = Facility::query()
+            ->whereIn('id', ['itdif', 'itrc'])
+            ->pluck('id')
+            ->all();
+
+        if ($facilityIds !== []) {
+            $facilityAdmin->managedFacilities()->syncWithoutDetaching($facilityIds);
+        }
     }
 }
