@@ -107,6 +107,14 @@ class NotificationController extends Controller
             ->withQueryString()
             ->through(function ($notification) {
                 $data = $notification->data ?? [];
+                if (is_string($data)) {
+                    $decoded = json_decode($data, true);
+                    $data = is_array($decoded) ? $decoded : [];
+                }
+                if (!is_array($data)) {
+                    $data = [];
+                }
+
                 $title = $data['title'] ?? 'System Notification';
                 $message = $data['message'] ?? '';
                 $text = strtolower($title . ' ' . $message);
