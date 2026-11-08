@@ -579,7 +579,7 @@ export default function FacilitatorDashboard({
                 {/* Assigned-facility analytics */}
                 <section className="ri-panel space-y-5 p-5 sm:p-6">
                     <div>
-                        <p className="ri-page-eyebrow">Assigned facility insights</p>
+                        <p className="ri-page-eyebrow !text-[#6A535C]">Assigned facility insights</p>
                         <h2 className="mt-1 font-semibold text-slate-900">Client &amp; operations analytics</h2>
                         <p className="mt-1 text-xs text-slate-500">{analytics.periodLabel ?? 'Last six months'} · metrics include only facilities assigned to you and the selected facility scope.</p>
                     </div>

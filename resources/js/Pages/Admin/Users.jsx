@@ -25,7 +25,7 @@ const ROLE_LABELS = {
 };
 
 const ROLE_STYLES = {
-    super_admin: 'bg-purple-50 text-purple-700 ring-purple-600/20',
+    super_admin: 'bg-[#F7F0F3] text-[#543F48] ring-[#6A535C]/20',
     facility_admin: 'bg-blue-50 text-blue-700 ring-blue-600/20',
     user: 'bg-gray-100 text-gray-600 ring-gray-500/20',
 };
@@ -167,7 +167,7 @@ function ResetPasswordConfirmModal({
                             type="button"
                             onClick={onConfirm}
                             disabled={isSubmitting}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <KeyRound className="h-4 w-4" />
                             {isSubmitting
@@ -351,7 +351,7 @@ function AddUserModal({ facilities = [], onClose }) {
                 onClick={onClose}
             />
             <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl">
-                <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white px-6 py-4">
+                <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-[#F7F0F3] to-white px-6 py-4">
                     <h2 className="font-bold text-gray-900">Add User</h2>
                     <button
                         type="button"
@@ -369,7 +369,7 @@ function AddUserModal({ facilities = [], onClose }) {
                         placeholder="Full name"
                         value={form.name}
                         onChange={(e) => updateField('name', e.target.value)}
-                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
+                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                     />
 
                     <input
@@ -378,13 +378,13 @@ function AddUserModal({ facilities = [], onClose }) {
                         placeholder="Email address"
                         value={form.email}
                         onChange={(e) => updateField('email', e.target.value)}
-                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
+                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                     />
 
                     <select
                         value={form.role}
                         onChange={(e) => updateField('role', e.target.value)}
-                        className="block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
+                        className="block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                     >
                         <option value="facility_admin">Facility Admin</option>
                         <option value="user">User</option>
@@ -408,7 +408,7 @@ function AddUserModal({ facilities = [], onClose }) {
                                         )
                                     )
                                 }
-                                className="block min-h-28 w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
+                                className="block min-h-28 w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                             >
                                 {facilities.map((facility) => (
                                     <option key={facility.id} value={facility.id}>
@@ -430,7 +430,7 @@ function AddUserModal({ facilities = [], onClose }) {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:bg-indigo-300"
+                        className="w-full rounded-xl bg-[#6A535C] py-3 text-sm font-semibold text-white hover:bg-[#543F48] disabled:bg-[#DCCBD2]"
                     >
                         {isSubmitting ? 'Creating…' : 'Create Account'}
                     </button>
@@ -490,7 +490,7 @@ function EditUserModal({ user, facilities = [], onClose }) {
                 onClick={onClose}
             />
             <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl">
-                <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-white px-6 py-4">
+                <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-[#F7F0F3] to-white px-6 py-4">
                     <h2 className="font-bold text-gray-900">Edit User</h2>
                     <button
                         type="button"
@@ -512,7 +512,7 @@ function EditUserModal({ user, facilities = [], onClose }) {
                             placeholder="Full name"
                             value={form.name}
                             onChange={(e) => updateField('name', e.target.value)}
-                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
+                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                         />
                     </div>
 
@@ -526,7 +526,7 @@ function EditUserModal({ user, facilities = [], onClose }) {
                             placeholder="Email address"
                             value={form.email}
                             onChange={(e) => updateField('email', e.target.value)}
-                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
+                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                         />
                     </div>
 
@@ -557,20 +557,20 @@ function EditUserModal({ user, facilities = [], onClose }) {
                                                 }
                                                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
                                                     isSelected
-                                                        ? 'bg-indigo-50 font-semibold text-indigo-700 ring-1 ring-inset ring-indigo-600/30'
+                                                        ? 'bg-[#F7F0F3] font-semibold text-[#543F48] ring-1 ring-inset ring-[#6A535C]/30'
                                                         : 'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-200 hover:bg-gray-100'
                                                 }`}
                                             >
                                                 <Building2
                                                     className={`h-3.5 w-3.5 ${
                                                         isSelected
-                                                            ? 'text-indigo-600'
+                                                            ? 'text-[#6A535C]'
                                                             : 'text-gray-400'
                                                     }`}
                                                 />
                                                 {facility.name}
                                                 {isSelected && (
-                                                    <Check className="ml-0.5 h-3 w-3 text-indigo-600" />
+                                                    <Check className="ml-0.5 h-3 w-3 text-[#6A535C]" />
                                                 )}
                                             </button>
                                         );
@@ -587,7 +587,7 @@ function EditUserModal({ user, facilities = [], onClose }) {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:bg-indigo-300"
+                        className="w-full rounded-xl bg-[#6A535C] py-3 text-sm font-semibold text-white hover:bg-[#543F48] disabled:bg-[#DCCBD2]"
                     >
                         {isSubmitting ? 'Saving…' : 'Save Changes'}
                     </button>
@@ -1007,7 +1007,7 @@ export default function Users({
                     <button
                         type="button"
                         onClick={() => setShowAddModal(true)}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-[#6A535C] px-4 py-2 text-sm font-semibold text-white hover:bg-[#543F48]"
                     >
                         <Plus className="h-4 w-4" />
                         Add User
@@ -1027,7 +1027,7 @@ export default function Users({
                             placeholder="Search name or email..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-9 text-sm focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400"
+                            className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-9 text-sm focus:border-[#A98C97] focus:ring-2 focus:ring-[#A98C97]"
                         />
 
                         {searchTerm && (
@@ -1049,7 +1049,7 @@ export default function Users({
                             <select
                                 value={roleFilter}
                                 onChange={(e) => setRoleFilter(e.target.value)}
-                                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-indigo-400 sm:w-auto"
+                                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-[#A98C97] sm:w-auto"
                             >
                                 <option value="all">All Roles</option>
                                 <option value="super_admin">Super Admin</option>
@@ -1061,7 +1061,7 @@ export default function Users({
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full cursor-pointer rounded-xl border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700 focus:ring-2 focus:ring-indigo-400 sm:w-auto"
+                            className="w-full cursor-pointer rounded-xl border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-700 focus:ring-2 focus:ring-[#A98C97] sm:w-auto"
                         >
                             <option value="all">All Statuses</option>
                             <option value="active">Active</option>
@@ -1138,7 +1138,7 @@ export default function Users({
                                                                     e.target.value
                                                                 )
                                                             }
-                                                            className="w-full appearance-none truncate rounded-lg border border-gray-200 bg-white py-1.5 pl-3 pr-10 text-sm focus:ring-2 focus:ring-indigo-400 disabled:opacity-50"
+                                                            className="w-full appearance-none truncate rounded-lg border border-gray-200 bg-white py-1.5 pl-3 pr-10 text-sm focus:ring-2 focus:ring-[#A98C97] disabled:opacity-50"
                                                         >
                                                             <option value="user">
                                                                 User
