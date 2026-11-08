@@ -79,7 +79,9 @@ class NotificationController extends Controller
                         })
                         ->orWhereRaw('LOWER(CAST(id AS TEXT)) LIKE ?', ['%' . $needle . '%']);
                 })
-                ->select('id');
+                // Notification JSON stores booking IDs as strings, while the bookings table uses UUIDs.
+                // Cast the subquery IDs to text so PostgreSQL compares text to text.
+                ->selectRaw('CAST(id AS TEXT)');
 
             $query->where(function ($searchQuery) use ($needle, $matchingBookingIds) {
                 $searchQuery
