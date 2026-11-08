@@ -364,6 +364,17 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             Schedule Grid
                         </NavLink>
 
+                        {isSuperAdmin && (
+                            <NavLink
+                                href={route('bookings.index')}
+                                active={route().current('bookings.index')}
+                                icon={CalendarCheck}
+                                collapsed={collapsed}
+                            >
+                                My Bookings
+                            </NavLink>
+                        )}
+
                         {isUser && (
                             <>
                                 <NavLink
@@ -433,15 +444,6 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                         Admin
                                     </div>
                                 )}
-
-                                <NavLink
-                                    href={route('bookings.index')}
-                                    active={route().current('bookings.index')}
-                                    icon={CalendarCheck}
-                                    collapsed={collapsed}
-                                >
-                                    My Bookings
-                                </NavLink>
 
                                 <NavLink
                                     href={route('admin.bookings.index')}
