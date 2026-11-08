@@ -696,7 +696,7 @@ class BookingController extends Controller
                 $path = $file->storeAs(
                     'consent-letters',
                     bin2hex(random_bytes(24)) . '.' . $extension,
-                    'local'
+                    'tigris'
                 );
 
                 $originalName = basename($file->getClientOriginalName());
@@ -761,7 +761,7 @@ class BookingController extends Controller
         } catch (\Throwable $e) {
             if ($path !== null) {
                 try {
-                    Storage::disk('local')->delete($path);
+                    Storage::disk('tigris')->delete($path);
                 } catch (\Throwable $cleanupException) {
                     Log::error('Failed to clean up consent upload.', [
                         'path' => $path,
