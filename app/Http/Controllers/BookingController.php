@@ -786,6 +786,61 @@ class BookingController extends Controller
             ]);
         }
 
+        // Notify the active administrators assigned to this facility only after
+        // the booking transaction has committed successfully.
+        try {
+            $createdBooking = Booking::with('facility')->findOrFail($booking->getKey());
+            $requesterName = Auth::user()?->name
+                ?? $createdBooking->guest_name
+                ?? 'A guest';
+
+            $adminMessage = sprintf(
+                '%s submitted a %s booking request for %s on %s (%s–%s).',
+                $requesterName,
+                $createdBooking->status,
+                $createdBooking->facility?->name ?? 'a facility',
+                $createdBooking->date?->format('M d, Y')
+                    ?? $createdBooking->booking_date?->format('M d, Y')
+                    ?? 'an unspecified date',
+                $createdBooking->start_time,
+                $createdBooking->end_time
+            );
+
+            $createdBooking->facility?->facilityAdmins()
+                ->where('is_active', true)
+                ->get()
+                ->each(fn (User $admin) => $admin->notify(
+                    new BookingOperationsNotification(
+                        $adminMessage,
+                        (string) $createdBooking->getKey(),
+                        'New Booking Request'
+                    )
+                ));
+
+            // If system policy auto-approved the request, also inform its owner.
+            if ($createdBooking->status === 'approved' && $createdBooking->user_id) {
+                $requester = User::find($createdBooking->user_id);
+                $requester?->notify(new BookingOperationsNotification(
+                    sprintf(
+                        'Your booking for %s on %s (%s–%s) was automatically approved.',
+                        $createdBooking->facility?->name ?? 'the facility',
+                        $createdBooking->date?->format('M d, Y')
+                            ?? $createdBooking->booking_date?->format('M d, Y')
+                            ?? 'the selected date',
+                        $createdBooking->start_time,
+                        $createdBooking->end_time
+                    ),
+                    (string) $createdBooking->getKey(),
+                    'Booking Approved'
+                ));
+            }
+        } catch (\\Throwable $e) {
+            Log::warning('Booking notification delivery failed.', [
+                'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Booking submitted successfully.',
@@ -838,6 +893,25 @@ class BookingController extends Controller
                 'type' => 'error',
                 'message' => 'Only pending bookings can be approved.',
             ]);
+        }
+
+        $approvedBooking = Booking::with('facility')->findOrFail($booking->getKey());
+        if ($approvedBooking->user_id) {
+            User::find($approvedBooking->user_id)?->notify(
+                new BookingOperationsNotification(
+                    sprintf(
+                        'Your booking for %s on %s (%s–%s) has been approved.',
+                        $approvedBooking->facility?->name ?? 'the facility',
+                        $approvedBooking->date?->format('M d, Y')
+                            ?? $approvedBooking->booking_date?->format('M d, Y')
+                            ?? 'the selected date',
+                        $approvedBooking->start_time,
+                        $approvedBooking->end_time
+                    ),
+                    (string) $approvedBooking->getKey(),
+                    'Booking Approved'
+                )
+            );
         }
 
         return back()->with('toast', [
@@ -895,6 +969,26 @@ class BookingController extends Controller
                 'type' => 'error',
                 'message' => 'Only pending bookings can be declined.',
             ]);
+        }
+
+        $declinedBooking = Booking::with('facility')->findOrFail($booking->getKey());
+        if ($declinedBooking->user_id) {
+            User::find($declinedBooking->user_id)?->notify(
+                new BookingOperationsNotification(
+                    sprintf(
+                        'Your booking for %s on %s (%s–%s) was declined. Reason: %s',
+                        $declinedBooking->facility?->name ?? 'the facility',
+                        $declinedBooking->date?->format('M d, Y')
+                            ?? $declinedBooking->booking_date?->format('M d, Y')
+                            ?? 'the selected date',
+                        $declinedBooking->start_time,
+                        $declinedBooking->end_time,
+                        $declinedBooking->rejection_reason ?? $reason
+                    ),
+                    (string) $declinedBooking->getKey(),
+                    'Booking Declined'
+                )
+            );
         }
 
         return back()->with('toast', [
