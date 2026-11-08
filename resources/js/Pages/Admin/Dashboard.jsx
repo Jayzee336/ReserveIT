@@ -576,7 +576,7 @@ export default function AdminDashboard({
                             ['cancellationRate', 'Cancellation rate', `${operationalAnalytics.cancellationRate ?? 0}%`, 'Cancelled out of all requests'],
                             ['approvalTime', 'Average approval time', operationalAnalytics.averageApprovalHours == null ? 'No data' : `${operationalAnalytics.averageApprovalHours} hrs`, 'From request creation to approval'],
                             ['peakHour', 'Peak booking hour', operationalAnalytics.peakHour ?? 'No data', `${operationalAnalytics.peakHourBookings ?? 0} bookings started in this hour`],
-                            ['overtime', 'Overtime bookings', operationalAnalytics.overtimeBookings ?? 0, `${operationalAnalytics.overtimeMinutes ?? 0} total overtime minutes`],
+                            ['overtime', 'Overtime minutes', `${operationalAnalytics.overtimeMinutes ?? 0} min`, `${operationalAnalytics.overtimeBookings ?? 0} bookings with recorded overtime`],
                             ['overtime', 'Overtime fees', `₱${Number(operationalAnalytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Recorded overtime charges in the period'],
                         ].map(([key, label, value, hint], index) => (
                             <button key={`${key}-${index}`} type="button" onClick={() => setAnalyticsDetailKey(key)} className="group rounded-xl border border-stone-200 bg-stone-50 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#846A75] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2">
