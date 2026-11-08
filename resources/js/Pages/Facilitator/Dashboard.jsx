@@ -409,7 +409,7 @@ export default function FacilitatorDashboard({
                         </div>
                         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
                             <Link
-                                href={route('schedule.index')}
+                                href={route('facilities.index')}
                                 className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#6A535C] hover:!border-white hover:!bg-[#FFF8F2]"
                             >
                                 <Plus className="h-4 w-4" />
