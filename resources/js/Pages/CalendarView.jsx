@@ -140,7 +140,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
             <div className="mb-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-600">
                 <span><strong className="text-amber-700">Pending:</strong> temporarily held slot</span>
                 <span><strong className="text-emerald-700">Booked:</strong> confirmed reservation</span>
-                {availabilityOnly && <span className="font-medium text-indigo-700">You can check availability and request bookings for any facility here. Existing reservation details remain private.</span>}
+                {availabilityOnly && <span className="font-medium text-[#543F48]">You can check availability and request bookings for any facility here. Existing reservation details remain private.</span>}
                 <span className="text-slate-500">Each column is 15 minutes; reservation bars span their full booked duration.</span>
                 <span className="text-slate-500">Schedule shown from {formatTime(openingTime)} to {closingTime === '00:00' ? '12:00 AM (midnight)' : formatTime(closingTime)}</span>
             </div>
@@ -173,7 +173,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                             <th
                                 rowSpan={2}
                                 title={`Closing boundary: ${closingBoundaryLabel} — end time only`}
-                                className="w-[64px] min-w-[64px] border-b border-l-2 border-l-indigo-200 bg-indigo-50/70 px-1 py-2 text-center text-[9px] font-bold leading-tight text-indigo-700"
+                                className="w-[64px] min-w-[64px] border-b border-l-2 border-l-[#E8D8D1] bg-[#F7F0F3]/70 px-1 py-2 text-center text-[9px] font-bold leading-tight text-[#543F48]"
                             >
                                 <span className="block">End</span>
                                 <span className="mt-1 block text-[8px] font-medium">{closingBoundaryLabel}</span>
@@ -269,7 +269,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                                             aria-label={`${fullLabel} booking for ${facility.name}, ${formatTime(booking.start_time)} to ${formatTime(booking.end_time)}`}
                                                             title={`${fullLabel} · ${formatTime(booking.start_time)} – ${formatTime(booking.end_time)}`}
                                                             onClick={() => setDetails({ facility, bookings: [booking] })}
-                                                            className={`flex min-h-[46px] w-full flex-col justify-center overflow-hidden rounded-lg bg-gradient-to-r ${statusClass(booking.status)} px-2 py-1 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500`}
+                                                            className={`flex min-h-[46px] w-full flex-col justify-center overflow-hidden rounded-lg bg-gradient-to-r ${statusClass(booking.status)} px-2 py-1 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]`}
                                                         >
                                                             <span className="block truncate text-[9px] font-extrabold uppercase leading-3 tracking-wide">
                                                                 {visibleIntervals === 1 ? shortLabel : fullLabel}
@@ -345,7 +345,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                             aria-label={`Create a booking for ${facility.name} at ${formatMinutes(slot.start)}`}
                                             title={`Book ${facility.name} at ${formatMinutes(slot.start)}`}
                                             onClick={() => setCreate({ facility, startTime })}
-                                            className="flex min-h-[46px] w-full items-center justify-center rounded-md border border-dashed border-[var(--ri-border-strong)] text-[11px] font-medium text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                            className="flex min-h-[46px] w-full items-center justify-center rounded-md border border-dashed border-[var(--ri-border-strong)] text-[11px] font-medium text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]"
                                         >
                                             +
                                         </button>
@@ -364,7 +364,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                                     {cells}
                                     <td
                                         aria-label={`Closing boundary at ${closingBoundaryLabel}`}
-                                        className="border-b border-l-2 border-l-indigo-100 bg-indigo-50/30 p-0.5"
+                                        className="border-b border-l-2 border-l-[#EFE4E9] bg-[#F7F0F3]/30 p-0.5"
                                     />
                                 </tr>
                             );

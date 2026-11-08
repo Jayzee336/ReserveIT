@@ -20,7 +20,7 @@ import {
 
 const CATEGORY_COLORS = {
     Facility: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-    'UI Improvements': 'bg-purple-50 text-purple-700 ring-purple-600/20',
+    'UI Improvements': 'bg-[#F7F0F3] text-[#543F48] ring-[#6A535C]/20',
     Account: 'bg-amber-50 text-amber-700 ring-amber-600/20',
     Bug: 'bg-red-50 text-red-700 ring-red-600/20',
     Others: 'bg-gray-50 text-gray-700 ring-gray-600/20',
@@ -298,7 +298,7 @@ export default function Concerns({ concerns, filters = {} }) {
                             onChange={(e) => handleSearch(e.target.value)}
                             placeholder="Search by description or user name..."
                             aria-label="Search concerns"
-                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none transition focus:border-[#A98C97] focus:ring-2 focus:ring-[#EFE4E9]"
                         />
                     </div>
 
@@ -311,7 +311,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 handleCategoryFilter(e.target.value)
                             }
                             aria-label="Filter concerns by category"
-                            className="w-full appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                            className="w-full appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-700 outline-none transition focus:border-[#A98C97] focus:ring-2 focus:ring-[#EFE4E9]"
                         >
                             <option value="">All Categories</option>
                             <option value="Facility">Facility</option>
@@ -562,7 +562,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                         </div>
 
                                                         {histories.length > 0 && (
-                                                            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-indigo-700 ring-1 ring-indigo-100">
+                                                            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-[#543F48] ring-1 ring-[#EFE4E9]">
                                                                 <Pencil className="h-3 w-3" />
                                                                 Edited
                                                             </span>
@@ -603,7 +603,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                                     concern,
                                                                 )
                                                             }
-                                                            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                                            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#F7F0F3] px-3 py-2.5 text-sm font-semibold text-[#543F48] transition hover:bg-[#EFE4E9] focus:outline-none focus:ring-2 focus:ring-[#E8D8D1]"
                                                         >
                                                             <MessageCircle className="h-4 w-4" />
                                                             Reply
@@ -632,7 +632,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                                 concern,
                                                             )
                                                         }
-                                                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-3 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                                                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#E8D8D1] bg-white px-3 py-2.5 text-sm font-semibold text-[#543F48] transition hover:bg-[#F7F0F3] focus:outline-none focus:ring-2 focus:ring-[#EFE4E9]"
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                         Edit Reply
@@ -778,7 +778,7 @@ export default function Concerns({ concerns, filters = {} }) {
                         className="my-auto w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl"
                     >
                         <div className="mb-5">
-                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#6A535C]">
                                 Support response
                             </p>
 
@@ -814,7 +814,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 }
                                 rows={5}
                                 maxLength={5000}
-                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-[#A98C97] focus:ring-2 focus:ring-[#EFE4E9]"
                                 placeholder="Write a clear and helpful response..."
                                 required
                             />
@@ -838,7 +838,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                     disabled={
                                         isReplying || !replyText.trim()
                                     }
-                                    className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isReplying ? 'Sending...' : 'Send Reply'}
                                 </button>
@@ -858,7 +858,7 @@ export default function Concerns({ concerns, filters = {} }) {
                         className="my-auto w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl"
                     >
                         <div className="mb-5">
-                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">
+                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#6A535C]">
                                 <Pencil className="h-4 w-4" />
                                 Reply management
                             </p>
@@ -893,7 +893,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 onChange={(e) => setEditText(e.target.value)}
                                 rows={6}
                                 maxLength={5000}
-                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-[#A98C97] focus:ring-2 focus:ring-[#EFE4E9]"
                                 placeholder="Update the admin reply..."
                                 required
                             />
@@ -920,7 +920,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 <button
                                     type="submit"
                                     disabled={isEditing || !editText.trim()}
-                                    className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isEditing
                                         ? 'Saving...'

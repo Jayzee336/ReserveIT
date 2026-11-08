@@ -53,7 +53,7 @@ export default function CalendarDashboard({
         <AuthenticatedLayout
             header={
                 <div className="flex items-center gap-2">
-                    <CalendarDays className="h-5 w-5 text-indigo-600" />
+                    <CalendarDays className="h-5 w-5 text-[#6A535C]" />
                     <h2 className="text-lg font-semibold text-gray-800">
                         Schedule Grid
                     </h2>
@@ -68,8 +68,8 @@ export default function CalendarDashboard({
                     <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="min-w-0">
                             <div className="mb-1 flex items-center gap-2">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50">
-                                    <CalendarDays className="h-5 w-5 text-indigo-600" />
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F7F0F3]">
+                                    <CalendarDays className="h-5 w-5 text-[#6A535C]" />
                                 </div>
 
                                 <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -89,7 +89,7 @@ export default function CalendarDashboard({
                                 htmlFor="schedule-date"
                                 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
                             >
-                                <CalendarDays className="h-3.5 w-3.5 text-indigo-500" />
+                                <CalendarDays className="h-3.5 w-3.5 text-[#846A75]" />
                                 Schedule date
                             </label>
 
@@ -98,7 +98,7 @@ export default function CalendarDashboard({
                                 type="date"
                                 value={selectedDate}
                                 onChange={handleDateChange}
-                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition focus:border-[#A98C97] focus:bg-white focus:ring-2 focus:ring-[#EFE4E9]"
                             />
 
                             <div className="flex items-center gap-1.5 text-xs text-slate-500">
@@ -121,7 +121,7 @@ export default function CalendarDashboard({
                                     type="button"
                                     onClick={() => handleScheduleViewChange('assigned')}
                                     aria-pressed={scheduleView === 'assigned'}
-                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'assigned' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'assigned' ? 'bg-white text-[#543F48] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                                 >
                                     My Assigned Facilities
                                 </button>
@@ -129,7 +129,7 @@ export default function CalendarDashboard({
                                     type="button"
                                     onClick={() => handleScheduleViewChange('all')}
                                     aria-pressed={scheduleView === 'all'}
-                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'all' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'all' ? 'bg-white text-[#543F48] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                                 >
                                     All Facilities
                                 </button>
@@ -150,7 +150,7 @@ export default function CalendarDashboard({
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-xs font-medium text-indigo-700">
+                            <div className="flex items-center gap-2 rounded-lg bg-[#F7F0F3] px-3 py-2 text-xs font-medium text-[#543F48]">
                                 <CalendarDays className="h-4 w-4" />
                                 {serverFacilities.length}{' '}
                                 {serverFacilities.length === 1
@@ -193,7 +193,7 @@ export default function CalendarDashboard({
                                     }
                                 }}
                                 disabled={!selectedDate}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-[#E8D8D1] hover:bg-[#F7F0F3] hover:text-[#543F48] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <RefreshCw className="h-3.5 w-3.5" />
                                 Refresh schedule

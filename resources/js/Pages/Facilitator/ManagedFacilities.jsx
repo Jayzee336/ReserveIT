@@ -92,14 +92,14 @@ export default function ManagedFacilities({ facilities = [] }) {
                                         <input
                                             type="text" required value={form.name}
                                             onChange={(e) => updateField('name', e.target.value)}
-                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
+                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                                         />
 
                                         <div className="grid grid-cols-2 gap-2">
                                             <select
                                                 value={form.type}
                                                 onChange={(e) => updateField('type', e.target.value)}
-                                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-indigo-400"
+                                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-[#A98C97]"
                                             >
                                                 <option value="Venue">Venue</option>
                                                 <option value="Laboratory">Laboratory</option>
@@ -108,26 +108,26 @@ export default function ManagedFacilities({ facilities = [] }) {
                                                 type="number" min={1} placeholder="Capacity"
                                                 value={form.capacity}
                                                 onChange={(e) => updateField('capacity', e.target.value)}
-                                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
+                                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                                             />
                                         </div>
 
                                         <input
                                             type="text" required value={form.location}
                                             onChange={(e) => updateField('location', e.target.value)}
-                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-400"
+                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                                         />
 
                                         <textarea
                                             required rows={3} value={form.description}
                                             onChange={(e) => updateField('description', e.target.value)}
-                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-indigo-400 resize-none"
+                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97] resize-none"
                                         />
 
                                         <select
                                             value={form.requirement}
                                             onChange={(e) => updateField('requirement', e.target.value)}
-                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-indigo-400"
+                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-[#A98C97]"
                                         >
                                             <option value="STANDARD">Standard (no consent unless weekend)</option>
                                             <option value="CONSENT_REQUIRED">Always requires consent</option>
@@ -137,7 +137,7 @@ export default function ManagedFacilities({ facilities = [] }) {
                                             <input
                                                 type="checkbox" checked={form.requiresWeekendConsent}
                                                 onChange={(e) => updateField('requiresWeekendConsent', e.target.checked)}
-                                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-400"
+                                                className="h-4 w-4 rounded border-gray-300 text-[#6A535C] focus:ring-[#A98C97]"
                                             />
                                             Requires consent for weekends
                                         </label>
@@ -146,14 +146,14 @@ export default function ManagedFacilities({ facilities = [] }) {
                                             <input
                                                 type="checkbox" checked={form.allowTdevsManpower}
                                                 onChange={(e) => updateField('allowTdevsManpower', e.target.checked)}
-                                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-400"
+                                                className="h-4 w-4 rounded border-gray-300 text-[#6A535C] focus:ring-[#A98C97]"
                                             />
                                             Allow TDEVS manpower requests
                                         </label>
 
                                         <button
                                             type="submit" disabled={isSubmitting}
-                                            className="w-full inline-flex justify-center items-center gap-1.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold disabled:bg-indigo-300"
+                                            className="w-full inline-flex justify-center items-center gap-1.5 py-2.5 bg-[#6A535C] hover:bg-[#543F48] text-white rounded-xl text-sm font-semibold disabled:bg-[#DCCBD2]"
                                         >
                                             <Save className="h-4 w-4" /> {isSubmitting ? 'Saving…' : 'Save Changes'}
                                         </button>
@@ -168,7 +168,7 @@ export default function ManagedFacilities({ facilities = [] }) {
                                         <div className="p-4">
                                             <div className="flex items-start justify-between gap-2">
                                                 <h3 className="font-semibold text-gray-900">{facility.name}</h3>
-                                                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full uppercase flex-shrink-0">
+                                                <span className="text-[10px] font-bold text-[#6A535C] bg-[#F7F0F3] px-2 py-0.5 rounded-full uppercase flex-shrink-0">
                                                     {facility.type}
                                                 </span>
                                             </div>
@@ -190,7 +190,7 @@ export default function ManagedFacilities({ facilities = [] }) {
                                         </button>
                                         <Link
                                             href={`/facility/${facility.id}`}
-                                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg"
+                                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#F7F0F3] hover:bg-[#EFE4E9] text-[#543F48] text-xs font-semibold rounded-lg"
                                         >
                                             <Calendar className="h-3.5 w-3.5" /> View
                                         </Link>
