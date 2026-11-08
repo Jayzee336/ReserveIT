@@ -639,17 +639,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
             echo $disk->get($path);
         };
 
-        $isPdf = strtolower(pathinfo($downloadName, PATHINFO_EXTENSION)) === 'pdf';
+        $extension = strtolower(pathinfo($downloadName, PATHINFO_EXTENSION));
+        $contentType = match ($extension) {
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            default => 'application/octet-stream',
+        };
 
-        // The embedded preview is available only for PDFs. Both preview and
-        // download continue to use this authorization-protected route.
+        // The View action opens this same authorization-protected route in a
+        // new tab and asks the browser to display the file inline where supported.
         if (request()->boolean('preview')) {
-            abort_unless($isPdf, 415);
+            abort_unless(in_array($extension, ['pdf', 'doc', 'docx'], true), 415);
 
-            $safeInlineName = str_replace(["\r", "\n", '"'], '', $downloadName);
+            $safeInlineName = str_replace(["\\r", "\\n", '"'], '', $downloadName);
 
             return response()->stream($stream, 200, [
-                'Content-Type' => 'application/pdf',
+                'Content-Type' => $contentType,
                 'Content-Disposition' => 'inline; filename="' . $safeInlineName . '"',
                 'X-Content-Type-Options' => 'nosniff',
                 'Cache-Control' => 'private, no-store, max-age=0',
@@ -660,7 +666,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $stream,
             $downloadName,
             [
-                'Content-Type' => $isPdf ? 'application/pdf' : 'application/octet-stream',
+                'Content-Type' => $contentType,
                 'X-Content-Type-Options' => 'nosniff',
                 'Cache-Control' => 'private, no-store, max-age=0',
             ]
