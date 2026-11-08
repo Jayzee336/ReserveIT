@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\\Http\\Controllers;
 
-use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
+use App\\Models\\Booking;
+use Illuminate\\Http\\Request;
+use Inertia\\Inertia;
+use Inertia\\Response;
 
 class NotificationController extends Controller
 {
@@ -50,15 +51,9 @@ class NotificationController extends Controller
                     }
                 });
             } else {
-                // "Other" excludes all known booking lifecycle notifications.
                 $knownPatterns = [
-                    '%request%',
-                    '%submitted%',
-                    '%new booking%',
-                    '%approv%',
-                    '%reject%',
-                    '%declin%',
-                    '%cancel%',
+                    '%request%', '%submitted%', '%new booking%',
+                    '%approv%', '%reject%', '%declin%', '%cancel%',
                 ];
 
                 $query->where(function ($categoryQuery) use ($knownPatterns) {
@@ -73,10 +68,24 @@ class NotificationController extends Controller
         }
 
         if ($search !== '') {
-            $query->whereRaw(
-                'LOWER(CAST(data AS TEXT)) LIKE ?',
-                ['%' . mb_strtolower($search) . '%']
-            );
+            $needle = mb_strtolower($search);
+
+            $matchingBookingIds = Booking::query()
+                ->where(function ($bookingQuery) use ($needle) {
+                    $bookingQuery
+                        ->whereRaw('LOWER(COALESCE(notes, \'\')) LIKE ?', ['%' . $needle . '%'])
+                        ->orWhereHas('facility', function ($facilityQuery) use ($needle) {
+                            $facilityQuery->whereRaw('LOWER(name) LIKE ?', ['%' . $needle . '%']);
+                        })
+                        ->orWhereRaw('LOWER(CAST(id AS TEXT)) LIKE ?', ['%' . $needle . '%']);
+                })
+                ->select('id');
+
+            $query->where(function ($searchQuery) use ($needle, $matchingBookingIds) {
+                $searchQuery
+                    ->whereRaw('LOWER(CAST(data AS TEXT)) LIKE ?', ['%' . $needle . '%'])
+                    ->orWhereIn('data->booking_id', $matchingBookingIds);
+            });
         }
 
         $notifications = $query
@@ -86,7 +95,8 @@ class NotificationController extends Controller
             ->through(function ($notification) {
                 $data = $notification->data ?? [];
                 $title = $data['title'] ?? 'System Notification';
-                $text = strtolower($title . ' ' . ($data['message'] ?? ''));
+                $message = $data['message'] ?? '';
+                $text = strtolower($title . ' ' . $message);
 
                 $category = match (true) {
                     str_contains($text, 'cancel') => 'cancelled',
@@ -96,11 +106,28 @@ class NotificationController extends Controller
                     default => 'other',
                 };
 
+                $booking = !empty($data['booking_id'])
+                    ? Booking::with('facility:id,name')
+                        ->find($data['booking_id'])
+                    : null;
+
+                // BookingModal stores the submitted event title in the notes field:
+                // "Event: <title> | Dept: ... | Desig: ...".
+                $eventTitle = null;
+                if ($booking && preg_match('/(?:^|\\n)Event:\\s*(.*?)(?:\\s*\\|\\s*Dept:|\\n|$)/i', (string) $booking->notes, $matches)) {
+                    $eventTitle = trim($matches[1]) ?: null;
+                }
+
                 return [
                     'id' => $notification->id,
                     'title' => $title,
-                    'message' => $data['message'] ?? '',
+                    'message' => $message,
                     'booking_id' => $data['booking_id'] ?? null,
+                    'event_title' => $eventTitle,
+                    'facility_name' => $booking?->facility?->name,
+                    'booking_date' => ($booking?->date ?? $booking?->booking_date)?->format('Y-m-d'),
+                    'start_time' => $booking?->start_time,
+                    'end_time' => $booking?->end_time,
                     'category' => $category,
                     'read' => $notification->read_at !== null,
                     'created_at' => $notification->created_at?->toIso8601String(),
