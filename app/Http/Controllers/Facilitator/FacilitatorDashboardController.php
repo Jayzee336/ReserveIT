@@ -61,7 +61,7 @@ class FacilitatorDashboardController extends Controller
 
         $pendingBookings = (clone $operationalBookings)
             ->where('status', 'pending')
-            ->with(['facility:id,name', 'user:id,name,email'])
+            ->with(['facility:id,name,location', 'user:id,name,email'])
             ->orderBy('date')
             ->orderBy('start_time')
             ->take(5)
