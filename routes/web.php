@@ -619,7 +619,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             404
         );
 
-        $disk = Storage::disk('local');
+        $disk = Storage::disk('tigris');
         $path = $booking->consent_file_path;
 
         // Only allow files inside the designated consent-letter directory.
