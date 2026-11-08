@@ -60,6 +60,20 @@ return [
             'report' => false,
         ],
 
+        // Private S3-compatible object storage for booking consent letters.
+        'tigris' => [
+            'driver' => 's3',
+            'key' => env('TIGRIS_ACCESS_KEY_ID'),
+            'secret' => env('TIGRIS_SECRET_ACCESS_KEY'),
+            'region' => env('TIGRIS_REGION', 'auto'),
+            'bucket' => env('TIGRIS_BUCKET'),
+            'endpoint' => env('TIGRIS_ENDPOINT'),
+            'use_path_style_endpoint' => env('TIGRIS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => true,
+        ],
+
     ],
 
     /*
