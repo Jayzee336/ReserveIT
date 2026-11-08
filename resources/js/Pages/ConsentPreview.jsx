@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.mjs?url';
+import { saveProtectedFile } from '../utils/saveProtectedFile';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -25,18 +26,6 @@ function decodeBase64Pdf(base64) {
     }
 
     return bytes;
-}
-
-function getFriendlyDownloadError(response) {
-    if (response.status === 401 || response.status === 403) {
-        return 'Your session is no longer authorized to download this consent letter. Sign in again and retry.';
-    }
-
-    if (response.status === 404) {
-        return 'The original consent letter could not be found in private storage.';
-    }
-
-    return `ReserveIT could not prepare the download (HTTP ${response.status}).`;
 }
 
 export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64, downloadUrl }) {
@@ -225,98 +214,26 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
         setZoom((current) => Math.max(0.7, Math.min(1.8, Number((current + amount).toFixed(2)))));
     };
 
-    // Use the native Windows Save As picker instead of a browser download.
-    // It opens from the Downloads folder by default and lets the admin choose
-    // a different folder before ReserveIT writes the protected file there.
-    const handleDownload = async () => {
+    // Use the same Save As workflow as the booking details attachment row.
+    const handleDownload = () => {
         if (isDownloading) return;
 
         setDownloadError('');
         setDownloadMessage('');
-
-        if (typeof window.showSaveFilePicker !== 'function' || !window.isSecureContext) {
-            setDownloadError(
-                'Your browser does not support the secure Save As dialog. Please use an up-to-date Chrome or Edge browser over HTTPS (or localhost).',
-            );
-            return;
-        }
-
-        const extension = (fileName.split('.').pop() || '').toLowerCase();
-        const fileTypes = {
-            pdf: {
-                description: 'PDF document',
-                accept: { 'application/pdf': ['.pdf'] },
-            },
-            doc: {
-                description: 'Microsoft Word document',
-                accept: { 'application/msword': ['.doc'] },
-            },
-            docx: {
-                description: 'Microsoft Word document',
-                accept: {
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-                },
-            },
-        };
-
-        const selectedType = fileTypes[extension] || {
-            description: 'Consent letter',
-            accept: { 'application/octet-stream': ['.bin'] },
-        };
-
-        // IMPORTANT: call the picker synchronously during this button click,
-        // before the first await, because browsers require a fresh user gesture.
-        let saveHandlePromise;
-
-        try {
-            saveHandlePromise = window.showSaveFilePicker({
-                suggestedName: fileName || 'consent-letter',
-                startIn: 'downloads',
-                types: [selectedType],
-            });
-        } catch (pickerError) {
-            setDownloadError(pickerError?.message || 'The Save As dialog could not be opened.');
-            return;
-        }
-
         setIsDownloading(true);
 
-        try {
-            const saveHandle = await saveHandlePromise;
-
-            const response = await fetch(downloadUrl, {
-                method: 'GET',
-                credentials: 'same-origin',
-                cache: 'no-store',
-                headers: {
-                    Accept: 'application/octet-stream, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                },
+        saveProtectedFile({ url: downloadUrl, fileName })
+            .then((savedName) => {
+                setDownloadMessage(`Saved "${savedName}" successfully.`);
+            })
+            .catch((downloadFailure) => {
+                if (downloadFailure?.name !== 'AbortError') {
+                    setDownloadError(downloadFailure?.message || 'The file could not be saved. Please try again.');
+                }
+            })
+            .finally(() => {
+                setIsDownloading(false);
             });
-
-            if (!response.ok) {
-                throw new Error(getFriendlyDownloadError(response));
-            }
-
-            const fileBlob = await response.blob();
-            const writable = await saveHandle.createWritable();
-
-            try {
-                await writable.write(fileBlob);
-                await writable.close();
-            } catch (writeError) {
-                await writable.abort().catch(() => {});
-                throw writeError;
-            }
-
-            setDownloadMessage(`Saved "${saveHandle.name}" successfully.`);
-        } catch (downloadFailure) {
-            // Closing the native Save As dialog is a normal cancellation.
-            if (downloadFailure?.name !== 'AbortError') {
-                setDownloadError(downloadFailure?.message || 'The file could not be saved. Please try again.');
-            }
-        } finally {
-            setIsDownloading(false);
-        }
     };
 
     return (
