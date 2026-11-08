@@ -36,6 +36,23 @@ function Stat({ label, value, onClick }) {
     return onClick ? <button type="button" onClick={onClick} className={`w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
 }
 
+function AnalyticsStat({ label, value, hint, onClick }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className="group min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-4 text-left transition hover:-translate-y-0.5 hover:border-[#846A75] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2"
+        >
+            <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600">
+                <span>{label}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details ↗</span>
+            </span>
+            <span className="mt-2 block break-words text-xl font-bold text-[#6A535C]">{value}</span>
+            <span className="mt-1 block text-[11px] leading-4 text-slate-500">{hint}</span>
+        </button>
+    );
+}
+
 function StatusBadge({ status }) {
     const normalized = String(status || '').toLowerCase();
 
@@ -405,7 +422,7 @@ export default function FacilitatorDashboard({
                         <h2 className="mt-1 font-semibold text-slate-900">Client &amp; operations analytics</h2>
                         <p className="mt-1 text-xs text-slate-500">{analytics.periodLabel ?? 'Last six months'} · metrics include only facilities assigned to you and the selected facility scope.</p>
                     </div>
-                    <form onSubmit={applyAnalyticsFilters} className="grid gap-3 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-3 sm:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_0.8fr_auto_auto] xl:items-end">
+                    <form onSubmit={applyAnalyticsFilters} className="grid gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_0.8fr_auto_auto] xl:items-end">
                         <label className="block text-xs font-semibold text-slate-600">
                             Facility scope
                             <select value={analyticsFacility} onChange={handleFacilityChange} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700">
@@ -433,14 +450,14 @@ export default function FacilitatorDashboard({
                         <button type="button" onClick={() => { setAnalyticsFrom(''); setAnalyticsTo(''); setAnalyticsGroupBy('month'); setAnalyticsFacility(''); router.get(route('facilitator.dashboard'), {}, { preserveState: true, preserveScroll: true, replace: true }); }} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-stone-100">Reset</button>
                     </form>
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <Stat label="Total bookings" value={analytics.totalBookings ?? 0} onClick={() => setSelectedAnalyticsDetail({title:'Total bookings',description:'All bookings in the selected date range and assigned facility scope.',items:analyticsDetails.totalBookings ?? [],mode:'bookings'})}/>
-                        <Stat label="Unique clients" value={analytics.uniqueClients ?? 0} onClick={() => setSelectedAnalyticsDetail({title:'Unique clients',description:'Clients with at least one booking in the selected period.',items:analyticsDetails.uniqueClients ?? [],mode:'clients'})}/>
-                        <Stat label="Returning clients" value={analytics.returningClients ?? 0} onClick={() => setSelectedAnalyticsDetail({title:'Returning clients',description:'Clients with more than one booking in the selected period.',items:analyticsDetails.returningClients ?? [],mode:'clients'})}/>
-                        <Stat label="Approval rate" value={`${analytics.approvalRate ?? 0}%`} onClick={() => setSelectedAnalyticsDetail({title:'Approval rate details',description:'Bookings included in approved-versus-declined decisions.',items:analyticsDetails.approvalRate ?? [],mode:'bookings'})}/>
-                        <Stat label="Cancellation rate" value={`${analytics.cancellationRate ?? 0}%`} onClick={() => setSelectedAnalyticsDetail({title:'Cancellation details',description:'Cancelled bookings in the selected period.',items:analyticsDetails.cancellationRate ?? [],mode:'bookings'})}/>
-                        <Stat label="Average approval time" value={analytics.averageApprovalHours != null ? `${analytics.averageApprovalHours} hrs` : '—'} onClick={() => setSelectedAnalyticsDetail({title:'Approval time details',description:'Approved bookings with recorded approval timestamps.',items:analyticsDetails.approvalTime ?? [],mode:'bookings'})}/>
-                        <Stat label="Peak booking hour" value={analytics.peakHour ?? '—'} onClick={() => setSelectedAnalyticsDetail({title:'Peak-hour bookings',description:'Bookings that started during the busiest hour.',items:analyticsDetails.peakHour ?? [],mode:'bookings'})}/>
-                        <Stat label="Overtime bookings" value={analytics.overtimeBookings ?? 0} onClick={() => setSelectedAnalyticsDetail({title:'Overtime bookings',description:'Reservations with recorded overtime minutes and charges.',items:analyticsDetails.overtimeBookings ?? [],mode:'bookings'})}/>
+                        <AnalyticsStat label="Unique clients" value={analytics.uniqueClients ?? 0} hint="Clients with at least one booking in the selected period" onClick={() => setSelectedAnalyticsDetail({title:'Unique clients',description:'Clients with at least one booking in the selected period.',items:analyticsDetails.uniqueClients ?? [],mode:'clients'})}/>
+                        <AnalyticsStat label="Returning clients" value={analytics.returningClients ?? 0} hint="Clients with more than one booking" onClick={() => setSelectedAnalyticsDetail({title:'Returning clients',description:'Clients with more than one booking in the selected period.',items:analyticsDetails.returningClients ?? [],mode:'clients'})}/>
+                        <AnalyticsStat label="Approval rate" value={`${analytics.approvalRate ?? 0}%`} hint="Approved out of approved and declined decisions" onClick={() => setSelectedAnalyticsDetail({title:'Approval rate details',description:'Bookings included in approved-versus-declined decisions.',items:analyticsDetails.approvalRate ?? [],mode:'bookings'})}/>
+                        <AnalyticsStat label="Cancellation rate" value={`${analytics.cancellationRate ?? 0}%`} hint="Cancelled out of all requests" onClick={() => setSelectedAnalyticsDetail({title:'Cancellation details',description:'Cancelled bookings in the selected period.',items:analyticsDetails.cancellationRate ?? [],mode:'bookings'})}/>
+                        <AnalyticsStat label="Average approval time" value={analytics.averageApprovalHours != null ? `${analytics.averageApprovalHours} hrs` : '—'} hint="From request creation to approval" onClick={() => setSelectedAnalyticsDetail({title:'Approval time details',description:'Approved bookings with recorded approval timestamps.',items:analyticsDetails.approvalTime ?? [],mode:'bookings'})}/>
+                        <AnalyticsStat label="Peak booking hour" value={analytics.peakHour ?? '—'} hint={`${analytics.peakHourBookings ?? 0} bookings started in this hour`} onClick={() => setSelectedAnalyticsDetail({title:'Peak-hour bookings',description:'Bookings that started during the busiest hour.',items:analyticsDetails.peakHour ?? [],mode:'bookings'})}/>
+                        <AnalyticsStat label="Overtime minutes" value={`${analytics.overtimeMinutes ?? 0} min`} hint={`${analytics.overtimeBookings ?? 0} bookings with recorded overtime`} onClick={() => setSelectedAnalyticsDetail({title:'Overtime details',description:'Bookings with recorded overtime minutes and charges.',items:analyticsDetails.overtimeBookings ?? [],mode:'bookings'})}/>
+                        <AnalyticsStat label="Recorded overtime fees" value={`₱${Number(analytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} hint="Recorded overtime charges in the selected period" onClick={() => setSelectedAnalyticsDetail({title:'Overtime fee details',description:'Bookings with recorded overtime fees and payment status.',items:analyticsDetails.overtimeBookings ?? [],mode:'bookings'})}/>
                     </div>
                     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.9fr)]">
                         <div className="rounded-xl border border-[var(--ri-border)] p-4">
@@ -472,42 +489,31 @@ export default function FacilitatorDashboard({
                         <div className="rounded-xl border border-[var(--ri-border)] p-4">
                             <div className="flex items-center gap-2">
                                 <BarChart3 className="h-4 w-4 text-[#6A535C]"/>
-                                <h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3>
+                                <h3 className="text-sm font-semibold text-slate-900">Status breakdown</h3>
                             </div>
                             <div className="mt-5 space-y-4">
                                 {displayedStatusBreakdown.map((item) => {
                                     const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
                                     return <button key={item.status} type="button" onClick={() => setSelectedAnalyticsDetail({title:`${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`,description:`Assigned-facility ${item.status} bookings in the selected period.`,items:statusDetails[item.status] ?? [],mode:'bookings'})} className="block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
                                         <div className="mb-1 flex justify-between text-xs"><span className="font-semibold capitalize text-slate-700">{item.status}</span><span className="text-slate-500">{item.count} · {item.percentage.toFixed(1)}%</span></div>
-                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
+                                        <div className="h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
                                     </button>;
                                 })}
                                 {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No booking data in this period.</p>}
                             </div>
                         </div>
                     </div>
-                    <div className="rounded-xl border border-[var(--ri-border)] p-4">
+                    <section className="rounded-xl border border-[var(--ri-border)] p-4">
                         <h3 className="text-sm font-bold text-slate-900">Most used facilities</h3>
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                            {mostUsedFacilities.map((facility) => (
-                                <div key={facility.name} className="flex items-center justify-between gap-3 rounded-lg bg-stone-50 px-3 py-2 text-sm">
-                                    <span className="truncate text-slate-700">{facility.name}</span>
-                                    <span className="shrink-0 font-semibold text-[#6A535C]">{facility.bookings}</span>
+                        <div className="mt-4 space-y-3">
+                            {mostUsedFacilities.length ? mostUsedFacilities.map((facility) => (
+                                <div key={facility.name} className="flex items-center justify-between gap-3 rounded-xl bg-stone-50 px-3 py-2 text-sm">
+                                    <span className="min-w-0 truncate text-slate-700">{facility.name}</span>
+                                    <span className="shrink-0 font-semibold text-[#6A535C]">{facility.bookings} bookings</span>
                                 </div>
-                            ))}
-                            {mostUsedFacilities.length === 0 && <p className="text-sm text-slate-500">No facility usage data in this period.</p>}
+                            )) : <p className="text-sm text-slate-500">No facility usage data in this period.</p>}
                         </div>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="rounded-xl bg-[var(--ri-surface-subtle)] p-4">
-                            <p className="text-xs font-semibold text-slate-500">Overtime minutes</p>
-                            <p className="mt-1 text-xl font-bold text-slate-900">{analytics.overtimeMinutes ?? 0}</p>
-                        </div>
-                        <div className="rounded-xl bg-[var(--ri-surface-subtle)] p-4">
-                            <p className="text-xs font-semibold text-slate-500">Recorded overtime fees</p>
-                            <p className="mt-1 text-xl font-bold text-slate-900">₱{Number(analytics.overtimeFees ?? 0).toFixed(2)}</p>
-                        </div>
-                    </div>
+                    </section>
                 </section>
 
                 {/* Today's Schedule */}
