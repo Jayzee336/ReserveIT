@@ -635,12 +635,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $booking->consent_file_name ?: 'consent-letter.pdf'
         );
 
+        $stream = function () use ($disk, $path) {
+            echo $disk->get($path);
+        };
+
+        $isPdf = strtolower(pathinfo($downloadName, PATHINFO_EXTENSION)) === 'pdf';
+
+        // The embedded preview is available only for PDFs. Both preview and
+        // download continue to use this authorization-protected route.
+        if (request()->boolean('preview')) {
+            abort_unless($isPdf, 415);
+
+            $safeInlineName = str_replace(["\\r", "\\n", '"'], '', $downloadName);
+
+            return response()->stream($stream, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $safeInlineName . '"',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, no-store, max-age=0',
+            ]);
+        }
+
         return response()->streamDownload(
-            function () use ($disk, $path) {
-                echo $disk->get($path);
-            },
+            $stream,
             $downloadName,
-            ['Content-Type' => 'application/octet-stream']
+            [
+                'Content-Type' => $isPdf ? 'application/pdf' : 'application/octet-stream',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, no-store, max-age=0',
+            ]
         );
     })->name('bookings.consent');
 });
