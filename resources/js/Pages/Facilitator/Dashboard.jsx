@@ -537,7 +537,10 @@ export default function FacilitatorDashboard({
                                         {group.title}
                                     </h3>
 
-                                    <div className="mt-3 space-y-2">
+                                    <div
+                                        className="mt-3 max-h-[22rem] space-y-2 overflow-y-auto overscroll-contain pr-1"
+                                        aria-label={`${group.title} bookings`}
+                                    >
                                         {items.length ? (
                                             items.map((booking) => (
                                                 <button
