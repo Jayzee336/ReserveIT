@@ -569,7 +569,11 @@ class BookingController extends Controller
             ->merge($superAdmins)
             ->unique('id')
             ->each(fn (User $admin) => $admin->notify(
-                new BookingOperationsNotification($message, (string) $cancelledBooking->getKey())
+                new BookingOperationsNotification(
+                    $message,
+                    (string) $cancelledBooking->getKey(),
+                    'Booking Cancelled'
+                )
             ));
 
         return back()->with('toast', [
@@ -834,7 +838,7 @@ class BookingController extends Controller
                     'Booking Approved'
                 ));
             }
-        } catch (\\Throwable $e) {
+        } catch (\Throwable $e) {
             Log::warning('Booking notification delivery failed.', [
                 'booking_id' => $booking->id,
                 'error' => $e->getMessage(),
