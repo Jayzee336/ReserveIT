@@ -531,7 +531,7 @@ export default function FacilitatorDashboard({
                             return (
                                 <div
                                     key={group.key}
-                                    className="rounded-2xl border border-white/80 bg-white/85 p-4 shadow-sm backdrop-blur-sm"
+                                    className="rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-4"
                                 >
                                     <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
                                         {group.title}
@@ -544,7 +544,7 @@ export default function FacilitatorDashboard({
                                                     key={booking.id}
                                                     type="button"
                                                     onClick={() => setViewBooking(booking)}
-                                                    className="group flex w-full min-w-0 flex-col gap-1 rounded-xl border border-slate-200/80 bg-white/90 p-3 text-left shadow-sm transition hover:border-[#BDAAB2] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75]"
+                                                    className="group flex w-full min-w-0 flex-col gap-1 rounded-xl border border-[var(--ri-border)] bg-white/80 p-3 text-left transition hover:border-[#BDAAB2] hover:bg-white hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#846A75]"
                                                 >
                                                     <p className="text-sm font-semibold text-[#6A535C]">
                                                         {booking.facility?.name ?? 'Facility'}
