@@ -618,19 +618,19 @@ export default function FacilitatorDashboard({
                         <AnalyticsStat label="Recorded overtime fees" value={`₱${Number(analytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} hint="Recorded overtime charges in the selected period" onClick={() => setSelectedAnalyticsDetail({title:'Overtime fee details',description:'Bookings with recorded overtime fees and payment status.',items:analyticsDetails.overtimeBookings ?? [],mode:'bookings'})}/>
                     </div>
                     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.9fr)]">
-                        <div className="rounded-xl border border-[var(--ri-border)] p-4">
+                        <div className="flex min-h-[20rem] flex-col rounded-xl border border-[var(--ri-border)] p-4">
                             <div className="flex items-center gap-2">
                                 <TrendingUp className="h-4 w-4 text-[#6A535C]"/>
                                 <h3 className="text-sm font-semibold text-slate-900">Booking volume over time</h3>
                             </div>
-                            <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6">
+                            <div className="mt-5 grid min-h-[15rem] flex-1 grid-cols-3 items-stretch gap-3 sm:grid-cols-6">
                                 {usageOverTime.map((item) => {
                                     const maxValue = Math.max(...usageOverTime.map((point) => point.bookings), 1);
                                     const facilityHint = (item.facilities ?? []).map((facility) => `${facility.name}: ${facility.bookings}`).join(', ');
                                     return (
-                                        <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
+                                        <div key={item.label} className="flex h-full min-w-0 flex-col items-center gap-2">
                                             <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
-                                            <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`} aria-label={`View facilities booked in ${item.label}`} className={`flex h-24 w-full items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}>
+                                            <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`} aria-label={`View facilities booked in ${item.label}`} className={`flex min-h-0 w-full flex-1 items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}>
                                                 <span className="block w-full rounded-t-lg bg-[#846A75]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / maxValue * 100)}%` : '3px' }} />
                                             </button>
                                             <span className="truncate text-[10px] text-slate-500">{item.label}</span>
