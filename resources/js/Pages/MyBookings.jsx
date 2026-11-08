@@ -1048,11 +1048,16 @@ export default function MyBookings({
                                 </section>
 
                                 {selectedDetailBooking.approved_by && (
-                                    <section className="rounded-lg border border-emerald-100 bg-emerald-50 p-3">
-                                        <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Approved by</p>
-                                        <p className="mt-1 text-sm font-semibold text-emerald-900">{selectedDetailBooking.approved_by}</p>
+                                    <section className={`rounded-lg border p-3 ${getStatus(selectedDetailBooking.status) === 'declined' ? 'border-red-100 bg-red-50' : 'border-emerald-100 bg-emerald-50'}`}>
+                                        <p className={`text-xs font-bold uppercase tracking-wide ${getStatus(selectedDetailBooking.status) === 'declined' ? 'text-red-700' : 'text-emerald-700'}`}>
+                                            {getStatus(selectedDetailBooking.status) === 'declined' ? 'Declined by' : 'Approved by'}
+                                        </p>
+                                        <p className={`mt-1 text-sm font-semibold ${getStatus(selectedDetailBooking.status) === 'declined' ? 'text-red-900' : 'text-emerald-900'}`}>
+                                            {selectedDetailBooking.approved_by}
+                                        </p>
                                         {selectedDetailBooking.approved_at && (
-                                            <p className="mt-0.5 text-xs text-emerald-800">
+                                            <p className={`mt-0.5 text-xs ${getStatus(selectedDetailBooking.status) === 'declined' ? 'text-red-800' : 'text-emerald-800'}`}>
+                                                {getStatus(selectedDetailBooking.status) === 'declined' ? 'Declined on ' : 'Approved on '}
                                                 {new Date(selectedDetailBooking.approved_at).toLocaleString('en-PH', {
                                                     year: 'numeric', month: 'short', day: 'numeric',
                                                     hour: 'numeric', minute: '2-digit', hour12: true,
@@ -1061,6 +1066,16 @@ export default function MyBookings({
                                         )}
                                     </section>
                                 )}
+
+                                {getStatus(selectedDetailBooking.status) === 'declined' &&
+                                    (selectedDetailBooking.decline_reason || selectedDetailBooking.rejection_reason) && (
+                                        <section className="rounded-lg border border-red-100 bg-red-50/70 p-3">
+                                            <p className="text-xs font-bold uppercase tracking-wide text-red-700">Reason for decline</p>
+                                            <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-red-900">
+                                                {selectedDetailBooking.decline_reason || selectedDetailBooking.rejection_reason}
+                                            </p>
+                                        </section>
+                                    )}
 
                                 {selectedDetailBooking.cancellation_reason && (
                                     <section className="rounded-lg border border-red-100 bg-red-50 p-3">
