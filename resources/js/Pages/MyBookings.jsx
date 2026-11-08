@@ -230,7 +230,12 @@ const formatTime = (time) => {
     return `${displayHour}:${String(minute).padStart(2, '0')} ${suffix}`;
 };
 
-const getStatus = (status) => String(status || 'unknown').toLowerCase().trim();
+const getStatus = (status) => {
+    const normalized = String(status || 'unknown').toLowerCase().trim();
+
+    // Older booking records may use "rejected" while current workflows use "declined".
+    return normalized === 'rejected' ? 'declined' : normalized;
+};
 
 const isBookingCompleted = (booking) => {
     if (getStatus(booking?.status) !== 'approved') return false;
