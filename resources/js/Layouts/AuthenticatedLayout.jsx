@@ -435,6 +435,15 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 )}
 
                                 <NavLink
+                                    href={route('bookings.index')}
+                                    active={route().current('bookings.index')}
+                                    icon={CalendarCheck}
+                                    collapsed={collapsed}
+                                >
+                                    My Bookings
+                                </NavLink>
+
+                                <NavLink
                                     href={route('admin.bookings.index')}
                                     active={route().current('admin.bookings.index')}
                                     icon={ClipboardCheck}
