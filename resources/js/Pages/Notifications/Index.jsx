@@ -15,6 +15,7 @@ import {
     ArrowUpRight,
     Inbox,
     ArrowLeft,
+    Ticket,
 } from 'lucide-react';
 
 const CATEGORY_STYLES = {
@@ -22,6 +23,7 @@ const CATEGORY_STYLES = {
     approved: { label: 'Approved', className: 'bg-emerald-50 text-emerald-700', icon: CheckCircle2 },
     rejected: { label: 'Rejected', className: 'bg-rose-50 text-rose-700', icon: XCircle },
     cancelled: { label: 'Cancelled', className: 'bg-amber-50 text-amber-700', icon: CalendarX },
+    ticket: { label: 'Support ticket', className: 'bg-violet-50 text-violet-700', icon: Ticket },
     other: { label: 'Update', className: 'bg-stone-100 text-stone-600', icon: Bell },
 };
 
@@ -36,6 +38,12 @@ const formatDate = (value) => {
         hour: 'numeric',
         minute: '2-digit',
     });
+};
+
+const ticketDestination = (role, ticketId) => {
+    if (!ticketId) return null;
+    if (role === 'super_admin') return route('admin.concerns.index');
+    return route('concerns.my-tickets');
 };
 
 const bookingDestination = (role, bookingId) => {
@@ -72,8 +80,12 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
         });
     };
 
+    const notificationDestination = (notification) => notification.ticket_id
+        ? ticketDestination(user?.role, notification.ticket_id)
+        : bookingDestination(user?.role, notification.booking_id);
+
     const openNotification = (notification) => {
-        const destination = bookingDestination(user?.role, notification.booking_id);
+        const destination = notificationDestination(notification);
         if (destination) {
             router.post(route('notifications.read', notification.id), {}, {
                 preserveScroll: true,
@@ -97,6 +109,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
         { value: 'approved', label: 'Approved' },
         { value: 'rejected', label: 'Rejected' },
         { value: 'cancelled', label: 'Cancelled' },
+        { value: 'ticket', label: 'Support tickets' },
         { value: 'other', label: 'Other' },
     ];
 
@@ -121,7 +134,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                 <p className="text-xs font-bold uppercase tracking-[0.25em] text-white/70">ReserveIT updates</p>
                                 <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">Notification Center</h1>
                                 <p className="mt-2 max-w-xl text-sm leading-6 text-white/80">
-                                    Review booking requests, reservation decisions, and other account updates in one place.
+                                    Review reservation updates, support ticket activity, and other account notifications in one place.
                                 </p>
                                 <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white">
                                     <span className="h-2 w-2 rounded-full bg-white/90" />
@@ -172,7 +185,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                 <input
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
-                                    placeholder="Search event title (e.g. Test1), facility, details, or booking ID…"
+                                    placeholder="Search event title, facility, details, booking ID, or ticket ID…"
                                     className="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#A98C97] focus:bg-white focus:ring-2 focus:ring-[#EADDE1]"
                                 />
                             </div>
@@ -202,7 +215,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                     {notificationHistory.data.map((notification) => {
                                         const meta = CATEGORY_STYLES[notification.category] ?? CATEGORY_STYLES.other;
                                         const Icon = meta.icon;
-                                        const destination = bookingDestination(user?.role, notification.booking_id);
+                                        const destination = notificationDestination(notification);
 
                                         return (
                                             <article key={notification.id} className={`flex flex-col gap-4 rounded-2xl border p-4 transition sm:flex-row sm:items-start sm:p-5 ${notification.read ? 'border-stone-100 bg-white' : 'border-[#E8D8D1] bg-[#FCFAF9] shadow-sm'}`}>
@@ -235,7 +248,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                                     <p className="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-stone-400">
                                                         <Clock3 className="h-3.5 w-3.5" />
                                                         {formatDate(notification.created_at)}
-                                                        {notification.booking_id && <span>· Booking #{String(notification.booking_id).slice(0, 8)}</span>}
+                                                        {notification.ticket_id ? <span>· Ticket #{notification.ticket_id}</span> : notification.booking_id ? <span>· Booking #{String(notification.booking_id).slice(0, 8)}</span> : null}
                                                     </p>
                                                 </div>
                                                 {destination && (
@@ -244,7 +257,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                                         onClick={() => openNotification(notification)}
                                                         className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#533e45]"
                                                     >
-                                                        View booking <ArrowUpRight className="h-3.5 w-3.5" />
+                                                        {notification.ticket_id ? 'View ticket' : 'View booking'} <ArrowUpRight className="h-3.5 w-3.5" />
                                                     </button>
                                                 )}
                                                 {!destination && !notification.read && (
