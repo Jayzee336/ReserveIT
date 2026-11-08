@@ -6,7 +6,7 @@ export default function BookingConsentAttachment({ booking }) {
     }
 
     const consentUrl = route('bookings.consent', booking.id);
-    const previewUrl = `${consentUrl}?preview=1`;
+    const previewUrl = `${consentUrl}?viewer=1`;
     const fileName = booking.consent_file_name || 'Consent letter';
     const extension = fileName.includes('.')
         ? fileName.split('.').pop().toLowerCase()
