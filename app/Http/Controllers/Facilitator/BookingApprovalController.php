@@ -84,6 +84,11 @@ class BookingApprovalController extends Controller
             $pastUnapprovedQuery->where($searchFilter);
         }
 
+        $openBookingId = $request->input('booking');
+        $openBooking = $openBookingId
+            ? $this->getVisibleBookingsQuery(Auth::user())->whereKey($openBookingId)->first()
+            : null;
+
         return Inertia::render('Facilitator/Bookings', [
             'pendingBookings' => $pendingQuery->orderBy('date')->get(),
             'reviewedBookings' => $reviewedQuery
@@ -93,6 +98,7 @@ class BookingApprovalController extends Controller
             'pastUnapprovedBookings' => $pastUnapprovedQuery
                 ->orderByDesc('date')
                 ->get(),
+            'openBooking' => $openBooking,
             'filters' => $request->only(['search', 'status']),
         ]);
     }
