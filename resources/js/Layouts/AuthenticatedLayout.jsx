@@ -183,16 +183,13 @@ export default function AuthenticatedLayout({ header, action, children }) {
     };
 
     const toggleNotificationSound = () => {
-        setNotificationSoundEnabled((enabled) => {
-            const nextEnabled = !enabled;
+        const nextEnabled = !notificationSoundEnabled;
+        setNotificationSoundEnabled(nextEnabled);
 
-            if (nextEnabled) {
-                // The button click is a user gesture, allowing the browser to unlock audio.
-                playNotificationSound({ title: 'Sound test' }, true);
-            }
-
-            return nextEnabled;
-        });
+        if (nextEnabled) {
+            // Start audio directly from the button click so the browser recognizes the user gesture.
+            playNotificationSound({ title: 'Sound test' }, true);
+        }
     };
 
     useEffect(() => {
@@ -278,7 +275,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
         }, 30000);
 
         return () => window.clearInterval(interval);
-    }, [user, isLoggingOut]);
+    }, [user, isLoggingOut, notificationSoundEnabled]);
 
     // Clear all notifications.
     const clearAllNotifications = () => {
