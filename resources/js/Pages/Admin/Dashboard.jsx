@@ -809,9 +809,9 @@ export default function AdminDashboard({
                                 mostUsedFacilities.map((facility) => (
                                     <div
                                         key={facility.name}
-                                        className="flex justify-between rounded-xl border border-[#E7DDE1] bg-[#F4ECEF] px-3 py-2 text-sm"
+                                        className="flex justify-between rounded-xl bg-[var(--ri-surface-subtle)] px-3 py-2 text-sm"
                                     >
-                                        <span className="font-medium text-[#6A535C]">{facility.name}</span>
+                                        <span>{facility.name}</span>
                                         <span className="font-semibold text-[#6A535C]">
                                             {facility.bookings} bookings
                                         </span>
