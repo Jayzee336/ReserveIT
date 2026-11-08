@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect, useCallback } from 'react';
 import {
     Clock,
@@ -11,6 +11,7 @@ import {
     CheckCircle,
     CreditCard,
     LogOut,
+    ArrowLeft,
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -41,6 +42,7 @@ export default function ActiveBookings() {
     const [actionError, setActionError] = useState('');
     const [success, setSuccess] = useState('');
     const [processingId, setProcessingId] = useState(null);
+    const [paymentBooking, setPaymentBooking] = useState(null);
 
     const fetchBookings = useCallback(async (showLoading = false) => {
         if (showLoading) setLoading(true);
@@ -116,15 +118,6 @@ export default function ActiveBookings() {
             return;
         }
 
-        const confirmed = window.confirm(
-            `Confirm that the overtime payment has been received?\n\n` +
-            `Facility: ${booking.facility_name}\n` +
-            `Amount: ${formatCurrency(amount)}\n\n` +
-            'This records a manual payment confirmation. It does not process a payment transaction.'
-        );
-
-        if (!confirmed) return;
-
         setProcessingId(booking.id);
         setActionError('');
         setSuccess('');
@@ -138,6 +131,7 @@ export default function ActiveBookings() {
                 response.data?.message || 'Overtime payment recorded successfully.'
             );
 
+            setPaymentBooking(null);
             await fetchBookings(false);
         } catch (err) {
             setActionError(
@@ -168,6 +162,13 @@ export default function ActiveBookings() {
             header={
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
+                        <Link
+                            href={route('dashboard')}
+                            className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-[#6A535C] transition hover:text-[#533E45]"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Back to Dashboard
+                        </Link>
                         <h1 className="text-2xl font-bold text-gray-900">
                             Active Bookings Monitor
                         </h1>
@@ -450,7 +451,7 @@ export default function ActiveBookings() {
                                                         {amount > 0 && !paid ? (
                                                             <button
                                                                 type="button"
-                                                                onClick={() => handleRecordPayment(booking)}
+                                                                onClick={() => { setActionError(""); setPaymentBooking(booking); }}
                                                                 disabled={processingId === booking.id}
                                                                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                                                             >
@@ -475,6 +476,68 @@ export default function ActiveBookings() {
                     )}
                 </section>
             </div>
+                {paymentBooking && (
+                    <div
+                        className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 p-4"
+                        onClick={() => processingId !== paymentBooking.id && setPaymentBooking(null)}
+                    >
+                        <div
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="record-payment-title"
+                            className="w-full max-w-md overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl"
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            <div className="border-b border-stone-100 bg-[#FFFAF7] px-6 py-5">
+                                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F4ECEF] text-[#6A535C]">
+                                    <CreditCard className="h-5 w-5" />
+                                </div>
+                                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#846A75]">Overtime billing</p>
+                                <h2 id="record-payment-title" className="mt-1 text-xl font-bold text-slate-900">Record payment received</h2>
+                                <p className="mt-1 text-sm text-slate-500">Confirm that the outstanding overtime fee has already been collected.</p>
+                            </div>
+                            <div className="space-y-4 px-6 py-5">
+                                <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+                                    <div className="flex justify-between gap-4 text-sm">
+                                        <span className="text-slate-500">Facility</span>
+                                        <span className="text-right font-semibold text-slate-800">{paymentBooking.facility_name}</span>
+                                    </div>
+                                    <div className="mt-3 flex justify-between gap-4 text-sm">
+                                        <span className="text-slate-500">Client</span>
+                                        <span className="text-right font-semibold text-slate-800">{paymentBooking.user_name}</span>
+                                    </div>
+                                    <div className="mt-3 flex justify-between gap-4 border-t border-stone-200 pt-3 text-sm">
+                                        <span className="font-semibold text-slate-600">Amount received</span>
+                                        <span className="text-lg font-bold text-[#6A535C]">{formatCurrency(paymentBooking.overtime_fee_amount)}</span>
+                                    </div>
+                                </div>
+                                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs leading-5 text-amber-800">
+                                    This action records a manual payment confirmation only. It does not process or transfer money.
+                                </div>
+                                {actionError && <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{actionError}</p>}
+                                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setPaymentBooking(null); setActionError(""); }}
+                                        disabled={processingId === paymentBooking.id}
+                                        className="rounded-xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-stone-50 disabled:opacity-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRecordPayment(paymentBooking)}
+                                        disabled={processingId === paymentBooking.id}
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533E45] disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        <CheckCircle className="h-4 w-4" />
+                                        {processingId === paymentBooking.id ? 'Recording…' : 'Confirm payment received'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
         </AuthenticatedLayout>
     );
 }
