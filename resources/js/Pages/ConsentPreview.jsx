@@ -53,6 +53,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
     const [zoom, setZoom] = useState(1);
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadError, setDownloadError] = useState('');
+    const [downloadMessage, setDownloadMessage] = useState('');
 
     useEffect(() => {
         document.title = `${fileName || 'Consent Letter'} | ReserveIT`;
@@ -224,16 +225,66 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
         setZoom((current) => Math.max(0.7, Math.min(1.8, Number((current + amount).toFixed(2)))));
     };
 
-    // Fetch the protected download endpoint as data, then ask the browser to
-    // download a Blob. This avoids navigating to the attachment URL directly.
-    // The browser/IDM may still control downloads according to local settings.
+    // Use the native Windows Save As picker instead of a browser download.
+    // It opens from the Downloads folder by default and lets the admin choose
+    // a different folder before ReserveIT writes the protected file there.
     const handleDownload = async () => {
         if (isDownloading) return;
 
-        setIsDownloading(true);
         setDownloadError('');
+        setDownloadMessage('');
+
+        if (typeof window.showSaveFilePicker !== 'function' || !window.isSecureContext) {
+            setDownloadError(
+                'Your browser does not support the secure Save As dialog. Please use an up-to-date Chrome or Edge browser over HTTPS (or localhost).',
+            );
+            return;
+        }
+
+        const extension = (fileName.split('.').pop() || '').toLowerCase();
+        const fileTypes = {
+            pdf: {
+                description: 'PDF document',
+                accept: { 'application/pdf': ['.pdf'] },
+            },
+            doc: {
+                description: 'Microsoft Word document',
+                accept: { 'application/msword': ['.doc'] },
+            },
+            docx: {
+                description: 'Microsoft Word document',
+                accept: {
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+                },
+            },
+        };
+
+        const selectedType = fileTypes[extension] || {
+            description: 'Consent letter',
+            accept: { 'application/octet-stream': ['.bin'] },
+        };
+
+        // IMPORTANT: call the picker synchronously during this button click,
+        // before the first await, because browsers require a fresh user gesture.
+        let saveHandlePromise;
 
         try {
+            saveHandlePromise = window.showSaveFilePicker({
+                id: 'reserveit-consent-letter',
+                suggestedName: fileName || 'consent-letter',
+                startIn: 'downloads',
+                types: [selectedType],
+            });
+        } catch (pickerError) {
+            setDownloadError(pickerError?.message || 'The Save As dialog could not be opened.');
+            return;
+        }
+
+        setIsDownloading(true);
+
+        try {
+            const saveHandle = await saveHandlePromise;
+
             const response = await fetch(downloadUrl, {
                 method: 'GET',
                 credentials: 'same-origin',
@@ -248,19 +299,22 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
             }
 
             const fileBlob = await response.blob();
-            const objectUrl = URL.createObjectURL(fileBlob);
-            const anchor = document.createElement('a');
+            const writable = await saveHandle.createWritable();
 
-            anchor.href = objectUrl;
-            anchor.download = fileName || 'consent-letter';
-            anchor.style.display = 'none';
-            document.body.appendChild(anchor);
-            anchor.click();
-            anchor.remove();
+            try {
+                await writable.write(fileBlob);
+                await writable.close();
+            } catch (writeError) {
+                await writable.abort().catch(() => {});
+                throw writeError;
+            }
 
-            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+            setDownloadMessage(`Saved "${saveHandle.name}" successfully.`);
         } catch (downloadFailure) {
-            setDownloadError(downloadFailure?.message || 'The download could not be started. Please try again.');
+            // Closing the native Save As dialog is a normal cancellation.
+            if (downloadFailure?.name !== 'AbortError') {
+                setDownloadError(downloadFailure?.message || 'The file could not be saved. Please try again.');
+            }
         } finally {
             setIsDownloading(false);
         }
@@ -467,6 +521,12 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
                     </div>
                     <p className="text-[11px] text-slate-400">Keep downloaded copies secure.</p>
                 </div>
+
+                {downloadMessage && (
+                    <p role="status" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-700">
+                        {downloadMessage}
+                    </p>
+                )}
 
                 {downloadError && (
                     <p role="alert" className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700">
