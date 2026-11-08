@@ -27,7 +27,6 @@
         "@fullcalendar/resource-timeline": "^6.1.21",
         "framer-motion": "^13.1.0",
         "lucide-react": "^1.24.0",
-        "sonner": "^2.0.7",
-        "pdfjs-dist": "^6.5.438"
+        "sonner": "^2.0.7"
     }
 }
