@@ -169,39 +169,50 @@ export default function BookingModal({
         capacity && attendees !== '' && Number(attendees) > capacity
     );
 
-    // Check whether the requested interval conflicts with an existing booking.
-    // The cleanup buffer extends the existing booking on both sides.
+    // Pending and approved bookings both reserve their interval. Match either
+    // persisted date field because older records may expose booking_date only.
+    const blockedBookingRanges = useMemo(() => existingBookings
+        .filter((booking) => {
+            const bookingStatus = String(booking.status ?? '').toLowerCase();
+            const bookingDate = String(booking.date ?? booking.booking_date ?? '').slice(0, 10);
+
+            return (
+                String(booking.facility_id) === String(facility?.id) &&
+                bookingDate === date &&
+                ['pending', 'approved'].includes(bookingStatus)
+            );
+        })
+        .map((booking) => ({
+            start: toMins(booking.start_time) - cleanupBuffer,
+            end: toEndMins(String(booking.end_time).slice(0, 5)) + cleanupBuffer,
+        })), [existingBookings, facility?.id, date, cleanupBuffer]);
+
+    const isTimeRangeUnavailable = (requestedStart, requestedEnd) =>
+        blockedBookingRanges.some((range) =>
+            requestedStart < range.end && requestedEnd > range.start
+        );
+
+    // A start option is unavailable when its starting point falls inside a
+    // reserved interval or cleanup buffer. End options additionally validate
+    // the entire requested range so users cannot select a conflicting duration.
+    const isStartTimeUnavailable = (time) => {
+        const start = toMins(time);
+        return blockedBookingRanges.some((range) =>
+            start >= range.start && start < range.end
+        );
+    };
+
+    const isEndTimeUnavailable = (time) => {
+        if (!startTime) return false;
+        return isTimeRangeUnavailable(toMins(startTime), toEndMins(time));
+    };
+
     const checkConflict = () => {
         if (!startTime || !endTime || !date || !facility?.id) {
             return false;
         }
 
-        const requestedStart = toMins(startTime);
-        const requestedEnd = toEndMins(endTime);
-
-        return existingBookings.some((booking) => {
-            const bookingStatus = String(booking.status ?? '').toLowerCase();
-
-            if (
-                String(booking.facility_id) !== String(facility.id) ||
-                String(booking.date ?? '').slice(0, 10) !== date ||
-                !['pending', 'approved'].includes(bookingStatus)
-            ) {
-                return false;
-            }
-
-            const bookingStart = toMins(booking.start_time);
-            const bookingEnd = toEndMins(String(booking.end_time).slice(0, 5));
-
-            const blockedStart = bookingStart - cleanupBuffer;
-            const blockedEnd = bookingEnd + cleanupBuffer;
-
-            // Starting exactly at blockedEnd is allowed by this check.
-            return (
-                requestedStart < blockedEnd &&
-                requestedEnd > blockedStart
-            );
-        });
+        return isTimeRangeUnavailable(toMins(startTime), toEndMins(endTime));
     };
 
     // End times use the same 15-minute interval and must follow the start time.
@@ -213,7 +224,7 @@ export default function BookingModal({
         return TIME_SLOTS.filter(
             (time) => toEndMins(time) > startMinutes
         );
-    }, [startTime]);
+    }, [startTime, TIME_SLOTS]);
 
     // Submit booking
     const handleSubmit = (e) => {
@@ -643,7 +654,7 @@ export default function BookingModal({
                                 <option
                                     key={time}
                                     value={time}
-                                    disabled={isTimePast(time)}
+                                    disabled={isTimePast(time) || isStartTimeUnavailable(time)}
                                 >
                                     {formatTime(time)}
                                 </option>
@@ -668,7 +679,11 @@ export default function BookingModal({
                             <option value="">Select time</option>
 
                             {endTimeOptions.map((time) => (
-                                <option key={time} value={time}>
+                                <option
+                                    key={time}
+                                    value={time}
+                                    disabled={isEndTimeUnavailable(time)}
+                                >
                                     {formatTime(time)}
                                 </option>
                             ))}
