@@ -96,6 +96,9 @@ function BookingDetailModal({ booking, onClose }) {
                         <h3 className="mt-1 text-xl font-semibold text-gray-900">
                             {booking.facility?.name ?? 'Unknown Facility'}
                         </h3>
+                        {booking.facility?.location && (
+                            <p className="mt-1 text-sm text-gray-500">{booking.facility.location}</p>
+                        )}
                     </div>
 
                     <button
@@ -130,6 +133,16 @@ function BookingDetailModal({ booking, onClose }) {
                             <UserIcon className="h-3.5 w-3.5 text-gray-400" />
                             {booking.user?.name ?? booking.guest_name ?? 'Guest'}
                         </p>
+                        {(booking.user?.email || booking.guest_email) && (
+                            <p className="mt-1 text-xs text-gray-500">
+                                {booking.user?.email ?? booking.guest_email}
+                            </p>
+                        )}
+                        {booking.guest_phone && (
+                            <p className="mt-1 text-xs text-gray-500">
+                                {booking.guest_phone}
+                            </p>
+                        )}
                     </div>
 
                     <div className="rounded-xl bg-stone-50 p-4">
@@ -155,6 +168,11 @@ function BookingDetailModal({ booking, onClose }) {
                             {booking.attendees ?? 1}{' '}
                             {(booking.attendees ?? 1) === 1 ? 'person' : 'people'}
                         </p>
+                        {booking.needs_manpower && (
+                            <span className="mt-2 inline-flex rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                                Needs manpower
+                            </span>
+                        )}
                     </div>
 
                     {booking.notes && (
