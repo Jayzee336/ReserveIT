@@ -22,6 +22,12 @@ RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoload
 # Production web image: NGINX + PHP-FPM.
 FROM serversideup/php:8.3-fpm-nginx
 
+# NGINX must serve PDF.js ES-module workers with a JavaScript MIME type.
+USER root
+RUN grep -q 'application/javascript js;' /etc/nginx/mime.types \
+    && sed -i '/application\\/javascript/s/ js;/ js mjs;/' /etc/nginx/mime.types
+USER www-data
+
 WORKDIR /var/www/html
 
 COPY --chown=www-data:www-data . .
