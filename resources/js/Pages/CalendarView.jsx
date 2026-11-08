@@ -21,43 +21,6 @@ const toMinutes = (time) => { const [hour, minute] = String(time).split(':').map
 const toEndMinutes = (time) => String(time).slice(0, 5) === '00:00' ? 1440 : toMinutes(time);
 const statusClass = (status) => status === 'approved' ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500';
 
-// Find the earliest valid start time inside an hourly cell after applying the
-// same cleanup buffer enforced by BookingController and BookingModal.
-const findAvailableStartInHour = (slotStart, slotEnd, bookings, bufferMinutes) => {
-    let candidate = slotStart;
-
-    if (bufferMinutes <= 0) {
-        return { availableStart: candidate, blockedUntil: null };
-    }
-
-    // A short loop handles overlapping cleanup buffers from adjacent bookings.
-    for (let attempt = 0; attempt <= bookings.length; attempt += 1) {
-        const blockingEnds = bookings
-            .filter((booking) => ['pending', 'approved'].includes(String(booking.status ?? '').toLowerCase()))
-            .map((booking) => ({
-                start: toMinutes(booking.start_time) - bufferMinutes,
-                end: toEndMinutes(booking.end_time) + bufferMinutes,
-            }))
-            .filter((interval) => candidate >= interval.start && candidate < interval.end)
-            .map((interval) => interval.end);
-
-        if (blockingEnds.length === 0) {
-            break;
-        }
-
-        candidate = Math.max(...blockingEnds);
-    }
-
-    if (candidate >= slotEnd) {
-        return { availableStart: null, blockedUntil: candidate };
-    }
-
-    return {
-        availableStart: candidate,
-        blockedUntil: candidate > slotStart ? candidate : null,
-    };
-};
-
 export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate, availabilityOnly = false }) {
     const { systemSettings = {} } = usePage().props;
     const openingTime = String(systemSettings.opening_time ?? '08:00').slice(0, 5);
@@ -178,6 +141,7 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                 <span><strong className="text-amber-700">Pending:</strong> temporarily held slot</span>
                 <span><strong className="text-emerald-700">Booked:</strong> confirmed reservation</span>
                 {availabilityOnly && <span className="font-medium text-indigo-700">You can check availability and request bookings for any facility here. Existing reservation details remain private.</span>}
+                <span className="text-slate-500">Each column is 15 minutes; reservation bars span their full booked duration.</span>
                 <span className="text-slate-500">Schedule shown from {formatTime(openingTime)} to {closingTime === '00:00' ? '12:00 AM (midnight)' : formatTime(closingTime)}</span>
             </div>
             <div className="w-full overflow-x-auto overflow-y-hidden rounded-2xl border border-[var(--ri-border)]">
