@@ -36,9 +36,9 @@ function formatTime(value) {
 }
 
 function Stat({ label, value, onClick }) {
-    const content = <><p className="text-sm font-medium text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold tracking-tight text-[#6A535C]">{value ?? 0}</p>{onClick && <span className="mt-3 block text-[10px] font-bold uppercase tracking-wide text-[#846A75]">View details ↗</span>}</>;
+    const content = <><span className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-slate-500">{label}</span>{onClick && <span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>}</span><p className="mt-2 text-3xl font-bold tracking-tight text-[#6A535C]">{value ?? 0}</p></>;
     const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2";
-    return onClick ? <button type="button" onClick={onClick} className={`w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
+    return onClick ? <button type="button" onClick={onClick} className={`group w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
 }
 
 function StatusBadge({ status }) {
@@ -593,13 +593,16 @@ export default function AdminDashboard({
                             filteredAndSortedBookings.map((booking) => (
                                 <div
                                     key={booking.id}
-                                    className="flex cursor-pointer flex-col gap-3 rounded-xl border border-stone-100 p-3 transition hover:border-gray-200 hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                                    className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] p-3 transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] hover:shadow-sm sm:flex-row sm:items-center sm:justify-between"
                                     onClick={() => setViewBooking(booking)}
                                 >
                                     <div>
-                                        <p className="font-medium text-stone-800">
-                                            {booking.facility?.name}
-                                        </p>
+                                        <div>
+                                            <p className="font-semibold text-[#6A535C]">
+                                                {booking.facility?.name}
+                                            </p>
+                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                        </div>
                                         <p className="text-xs text-slate-500">
                                             {booking.user?.name ?? booking.guest_name ?? 'Guest'} ·{' '}
                                             {booking.booking_date ?? booking.date} · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}
@@ -725,7 +728,7 @@ export default function AdminDashboard({
                             ['overtime', 'Overtime fees', `₱${Number(operationalAnalytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Recorded overtime charges in the period'],
                         ].map(([key, label, value, hint], index) => (
                             <button key={`${key}-${index}`} type="button" onClick={() => setAnalyticsDetailKey(key)} className="group rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#846A75] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2">
-                                <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600"><span>{label}</span><span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details ↗</span></span>
+                                <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600"><span>{label}</span><span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span></span>
                                 <span className="mt-2 block text-xl font-bold text-[#6A535C]">{value}</span><span className="mt-1 block text-[11px] leading-4 text-slate-500">{hint}</span>
                             </button>
                         ))}
@@ -787,7 +790,7 @@ export default function AdminDashboard({
                             return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
                                 <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage.toFixed(1)}%</span></span></div>
                                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
-                                <span className="mt-1 block text-right text-[10px] font-semibold text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details ↗</span>
+                                <span className="mt-1 block text-right text-[10px] font-semibold text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                             </button>;
                         })}</div>
                     </div>
@@ -806,9 +809,9 @@ export default function AdminDashboard({
                                 mostUsedFacilities.map((facility) => (
                                     <div
                                         key={facility.name}
-                                        className="flex justify-between rounded-xl bg-[var(--ri-surface-subtle)] px-3 py-2 text-sm"
+                                        className="flex justify-between rounded-xl border border-[#E7DDE1] bg-[#F4ECEF] px-3 py-2 text-sm"
                                     >
-                                        <span>{facility.name}</span>
+                                        <span className="font-medium text-[#6A535C]">{facility.name}</span>
                                         <span className="font-semibold text-[#6A535C]">
                                             {facility.bookings} bookings
                                         </span>
