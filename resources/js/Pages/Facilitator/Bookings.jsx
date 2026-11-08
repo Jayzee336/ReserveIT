@@ -631,6 +631,7 @@ export default function Bookings({
     pendingBookings = [],
     reviewedBookings = [],
     pastUnapprovedBookings = [],
+    openBooking = null,
     filters = {},
 }) {
     const page = usePage();
@@ -656,6 +657,12 @@ export default function Bookings({
         setSearchQuery(filters.search || '');
         setStatusFilter(filters.status || '');
     }, [filters.search, filters.status]);
+
+    useEffect(() => {
+        if (openBooking) {
+            setViewBooking(openBooking);
+        }
+    }, [openBooking?.id]);
 
     useEffect(() => {
         const interval = setInterval(() => {
