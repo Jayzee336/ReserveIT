@@ -125,27 +125,27 @@ export default function Login({ status, canResetPassword }) {
 
                     <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-wider">
                         <span className="bg-white px-3 text-slate-400">
-                            or with institutional email
+                            or sign in with your username or email
                         </span>
                     </div>
                 </div>
 
                 <form onSubmit={submit} className="space-y-4">
-                    {/* Email Input */}
+                    {/* Username or Email Input */}
                     <div>
                         <InputLabel
                             htmlFor="email"
-                            value="Email Address"
+                            value="Username or Email"
                             className="text-xs font-bold text-slate-700"
                         />
 
                         <div className="relative mt-1">
                             <TextInput
                                 id="email"
-                                type="email"
+                                type="text"
                                 name="email"
                                 value={data.email}
-                                placeholder="your.email@uic.edu.ph"
+                                placeholder="Enter your username or email"
                                 className="block w-full rounded-2xl border-[#D8C9C2] bg-[#FFFBF6] px-3.5 py-2.5 text-xs font-medium text-slate-900 focus:border-[#7A4A57] focus:ring-[#7A4A57]"
                                 autoComplete="username"
                                 isFocused={true}
