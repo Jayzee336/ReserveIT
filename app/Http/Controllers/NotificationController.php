@@ -70,6 +70,8 @@ class NotificationController extends Controller
         if ($search !== '') {
             $needle = mb_strtolower($search);
 
+            // Find matching booking IDs first. The notifications.data column is TEXT
+            // in this database, so JSON operators such as ->> cannot be used on it.
             $matchingBookingIds = Booking::query()
                 ->where(function ($bookingQuery) use ($needle) {
                     $bookingQuery
@@ -79,14 +81,23 @@ class NotificationController extends Controller
                         })
                         ->orWhereRaw('LOWER(CAST(id AS TEXT)) LIKE ?', ['%' . $needle . '%']);
                 })
-                // Notification JSON stores booking IDs as strings, while the bookings table uses UUIDs.
-                // Cast the subquery IDs to text so PostgreSQL compares text to text.
-                ->selectRaw('CAST(id AS TEXT)');
+                ->pluck('id')
+                ->map(fn ($id) => (string) $id)
+                ->all();
 
             $query->where(function ($searchQuery) use ($needle, $matchingBookingIds) {
-                $searchQuery
-                    ->whereRaw('LOWER(CAST(data AS TEXT)) LIKE ?', ['%' . $needle . '%'])
-                    ->orWhereIn('data->booking_id', $matchingBookingIds);
+                $searchQuery->whereRaw(
+                    'LOWER(CAST(data AS TEXT)) LIKE ?',
+                    ['%' . $needle . '%']
+                );
+
+                // Match the booking UUID inside the TEXT-encoded notification payload.
+                foreach ($matchingBookingIds as $bookingId) {
+                    $searchQuery->orWhereRaw(
+                        'CAST(data AS TEXT) LIKE ?',
+                        ['%' . $bookingId . '%']
+                    );
+                }
             });
         }
 
