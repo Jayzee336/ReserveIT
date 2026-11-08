@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 class LoginRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Determine if the request is authorized.
      */
     public function authorize(): bool
     {
@@ -21,20 +21,23 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Get the validation rules.
+     *
+     * The existing "email" request key is retained for compatibility with
+     * the login form's validation errors, but it now accepts a username too.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ];
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Attempt authentication with either an email address or a username.
      *
      * @throws ValidationException
      */
@@ -42,26 +45,35 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // 1. Attempt login credentials
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $identifier = Str::lower(trim((string) $this->input('email', '')));
+        $credentialField = filter_var($identifier, FILTER_VALIDATE_EMAIL)
+            ? 'email'
+            : 'username';
+
+        $credentials = [
+            $credentialField => $identifier,
+            'password' => (string) $this->input('password'),
+        ];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'Invalid email address or password.',
+                'email' => 'Invalid username or email address, or password.',
             ]);
         }
 
-        // 2. Check if the user account is active
+        // Check whether the account is active before completing login.
         $user = Auth::user();
+
         if (! $user->is_active) {
-            Auth::logout(); // Log them back out immediately
+            Auth::logout();
 
             throw ValidationException::withMessages([
                 'email' => 'This account has been deactivated. Please contact administration.',
             ]);
         }
 
-        // 3. Clear rate limiter if login succeeds completely
         RateLimiter::clear($this->throttleKey());
     }
 
@@ -89,10 +101,12 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the rate limiting throttle key for the request.
+     * Use the normalized username/email and IP as the rate-limit key.
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
+        $identifier = Str::lower(trim((string) $this->input('email', ''));
+
+        return Str::transliterate($identifier . '|' . $this->ip());
     }
 }
