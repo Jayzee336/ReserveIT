@@ -6,6 +6,7 @@ import DashboardDrilldownModal from '@/Components/DashboardDrilldownModal';
 import {
     Activity,
     CheckCircle2,
+    Eye,
     XCircle,
     Clock,
     User as UserIcon,
@@ -452,6 +453,15 @@ export default function FacilitatorDashboard({
                                     <div className="flex shrink-0 flex-wrap gap-2">
                                         <button
                                             type="button"
+                                            onClick={() => setViewBooking(booking)}
+                                            className="rounded-xl bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
+                                        >
+                                            <Eye className="mr-1 inline-block h-4 w-4" />
+                                            View
+                                        </button>
+
+                                        <button
+                                            type="button"
                                             onClick={() => setConfirmApproveId(booking.id)}
                                             disabled={processingId === booking.id}
                                             className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
@@ -501,7 +511,7 @@ export default function FacilitatorDashboard({
                             return (
                                 <div
                                     key={group.key}
-                                    className="rounded-2xl border border-stone-100 bg-stone-50 p-4"
+                                    className="rounded-2xl border border-[#E7DDE1] bg-[#FFFAF7] p-4"
                                 >
                                     <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
                                         {group.title}
@@ -514,7 +524,7 @@ export default function FacilitatorDashboard({
                                                     key={booking.id}
                                                     type="button"
                                                     onClick={() => setViewBooking(booking)}
-                                                    className="group flex w-full flex-col gap-1 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] p-3 text-left transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#846A75]"
+                                                    className="group flex w-full flex-col gap-1 rounded-xl border border-[#E7DDE1] bg-[#F4ECEF] p-3 text-left transition hover:border-[#BDAAB2] hover:bg-white hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#846A75]"
                                                 >
                                                     <p className="text-sm font-semibold text-[#6A535C]">
                                                         {booking.facility?.name ?? 'Facility'}
@@ -632,7 +642,7 @@ export default function FacilitatorDashboard({
                             </div>
                         </div>
                     </div>
-                    <section className="rounded-xl border border-[var(--ri-border)] p-4">
+                    <section className="rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
                         <h3 className="text-sm font-bold text-slate-900">Most used facilities</h3>
                         <div className="mt-4 space-y-3">
                             {mostUsedFacilities.length ? mostUsedFacilities.map((facility) => (
@@ -660,10 +670,10 @@ export default function FacilitatorDashboard({
                                             mode: 'bookings',
                                         });
                                     }}
-                                    className="group flex w-full items-center justify-between gap-3 rounded-xl bg-stone-50 px-3 py-2 text-left text-sm transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-[#846A75]"
+                                    className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#E7DDE1] bg-[#F4ECEF] px-3 py-2 text-left text-sm transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]"
                                 >
                                     <span className="min-w-0 text-left">
-                                        <span className="block truncate text-slate-700">{facility.name}</span>
+                                        <span className="block truncate font-medium text-[#6A535C]">{facility.name}</span>
                                         <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                     </span>
                                     <span className="shrink-0 font-semibold text-[#6A535C]">{facility.bookings} bookings</span>
