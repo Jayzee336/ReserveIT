@@ -646,7 +646,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         if (request()->boolean('preview')) {
             abort_unless($isPdf, 415);
 
-            $safeInlineName = str_replace(["\\r", "\\n", '"'], '', $downloadName);
+            $safeInlineName = str_replace(["\r", "\n", '"'], '', $downloadName);
 
             return response()->stream($stream, 200, [
                 'Content-Type' => 'application/pdf',
