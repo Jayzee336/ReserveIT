@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import {
@@ -401,6 +401,7 @@ const TimeSelector = ({
 export default function MyBookings({
     auth,
     bookings = [],
+    openBooking = null,
     activityLogs = [],
 }) {
     const [cancelModalId, setCancelModalId] = useState(null);
@@ -410,6 +411,12 @@ export default function MyBookings({
     const [isCancelling, setIsCancelling] = useState(false);
     const [cancellationReason, setCancellationReason] = useState('');
     const [isCheckInOutProcessing, setIsCheckInOutProcessing] = useState(false);
+
+    useEffect(() => {
+        if (openBooking?.id) {
+            setDetailModalId(openBooking.id);
+        }
+    }, [openBooking?.id]);
 
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
