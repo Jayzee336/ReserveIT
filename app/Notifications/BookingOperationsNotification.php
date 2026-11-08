@@ -9,14 +9,18 @@ class BookingOperationsNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(private readonly string $message, private readonly string $bookingId) {}
+    public function __construct(
+        private readonly string $message,
+        private readonly string $bookingId,
+        private readonly string $title = 'Booking Update'
+    ) {}
 
     public function via(object $notifiable): array { return ['database']; }
 
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'Booking Update',
+            'title' => $this->title,
             'message' => $this->message,
             'booking_id' => $this->bookingId,
         ];
