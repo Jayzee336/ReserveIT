@@ -17,7 +17,7 @@ class NotificationController extends Controller
     {
         $filters = $request->validate([
             'status' => ['nullable', 'in:all,unread,read'],
-            'category' => ['nullable', 'in:all,request,approved,rejected,cancelled,other'],
+            'category' => ['nullable', 'in:all,request,approved,rejected,cancelled,ticket,other'],
             'search' => ['nullable', 'string', 'max:150'],
         ]);
 
@@ -39,6 +39,7 @@ class NotificationController extends Controller
                 'approved' => ['%approv%'],
                 'rejected' => ['%reject%', '%declin%'],
                 'cancelled' => ['%cancel%'],
+                'ticket' => ['%support ticket%'],
                 default => [],
             };
 
@@ -54,7 +55,7 @@ class NotificationController extends Controller
             } else {
                 $knownPatterns = [
                     '%request%', '%submitted%', '%new booking%',
-                    '%approv%', '%reject%', '%declin%', '%cancel%',
+                    '%approv%', '%reject%', '%declin%', '%cancel%', '%support ticket%',
                 ];
 
                 $query->where(function ($categoryQuery) use ($knownPatterns) {
@@ -120,7 +121,10 @@ class NotificationController extends Controller
                 $message = $data['message'] ?? '';
                 $text = strtolower($title . ' ' . $message);
 
+                $isTicket = str_contains($text, 'support ticket') || array_key_exists('ticket_id', $data);
+
                 $category = match (true) {
+                    $isTicket => 'ticket',
                     str_contains($text, 'cancel') => 'cancelled',
                     str_contains($text, 'reject'), str_contains($text, 'declin') => 'rejected',
                     str_contains($text, 'approv') => 'approved',
@@ -131,7 +135,12 @@ class NotificationController extends Controller
                 // Booking IDs are UUIDs in production. Ignore stale or malformed
                 // IDs in older notification payloads instead of triggering a PostgreSQL
                 // invalid-UUID exception that would break the entire history page.
-                $bookingId = $data['booking_id'] ?? null;
+                // Older ticket notifications stored their integer ticket ID in booking_id.
+                // Detect those payloads from their message and expose the correct reference.
+                $ticketId = $isTicket
+                    ? ($data['ticket_id'] ?? $data['booking_id'] ?? null)
+                    : null;
+                $bookingId = $isTicket ? null : ($data['booking_id'] ?? null);
                 $booking = is_string($bookingId) && Str::isUuid($bookingId)
                     ? Booking::with('facility:id,name')->find($bookingId)
                     : null;
@@ -147,7 +156,8 @@ class NotificationController extends Controller
                     'id' => $notification->id,
                     'title' => $title,
                     'message' => $message,
-                    'booking_id' => $data['booking_id'] ?? null,
+                    'booking_id' => $bookingId,
+                    'ticket_id' => $ticketId,
                     'event_title' => $eventTitle,
                     'facility_name' => $booking?->facility?->name,
                     'booking_date' => ($booking?->date ?? $booking?->booking_date)?->format('Y-m-d'),
