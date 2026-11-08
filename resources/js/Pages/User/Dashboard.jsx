@@ -47,13 +47,13 @@ function StatusBadge({ status }) {
     );
 }
 
-function MetricCard({ icon: Icon, label, value, detail, onClick, href }) {
+function MetricCard({ icon: Icon, label, value, detail, onClick, href, compact = false }) {
     const content = (
         <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-                <p className="text-sm font-medium text-slate-500">{label}</p>
-                <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">{value ?? 0}</p>
-                <p className="mt-1 text-xs text-slate-500">{detail}</p>
+                <p className={compact ? "text-xs font-semibold text-slate-600" : "text-sm font-medium text-slate-500"}>{label}</p>
+                <p className={`mt-2 font-bold tracking-tight text-[#6A535C] ${compact ? 'text-xl' : 'text-3xl'}`}>{value ?? 0}</p>
+                <p className={compact ? "mt-1 text-[11px] leading-4 text-slate-500" : "mt-1 text-xs text-slate-500"}>{detail}</p>
                 {(onClick || href) && <span className="mt-3 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-80">View details ↗</span>}
             </div>
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F4ECEF] text-[#6A535C]">
@@ -247,10 +247,10 @@ export default function Dashboard({
                     </form>
 
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <MetricCard icon={CalendarDays} label="Total bookings" value={analytics.totalBookings ?? 0} detail="Your bookings in the selected period" onClick={() => setSelectedDetail({ title: 'Bookings in selected period', description: 'Your reservations within the selected analytics date range.', items: analyticsDetails.totalBookings ?? [], mode: 'bookings' })} />
-                        <MetricCard icon={CheckCircle2} label="Approval rate" value={`${analytics.approvalRate ?? 0}%`} detail="Approved out of approved/declined decisions" onClick={() => setSelectedDetail({ title: 'Approval rate details', description: 'Your approved and declined booking decisions in the selected period.', items: analyticsDetails.approvalRate ?? [], mode: 'bookings' })} />
-                        <MetricCard icon={Ban} label="Cancellation rate" value={`${analytics.cancellationRate ?? 0}%`} detail="Cancelled out of all your requests" onClick={() => setSelectedDetail({ title: 'Cancellation details', description: 'Your cancelled reservations in the selected period.', items: analyticsDetails.cancellationRate ?? [], mode: 'bookings' })} />
-                        <MetricCard icon={Clock3} label="Average approval time" value={analytics.averageApprovalHours != null ? `${analytics.averageApprovalHours} hrs` : '—'} detail="Time from request to approval" onClick={() => setSelectedDetail({ title: 'Approval time details', description: 'Your bookings with recorded approval timestamps.', items: analyticsDetails.approvalTime ?? [], mode: 'bookings' })} />
+                        <MetricCard icon={CalendarDays} label="Total bookings" value={analytics.totalBookings ?? 0} detail="Your bookings in the selected period" onClick={() => setSelectedDetail({ title: 'Bookings in selected period', description: 'Your reservations within the selected analytics date range.', items: analyticsDetails.totalBookings ?? [], mode: 'bookings' })}  compact/>
+                        <MetricCard icon={CheckCircle2} label="Approval rate" value={`${analytics.approvalRate ?? 0}%`} detail="Approved out of approved/declined decisions" onClick={() => setSelectedDetail({ title: 'Approval rate details', description: 'Your approved and declined booking decisions in the selected period.', items: analyticsDetails.approvalRate ?? [], mode: 'bookings' })}  compact/>
+                        <MetricCard icon={Ban} label="Cancellation rate" value={`${analytics.cancellationRate ?? 0}%`} detail="Cancelled out of all your requests" onClick={() => setSelectedDetail({ title: 'Cancellation details', description: 'Your cancelled reservations in the selected period.', items: analyticsDetails.cancellationRate ?? [], mode: 'bookings' })}  compact/>
+                        <MetricCard icon={Clock3} label="Average approval time" value={analytics.averageApprovalHours != null ? `${analytics.averageApprovalHours} hrs` : '—'} detail="Time from request to approval" onClick={() => setSelectedDetail({ title: 'Approval time details', description: 'Your bookings with recorded approval timestamps.', items: analyticsDetails.approvalTime ?? [], mode: 'bookings' })}  compact/>
                     </div>
 
                     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.9fr)]">
