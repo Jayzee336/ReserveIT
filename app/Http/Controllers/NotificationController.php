@@ -117,6 +117,7 @@ class NotificationController extends Controller
 
         return Inertia::render('Notifications/Index', [
             'notifications' => $notifications,
+            'unreadCount' => $request->user()->unreadNotifications()->count(),
             'filters' => [
                 'status' => $status,
                 'category' => $category,
