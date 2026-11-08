@@ -1,0 +1,27 @@
+# Local dependencies and build output
+/node_modules
+/vendor
+/public/build
+/public/hot
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Git and editor files
+.git
+.github
+.vscode
+.idea
+
+# Local logs, caches, and uploaded files
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/app/private/*
+/storage/app/public/*
+
+# Local test artifacts
+.phpunit.result.cache
