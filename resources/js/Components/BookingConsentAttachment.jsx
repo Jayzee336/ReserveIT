@@ -1,6 +1,12 @@
-import { Download, Eye, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { Download, Eye, FileText, LoaderCircle } from 'lucide-react';
+import { saveProtectedFile } from '../utils/saveProtectedFile';
 
 export default function BookingConsentAttachment({ booking }) {
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadError, setDownloadError] = useState('');
+    const [downloadMessage, setDownloadMessage] = useState('');
+
     if (!booking?.consent_file_uploaded || !booking?.id) {
         return null;
     }
@@ -16,6 +22,29 @@ export default function BookingConsentAttachment({ booking }) {
         doc: 'Word document (.doc)',
         docx: 'Word document (.docx)',
     }[extension] || (extension ? `${extension.toUpperCase()} file` : 'Document');
+
+    const handleDownload = () => {
+        if (isDownloading) return;
+
+        setDownloadError('');
+        setDownloadMessage('');
+        setIsDownloading(true);
+
+        // saveProtectedFile opens the native picker immediately in this click
+        // event, then retrieves the attachment through the protected route.
+        saveProtectedFile({ url: consentUrl, fileName })
+            .then((savedName) => {
+                setDownloadMessage(`Saved "${savedName}" successfully.`);
+            })
+            .catch((error) => {
+                if (error?.name !== 'AbortError') {
+                    setDownloadError(error?.message || 'The consent letter could not be saved.');
+                }
+            })
+            .finally(() => {
+                setIsDownloading(false);
+            });
+    };
 
     return (
         <section className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 sm:col-span-2">
@@ -49,16 +78,32 @@ export default function BookingConsentAttachment({ booking }) {
                         View
                     </a>
 
-                    <a
-                        href={consentUrl}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        aria-label={`Download ${fileName}`}
+                    <button
+                        type="button"
+                        onClick={handleDownload}
+                        disabled={isDownloading}
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
+                        aria-label={`Save ${fileName}`}
                     >
-                        <Download className="h-4 w-4" />
-                        Download
-                    </a>
+                        {isDownloading
+                            ? <LoaderCircle className="h-4 w-4 animate-spin" />
+                            : <Download className="h-4 w-4" />}
+                        {isDownloading ? 'Preparing…' : 'Download'}
+                    </button>
                 </div>
             </div>
+
+            {downloadMessage && (
+                <p role="status" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                    {downloadMessage}
+                </p>
+            )}
+
+            {downloadError && (
+                <p role="alert" className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">
+                    {downloadError}
+                </p>
+            )}
         </section>
     );
 }
