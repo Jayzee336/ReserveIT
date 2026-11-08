@@ -166,7 +166,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     oscillator.type = 'sine';
                     oscillator.frequency.setValueAtTime(frequency, noteStart);
                     gain.gain.setValueAtTime(0.0001, noteStart);
-                    gain.gain.exponentialRampToValueAtTime(0.075, noteStart + 0.025);
+                    gain.gain.exponentialRampToValueAtTime(0.22, noteStart + 0.025);
                     gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.14);
 
                     oscillator.connect(gain);
@@ -207,11 +207,30 @@ export default function AuthenticatedLayout({ header, action, children }) {
         (notification) => !notification.read,
     ).length;
 
-    // Synchronize notifications when Inertia shares fresh props.
+    // Synchronize notifications whenever Inertia receives fresh props.
+    // Detect new IDs here (rather than inside router.reload's callback) so a
+    // prop-sync render cannot mark notifications as "known" before sound plays.
     useEffect(() => {
         const freshNotifications = page.props.notifications ?? [];
+        const newNotifications = freshNotifications.filter(
+            (notification) =>
+                notification.id != null &&
+                !knownNotificationIdsRef.current.has(String(notification.id)),
+        );
 
-        setRealtimeNotifications(freshNotifications);
+        if (newNotifications.length > 0) {
+            toast.message(
+                `${newNotifications.length} new notification${
+                    newNotifications.length > 1 ? 's' : ''
+                }`,
+                {
+                    description: 'You have unread updates. Check the bell icon.',
+                },
+            );
+
+            // One louder sound per incoming batch.
+            playNotificationSound(newNotifications[0]);
+        }
 
         freshNotifications.forEach((notification) => {
             if (notification.id != null) {
@@ -219,63 +238,31 @@ export default function AuthenticatedLayout({ header, action, children }) {
             }
         });
 
+        setRealtimeNotifications(freshNotifications);
         prevCountRef.current = freshNotifications.filter(
             (notification) => !notification.read,
         ).length;
-    }, [page.props.notifications]);
+    }, [page.props.notifications, notificationSoundEnabled]);
 
-    // Inertia notification polling: every 30 seconds.
+    // Poll the server every 10 seconds so new notifications appear without
+    // requiring a manual page refresh.
     useEffect(() => {
         if (!user || isLoggingOut) return undefined;
 
-        const interval = window.setInterval(() => {
+        const pollNotifications = () => {
             router.reload({
                 only: ['notifications'],
                 preserveScroll: true,
                 preserveState: true,
-                onSuccess: (updatedPage) => {
-                    const freshNotifications =
-                        updatedPage.props.notifications ?? [];
-
-                    const freshUnreadCount = freshNotifications.filter(
-                        (notification) => !notification.read,
-                    ).length;
-
-                    const newNotifications = freshNotifications.filter(
-                        (notification) =>
-                            notification.id != null &&
-                            !knownNotificationIdsRef.current.has(String(notification.id)),
-                    );
-
-                    if (newNotifications.length > 0) {
-                        toast.message(
-                            `${newNotifications.length} new notification${
-                                newNotifications.length > 1 ? 's' : ''
-                            }`,
-                            {
-                                description:
-                                    'You have unread updates. Check the bell icon.',
-                            },
-                        );
-
-                        // Play one sound per polling batch to avoid a burst of overlapping tones.
-                        playNotificationSound(newNotifications[0]);
-                    }
-
-                    freshNotifications.forEach((notification) => {
-                        if (notification.id != null) {
-                            knownNotificationIdsRef.current.add(String(notification.id));
-                        }
-                    });
-
-                    prevCountRef.current = freshUnreadCount;
-                    setRealtimeNotifications(freshNotifications);
-                },
             });
-        }, 30000);
+        };
+
+        pollNotifications();
+
+        const interval = window.setInterval(pollNotifications, 10000);
 
         return () => window.clearInterval(interval);
-    }, [user, isLoggingOut, notificationSoundEnabled]);
+    }, [user, isLoggingOut]);
 
     // Clear all notifications.
     const clearAllNotifications = () => {
