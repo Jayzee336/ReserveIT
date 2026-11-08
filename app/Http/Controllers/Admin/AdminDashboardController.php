@@ -42,7 +42,7 @@ class AdminDashboardController extends Controller
             abort_unless(in_array((string) $filterFacilityId, $managedFacilityIds, true), 403);
         }
 
-        $bookingQuery = Booking::with(['facility:id,name', 'user:id,name,email'])->forUser($user);
+        $bookingQuery = Booking::with(['facility:id,name,location', 'user:id,name,email'])->forUser($user);
         if ($filterFacilityId !== '') {
             $bookingQuery->where('facility_id', $filterFacilityId);
         }
