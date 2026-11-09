@@ -21,7 +21,7 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
                         </h1>
 
                         <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                            Update your name, email, password, and access preferences
+                            Update your name, username, email, password, and access preferences
                             for the university facilities portal.
                         </p>
                     </div>
