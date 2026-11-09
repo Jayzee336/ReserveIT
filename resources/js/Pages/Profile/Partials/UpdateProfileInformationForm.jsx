@@ -15,6 +15,7 @@ export default function UpdateProfileInformation({
     const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
+            username: user.username ?? '',
             email: user.email,
         });
 
@@ -32,7 +33,7 @@ export default function UpdateProfileInformation({
                 </h2>
 
                 <p className="mt-1 text-sm text-gray-600">
-                    Update your account's profile information and email address.
+                    Update your name, username, and email address.
                 </p>
             </header>
 
@@ -54,6 +55,28 @@ export default function UpdateProfileInformation({
                 </div>
 
                 <div>
+                    <InputLabel htmlFor="username" value="Username" />
+
+                    <TextInput
+                        id="username"
+                        type="text"
+                        className="mt-1 block w-full"
+                        value={data.username}
+                        onChange={(e) => setData('username', e.target.value.toLowerCase())}
+                        required
+                        maxLength={30}
+                        autoComplete="username"
+                        placeholder="Choose a unique username"
+                    />
+
+                    <p className="mt-1 text-xs text-gray-500">
+                        Use 30 characters or fewer. Letters, numbers, hyphens, and underscores are allowed.
+                    </p>
+
+                    <InputError className="mt-2" message={errors.username} />
+                </div>
+
+                <div>
                     <InputLabel htmlFor="email" value="Email" />
 
                     <TextInput
@@ -63,7 +86,7 @@ export default function UpdateProfileInformation({
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
                         required
-                        autoComplete="username"
+                        autoComplete="email"
                     />
 
                     <InputError className="mt-2" message={errors.email} />
@@ -77,7 +100,7 @@ export default function UpdateProfileInformation({
                                 href={route('verification.send')}
                                 method="post"
                                 as="button"
-                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#7A4A57] focus:ring-offset-2"
                             >
                                 Click here to re-send the verification email.
                             </Link>
