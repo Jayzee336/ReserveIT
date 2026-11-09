@@ -13,7 +13,6 @@ use App\\Models\\UserConcernReplyHistory;
 use Carbon\\Carbon;
 use Illuminate\\Database\\Seeder;
 use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Support\\Str;
 use RuntimeException;
 
 class DemoScenarioSeeder extends Seeder
@@ -130,8 +129,14 @@ class DemoScenarioSeeder extends Seeder
         $admin = $users['admin'];
         $now = Carbon::now();
 
-        $liveStart = $now->copy()->subHours(3);
-        $liveEnd = $now->copy()->subHour();
+        // Use a fixed daytime slot that is already over, including when the seeder
+        // is run shortly after midnight. This keeps the live overtime case valid.
+        $liveDate = $now->copy()->startOfDay();
+        if ($now->hour < 10) {
+            $liveDate->subDay();
+        }
+        $liveStart = $liveDate->copy()->setTime(8, 0);
+        $liveEnd = $liveDate->copy()->setTime(9, 0);
 
         $settings = SystemSetting::current();
         $settings->update([
