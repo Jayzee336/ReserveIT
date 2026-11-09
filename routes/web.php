@@ -560,9 +560,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/my-tickets/{concern}', [UserConcernController::class, 'updateMyTicket'])
         ->name('concerns.my-tickets.update');
 
-    // Admin Reply to Concerns
+    // Super Admin — Reply to Concerns
     Route::post('/admin/concerns/{concern}/reply', [UserConcernController::class, 'reply'])
-        ->middleware('role:super_admin,facility_admin')
+        ->middleware('role:super_admin')
         ->name('admin.concerns.reply');
 
     // Super Admin — Edit an Existing Concern Reply
