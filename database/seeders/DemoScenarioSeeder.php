@@ -1,18 +1,18 @@
 <?php
 
-namespace Database\\Seeders;
+namespace Database\Seeders;
 
-use App\\Models\\ActivityLog;
-use App\\Models\\Booking;
-use App\\Models\\Facility;
-use App\\Models\\SystemSetting;
-use App\\Models\\User;
-use App\\Models\\UserConcern;
-use App\\Models\\UserConcernEditHistory;
-use App\\Models\\UserConcernReplyHistory;
-use Carbon\\Carbon;
-use Illuminate\\Database\\Seeder;
-use Illuminate\\Support\\Facades\\DB;
+use App\Models\ActivityLog;
+use App\Models\Booking;
+use App\Models\Facility;
+use App\Models\SystemSetting;
+use App\Models\User;
+use App\Models\UserConcern;
+use App\Models\UserConcernEditHistory;
+use App\Models\UserConcernReplyHistory;
+use Carbon\Carbon;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class DemoScenarioSeeder extends Seeder
