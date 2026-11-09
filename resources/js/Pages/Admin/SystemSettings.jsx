@@ -385,13 +385,12 @@ export default function SystemSettings({ settings }) {
                             </div>
                         </div>
                     </SectionCard>
-                    <div className="xl:col-span-2">
                     <SectionCard
                         icon={Wallet}
                         title="Financial Policies"
                         description="Set the overtime rate and preview how the hourly fee translates into shorter overtime periods."
                     >
-                        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
+                        <div className="space-y-5">
                             <div>
                                 <label className={labelClass} htmlFor="overtime-fee">
                                     Overtime Fee (Per Hour)
@@ -436,7 +435,6 @@ export default function SystemSettings({ settings }) {
                             </div>
                         </div>
                     </SectionCard>
-                    </div>
 
                     <div className="xl:col-span-2">
                     <SectionCard
