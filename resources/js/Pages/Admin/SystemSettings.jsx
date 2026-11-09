@@ -413,12 +413,14 @@ export default function SystemSettings({ settings }) {
                         </p>
                     </SectionCard>
 
+                    <div className="xl:col-span-2">
                     <SectionCard
                         icon={Trash2}
                         title="Unapproved Booking Cleanup"
                         description="Choose how long expired pending bookings are retained before automated cleanup."
                     >
-                        <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                        <div className="grid gap-5 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+                        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
                             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
                             <div>
                                 <p className="text-sm font-semibold text-amber-900">
@@ -435,7 +437,7 @@ export default function SystemSettings({ settings }) {
                                 Automatic cleanup policy
                             </legend>
 
-                            <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+                            <div className="grid gap-3 sm:grid-cols-3">
                                 {purgeOptions.map((option) => {
                                     const selected =
                                         Number(autoPurgeDays) === option.days;
@@ -475,6 +477,7 @@ export default function SystemSettings({ settings }) {
                                 })}
                             </div>
                         </fieldset>
+                        </div>
 
                         {Number(autoPurgeDays) > 0 ? (
                             <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
@@ -496,6 +499,7 @@ export default function SystemSettings({ settings }) {
                             </div>
                         )}
                     </SectionCard>
+                    </div>
                 </div>
             <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 px-5 py-4 shadow-lg backdrop-blur">
                 <p className="text-sm text-slate-500">
