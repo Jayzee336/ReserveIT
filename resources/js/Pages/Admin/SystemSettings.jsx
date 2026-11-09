@@ -402,9 +402,6 @@ export default function SystemSettings({ settings }) {
                                 value={fee}
                                 disabled={saving}
                                 onChange={(e) => setFee(e.target.value)}
-                                onBlur={() => saveSettings({
-                                    overtime_fee_per_hour: fee,
-                                })}
                                 className={`${inputClass} pl-9`}
                             />
                         </div>
