@@ -10,6 +10,7 @@ export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
+        username: '',
         email: '',
         password: '',
         password_confirmation: '',
@@ -69,6 +70,24 @@ export default function Register() {
                         <InputError message={errors.name} className="mt-1 text-xs" />
                     </div>
 
+                    {/* Username */}
+                    <div>
+                        <InputLabel htmlFor="username" value="Username" className="text-xs font-bold text-slate-700" />
+                        <div className="relative mt-1">
+                            <TextInput
+                                id="username"
+                                name="username"
+                                value={data.username}
+                                className="block w-full rounded-2xl border-[#D8C9C2] bg-[#FFFBF6] py-2.5 px-3.5 text-xs font-medium text-slate-900 focus:border-[#7A4A57] focus:ring-[#7A4A57]"
+                                autoComplete="username"
+                                onChange={(e) => setData('username', e.target.value.toLowerCase())}
+                                required
+                            />
+                        </div>
+                        <p className="mt-1 text-[11px] text-slate-500">Use letters, numbers, hyphens, or underscores.</p>
+                        <InputError message={errors.username} className="mt-1 text-xs" />
+                    </div>
+
                     {/* Email */}
                     <div>
                         <InputLabel htmlFor="email" value="Email Address" className="text-xs font-bold text-slate-700" />
@@ -79,7 +98,7 @@ export default function Register() {
                                 name="email"
                                 value={data.email}
                                 className="block w-full rounded-2xl border-[#D8C9C2] bg-[#FFFBF6] py-2.5 px-3.5 text-xs font-medium text-slate-900 focus:border-[#7A4A57] focus:ring-[#7A4A57]"
-                                autoComplete="username"
+                                autoComplete="email"
                                 onChange={(e) => setData('email', e.target.value)}
                                 required
                             />

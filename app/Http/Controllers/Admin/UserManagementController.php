@@ -22,7 +22,7 @@ class UserManagementController extends Controller
      */
     public function index(): Response
     {
-        $users = User::select('id', 'name', 'email', 'role', 'is_active', 'created_at')
+        $users = User::select('id', 'name', 'username', 'email', 'role', 'is_active', 'created_at')
             ->with('managedFacilities:id,name')
             ->orderBy('name')
             ->get()
@@ -41,27 +41,32 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Create a new user account with an auto-generated temporary password.
+     * Create an account with an admin-chosen password or a generated temporary password.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:30', 'unique:users,username'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'role' => ['required', Rule::in(['super_admin', 'facility_admin', 'user'])],
+            'password_mode' => ['required', Rule::in(['generated', 'manual'])],
+            'password' => ['required_if:password_mode,manual', 'nullable', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
             'assigned_facility_ids' => ['nullable', 'array', 'max:100'],
             'assigned_facility_ids.*' => ['required', 'string', 'distinct', 'exists:facilities,id'],
         ]);
 
-        $tempPassword = Str::password(12);
+        $isTemporaryPassword = $validated['password_mode'] === 'generated';
+        $accountPassword = $isTemporaryPassword ? Str::password(12) : $validated['password'];
 
-        $user = DB::transaction(function () use ($validated, $tempPassword) {
+        $user = DB::transaction(function () use ($validated, $accountPassword, $isTemporaryPassword) {
             $user = User::create([
                 'name' => $validated['name'],
+                'username' => $validated['username'],
                 'email' => $validated['email'],
                 'role' => $validated['role'],
-                'password' => Hash::make($tempPassword),
-                'must_change_password' => true,
+                'password' => Hash::make($accountPassword),
+                'must_change_password' => $isTemporaryPassword,
             ]);
 
             if ($validated['role'] === 'facility_admin') {
@@ -73,8 +78,10 @@ class UserManagementController extends Controller
 
         return redirect()->back()->with('newAccount', [
             'name' => $user->name,
+            'username' => $user->username,
             'email' => $user->email,
-            'tempPassword' => $tempPassword,
+            'tempPassword' => $accountPassword,
+            'passwordIsTemporary' => $isTemporaryPassword,
         ]);
     }
 
@@ -85,6 +92,7 @@ class UserManagementController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:30', Rule::unique('users', 'username')->ignore($user->id)],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'assigned_facility_ids' => ['sometimes', 'nullable', 'array', 'max:100'],
             'assigned_facility_ids.*' => ['required', 'string', 'distinct', 'exists:facilities,id'],
@@ -98,6 +106,7 @@ class UserManagementController extends Controller
 
             $details = [
                 'name' => $validated['name'],
+                'username' => $validated['username'],
                 'email' => $validated['email'],
             ];
 
@@ -199,8 +208,10 @@ class UserManagementController extends Controller
 
         return redirect()->back()->with('newAccount', [
             'name' => $user->name,
+            'username' => $user->username,
             'email' => $user->email,
             'tempPassword' => $tempPassword,
+            'passwordIsTemporary' => true,
         ]);
     }
 

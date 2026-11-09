@@ -320,8 +320,12 @@ function DeleteUserConfirmModal({
 function AddUserModal({ facilities = [], onClose }) {
     const [form, setForm] = useState({
         name: '',
+        username: '',
         email: '',
         role: 'facility_admin',
+        password_mode: 'generated',
+        password: '',
+        password_confirmation: '',
         assigned_facility_ids: [],
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -373,6 +377,16 @@ function AddUserModal({ facilities = [], onClose }) {
                     />
 
                     <input
+                        type="text"
+                        required
+                        maxLength={30}
+                        placeholder="Username"
+                        value={form.username}
+                        onChange={(e) => updateField('username', e.target.value.toLowerCase())}
+                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
+                    />
+
+                    <input
                         type="email"
                         required
                         placeholder="Email address"
@@ -380,6 +394,37 @@ function AddUserModal({ facilities = [], onClose }) {
                         onChange={(e) => updateField('email', e.target.value)}
                         className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                     />
+
+                    <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-500">Password Setup</label>
+                        <select
+                            value={form.password_mode}
+                            onChange={(e) => {
+                                const mode = e.target.value;
+                                setForm((current) => ({
+                                    ...current,
+                                    password_mode: mode,
+                                    password: '',
+                                    password_confirmation: '',
+                                }));
+                            }}
+                            className="block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
+                        >
+                            <option value="generated">Generate temporary password</option>
+                            <option value="manual">Set password manually</option>
+                        </select>
+                    </div>
+
+                    {form.password_mode === 'manual' ? (
+                        <>
+                            <input type="password" required autoComplete="new-password" placeholder="Password" value={form.password} onChange={(e) => updateField('password', e.target.value)} className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]" />
+                            <input type="password" required autoComplete="new-password" placeholder="Confirm password" value={form.password_confirmation} onChange={(e) => updateField('password_confirmation', e.target.value)} className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]" />
+                        </>
+                    ) : (
+                        <p className="text-xs text-gray-400">
+                            A temporary password will be generated and shown once after creation. The user must change it on first login.
+                        </p>
+                    )}
 
                     <select
                         value={form.role}
@@ -422,11 +467,6 @@ function AddUserModal({ facilities = [], onClose }) {
                         </div>
                     )}
 
-                    <p className="text-xs text-gray-400">
-                        A temporary password will be generated automatically
-                        and shown once after creation.
-                    </p>
-
                     <button
                         type="submit"
                         disabled={isSubmitting}
@@ -443,6 +483,7 @@ function AddUserModal({ facilities = [], onClose }) {
 function EditUserModal({ user, facilities = [], onClose }) {
     const [form, setForm] = useState({
         name: user.name,
+        username: user.username ?? '',
         email: user.email,
         assigned_facility_ids: user.assigned_facility_ids ?? [],
     });
@@ -514,6 +555,13 @@ function EditUserModal({ user, facilities = [], onClose }) {
                             onChange={(e) => updateField('name', e.target.value)}
                             className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                         />
+                    </div>
+
+                    <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-500">
+                            Username
+                        </label>
+                        <input type="text" required maxLength={30} placeholder="Username" value={form.username} onChange={(e) => updateField('username', e.target.value.toLowerCase())} className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]" />
                     </div>
 
                     <div>
@@ -618,6 +666,7 @@ function FacilityAssignmentModal({ user, facilities = [], onClose }) {
             route('admin.users.update', user.id),
             {
                 name: user.name,
+                username: user.username,
                 email: user.email,
                 assigned_facility_ids: selectedIds,
             },
@@ -779,16 +828,24 @@ function TempPasswordModal({ account, onClose }) {
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
             <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl">
                 <div className="border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-white px-6 py-4">
-                    <h2 className="font-bold text-gray-900">Password Ready</h2>
+                    <h2 className="font-bold text-gray-900">{account.passwordIsTemporary ? 'Temporary Password Ready' : 'Account Password Set'}</h2>
                 </div>
 
                 <div className="space-y-4 px-6 py-5">
                     <p className="text-sm text-gray-600">
-                        <strong>{account.name}</strong>'s temporary password
-                        is ready. Share it securely — it will not be shown again.
+                        <strong>{account.name}</strong>'s account has been created. Share the password securely — it will not be shown again.
                     </p>
 
                     <div className="space-y-2">
+                        <div>
+                            <label className="mb-1 block text-xs font-medium text-gray-400">
+                                Username
+                            </label>
+                            <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 font-mono text-sm">
+                                {account.username}
+                            </p>
+                        </div>
+
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-400">
                                 Email
@@ -800,7 +857,7 @@ function TempPasswordModal({ account, onClose }) {
 
                         <div>
                             <label className="mb-1 block text-xs font-medium text-gray-400">
-                                Temporary Password
+                                {account.passwordIsTemporary ? 'Temporary Password' : 'Password'}
                             </label>
                             <div className="flex items-center gap-2">
                                 <p className="flex-1 break-all rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 font-mono text-sm">
@@ -823,10 +880,11 @@ function TempPasswordModal({ account, onClose }) {
                         </div>
                     </div>
 
-                    <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-600">
-                        The user will be required to change this password when
-                        they next log in.
-                    </p>
+                    {account.passwordIsTemporary && (
+                        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-600">
+                            The user will be required to change this password when they next log in.
+                        </p>
+                    )}
 
                     <button
                         type="button"
@@ -983,6 +1041,7 @@ export default function Users({
 
         const matchesSearch =
             (user.name?.toLowerCase().includes(query) ?? false) ||
+            (user.username?.toLowerCase().includes(query) ?? false) ||
             (user.email?.toLowerCase().includes(query) ?? false);
 
         const matchesRole =
@@ -1024,7 +1083,7 @@ export default function Users({
 
                         <input
                             type="text"
-                            placeholder="Search name or email..."
+                            placeholder="Search name, username, or email..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-9 text-sm focus:border-[#A98C97] focus:ring-2 focus:ring-[#A98C97]"
@@ -1079,6 +1138,9 @@ export default function Users({
                                         Name
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Username
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                                         Email
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
@@ -1100,7 +1162,7 @@ export default function Users({
                                 {filteredUsers.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan={6}
+                                            colSpan={7}
                                             className="px-6 py-8 text-center text-sm text-gray-400"
                                         >
                                             No matching users found.
@@ -1121,6 +1183,10 @@ export default function Users({
                                                             (you)
                                                         </span>
                                                     )}
+                                                </td>
+
+                                                <td className="px-6 py-4 text-sm font-medium text-gray-700">
+                                                    {user.username || '—'}
                                                 </td>
 
                                                 <td className="px-6 py-4 text-sm text-gray-500">
