@@ -413,26 +413,28 @@ class DemoScenarioSeeder extends Seeder
                 'booking_date' => $scenario['date'],
             ];
 
-            if ($this->productionMode) {
-                $existing = Booking::find($scenario['id']);
+            $booking = Booking::unguarded(function () use ($scenario, $attributes) {
+                if ($this->productionMode) {
+                    $existing = Booking::find($scenario['id']);
 
-                if ($existing && ! str_starts_with((string) $existing->notes, '[DEMO]')) {
-                    throw new RuntimeException(
-                        "Booking ID {$scenario['id']} is already occupied by a non-demo booking. No production demo data was committed."
+                    if ($existing && ! str_starts_with((string) $existing->notes, '[DEMO]')) {
+                        throw new RuntimeException(
+                            "Booking ID {$scenario['id']} is already occupied by a non-demo booking. No production demo data was committed."
+                        );
+                    }
+
+                    // Create once only: a rerun must not overwrite live edits or actions.
+                    return Booking::firstOrCreate(
+                        ['id' => $scenario['id']],
+                        $attributes
                     );
                 }
 
-                // Create once only: a rerun must not overwrite live edits or actions.
-                $booking = Booking::firstOrCreate(
+                return Booking::updateOrCreate(
                     ['id' => $scenario['id']],
                     $attributes
                 );
-            } else {
-                $booking = Booking::updateOrCreate(
-                    ['id' => $scenario['id']],
-                    $attributes
-                );
-            }
+            });
 
             $this->seedBookingActivity($booking, $users);
         }
