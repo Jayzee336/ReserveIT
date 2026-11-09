@@ -17,31 +17,64 @@ use RuntimeException;
 
 class DemoScenarioSeeder extends Seeder
 {
+    private bool $productionMode = false;
+
+    private ?string $productionTempPassword = null;
+
     /**
-     * Seed a compact, repeatable set of local-only scenarios.
+     * Seed a compact, repeatable set of demo scenarios.
      *
      * Run with:
      * php artisan db:seed --class=DemoScenarioSeeder
      */
     public function run(): void
     {
-        if (! app()->environment(['local', 'testing'])) {
-            throw new RuntimeException('DemoScenarioSeeder is restricted to local/testing environments.');
+        $environment = app()->environment();
+        $driver = DB::connection()->getDriverName();
+
+        $isLocalDatabase = in_array($environment, ['local', 'testing'], true)
+            && $driver === 'sqlite';
+
+        $isExplicitProductionRun = $environment === 'production'
+            && $driver === 'pgsql'
+            && filter_var(env('RESERVEIT_DEMO_SEED_ENABLED', false), FILTER_VALIDATE_BOOLEAN);
+
+        if (! $isLocalDatabase && ! $isExplicitProductionRun) {
+            throw new RuntimeException(
+                'DemoScenarioSeeder only runs on local SQLite, or on production PostgreSQL when RESERVEIT_DEMO_SEED_ENABLED=true.'
+            );
         }
 
-        if (DB::connection()->getDriverName() !== 'sqlite') {
-            throw new RuntimeException('DemoScenarioSeeder only runs against a local SQLite database.');
+        $this->productionMode = $isExplicitProductionRun;
+
+        if ($this->productionMode) {
+            $temporaryPassword = env('RESERVEIT_DEMO_TEMP_PASSWORD');
+
+            if (! is_string($temporaryPassword) || strlen($temporaryPassword) < 20) {
+                throw new RuntimeException(
+                    'For a production demo seed, set RESERVEIT_DEMO_TEMP_PASSWORD to a temporary password at least 20 characters long.'
+                );
+            }
+
+            $this->productionTempPassword = $temporaryPassword;
         }
 
         $this->command?->info('Preparing ReserveIT demo accounts and test scenarios...');
 
-        $users = $this->seedAdditionalAccounts();
-        $this->seedBookings($users);
-        $this->seedSupportTickets($users);
+        DB::transaction(function (): void {
+            $users = $this->seedAdditionalAccounts();
+            $this->seedBookings($users);
+            $this->seedSupportTickets($users);
+        });
 
         $this->command?->info('ReserveIT demo scenarios are ready.');
         $this->command?->line('Accounts: user@test.com, user2@test.com, user3@test.com, facility@test.com, facility2@test.com, facility3@test.com, facility4@test.com, admin@test.com');
-        $this->command?->line('Demo password for all seeded accounts: password');
+
+        if ($this->productionMode) {
+            $this->command?->warn('New production demo accounts require the temporary password supplied through Render environment variables and must change it at first login.');
+        } else {
+            $this->command?->line('Demo password for all seeded accounts: password');
+        }
     }
 
     /**
@@ -91,14 +124,43 @@ class DemoScenarioSeeder extends Seeder
         ];
 
         foreach ($accounts as $key => $account) {
-            $user = User::firstOrNew(['email' => $account['email']]);
-            $user->fill([
-                ...$account,
-                'password' => 'password',
-                'must_change_password' => false,
-                'is_active' => true,
-            ]);
-            $user->save();
+            if ($this->productionMode) {
+                $user = User::withTrashed()->where('email', $account['email'])->first();
+
+                if ($user) {
+                    if (
+                        $user->trashed()
+                        || $user->username !== $account['username']
+                        || $user->role !== $account['role']
+                    ) {
+                        throw new RuntimeException(
+                            "A production account already uses {$account['email']} but does not match the expected demo identity. No records were changed."
+                        );
+                    }
+                } else {
+                    if (User::withTrashed()->where('username', $account['username'])->exists()) {
+                        throw new RuntimeException(
+                            "The username {$account['username']} is already in use. No records were changed."
+                        );
+                    }
+
+                    $user = User::create([
+                        ...$account,
+                        'password' => $this->productionTempPassword,
+                        'must_change_password' => true,
+                        'is_active' => true,
+                    ]);
+                }
+            } else {
+                $user = User::firstOrNew(['email' => $account['email']]);
+                $user->fill([
+                    ...$account,
+                    'password' => 'password',
+                    'must_change_password' => false,
+                    'is_active' => true,
+                ]);
+                $user->save();
+            }
 
             $users[$key] = $user;
         }
@@ -138,11 +200,15 @@ class DemoScenarioSeeder extends Seeder
         $liveStart = $liveDate->copy()->setTime(8, 0);
         $liveEnd = $liveDate->copy()->setTime(9, 0);
 
-        $settings = SystemSetting::current();
-        $settings->update([
-            'overtime_fee_per_hour' => max((float) $settings->overtime_fee_per_hour, 150),
-            'overtime_grace_minutes' => 15,
-        ]);
+        // Keep the local demo settings convenient, but never alter live production
+        // overtime pricing or grace-period settings while adding sample records.
+        if (! $this->productionMode) {
+            $settings = SystemSetting::current();
+            $settings->update([
+                'overtime_fee_per_hour' => max((float) $settings->overtime_fee_per_hour, 150),
+                'overtime_grace_minutes' => 15,
+            ]);
+        }
 
         $scenarios = [
             [
@@ -331,14 +397,42 @@ class DemoScenarioSeeder extends Seeder
             ],
         ];
 
-        foreach ($scenarios as $scenario) {
-            $booking = Booking::updateOrCreate(
-                ['id' => $scenario['id']],
-                [
-                    ...$scenario,
-                    'booking_date' => $scenario['date'],
-                ]
+        $requiredFacilityIds = collect($scenarios)->pluck('facility_id')->unique();
+        $availableFacilityIds = Facility::whereIn('id', $requiredFacilityIds)->pluck('id');
+        $missingFacilityIds = $requiredFacilityIds->diff($availableFacilityIds);
+
+        if ($missingFacilityIds->isNotEmpty()) {
+            throw new RuntimeException(
+                'Missing facilities required by demo scenarios: ' . $missingFacilityIds->implode(', ') . '. No production demo data was committed.'
             );
+        }
+
+        foreach ($scenarios as $scenario) {
+            $attributes = [
+                ...$scenario,
+                'booking_date' => $scenario['date'],
+            ];
+
+            if ($this->productionMode) {
+                $existing = Booking::find($scenario['id']);
+
+                if ($existing && ! str_starts_with((string) $existing->notes, '[DEMO]')) {
+                    throw new RuntimeException(
+                        "Booking ID {$scenario['id']} is already occupied by a non-demo booking. No production demo data was committed."
+                    );
+                }
+
+                // Create once only: a rerun must not overwrite live edits or actions.
+                $booking = Booking::firstOrCreate(
+                    ['id' => $scenario['id']],
+                    $attributes
+                );
+            } else {
+                $booking = Booking::updateOrCreate(
+                    ['id' => $scenario['id']],
+                    $attributes
+                );
+            }
 
             $this->seedBookingActivity($booking, $users);
         }
@@ -380,14 +474,23 @@ class DemoScenarioSeeder extends Seeder
         }
 
         foreach ($events as $event) {
-            ActivityLog::updateOrCreate(
-                [
-                    'booking_id' => $booking->id,
-                    'action' => $event['action'],
-                    'performed_by' => $event['performed_by'],
-                ],
-                ['reason' => $event['reason'] ?? null]
-            );
+            $activityIdentity = [
+                'booking_id' => $booking->id,
+                'action' => $event['action'],
+                'performed_by' => $event['performed_by'],
+            ];
+
+            if ($this->productionMode) {
+                ActivityLog::firstOrCreate(
+                    $activityIdentity,
+                    ['reason' => $event['reason'] ?? null]
+                );
+            } else {
+                ActivityLog::updateOrCreate(
+                    $activityIdentity,
+                    ['reason' => $event['reason'] ?? null]
+                );
+            }
         }
     }
 
@@ -435,18 +538,20 @@ class DemoScenarioSeeder extends Seeder
 
         foreach ($tickets as $ticket) {
             $marker = '[RESERVEIT ' . strtoupper($ticket['key']) . ']';
-            $concern = UserConcern::updateOrCreate(
-                ['message' => $marker],
-                [
-                    'user_id' => $users[$ticket['user']]->id,
-                    'message' => $marker,
-                    'appeal_date' => Carbon::now()->subDays(2)->toDateString(),
-                    'category' => $ticket['category'],
-                    'detailed_info' => $ticket['details'],
-                    'status' => $ticket['status'],
-                    'admin_reply' => $ticket['reply'],
-                ]
-            );
+            $ticketAttributes = [
+                'user_id' => $users[$ticket['user']]->id,
+                'message' => $marker,
+                'appeal_date' => Carbon::now()->subDays(2)->toDateString(),
+                'category' => $ticket['category'],
+                'detailed_info' => $ticket['details'],
+                'status' => $ticket['status'],
+                'admin_reply' => $ticket['reply'],
+            ];
+
+            // Production reruns must preserve any edits made to seeded tickets.
+            $concern = $this->productionMode
+                ? UserConcern::firstOrCreate(['message' => $marker], $ticketAttributes)
+                : UserConcern::updateOrCreate(['message' => $marker], $ticketAttributes);
 
             if ($ticket['key'] === 'demo-ticket-ui') {
                 UserConcernEditHistory::firstOrCreate(
