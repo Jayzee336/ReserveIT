@@ -1,110 +1,280 @@
-# ReserveIT — UIC Facility Booking System
+# ReserveIT — UIC Facility Booking and Management System
 
-ReserveIT is a web-based facility reservation and scheduling management system designed for the University of the Immaculate Conception (UIC). It allows users to request facilities, supports role-based booking decisions, and gives authorized administrators tools to manage facilities, bookings, and related workflows.
+ReserveIT is a web-based facility reservation and operations platform designed for the **University of the Immaculate Conception (UIC)**. It centralizes facility discovery, booking requests, approval workflows, attendance monitoring, overtime billing, consent-document handling, and administrative management in one role-based application.
 
-> **Project status:** This repository contains application source code. Each installation needs its own environment configuration and database. The repository does not include your local `.env`, database records, or user accounts.
+The project is built as a Laravel application with a React interface powered by Inertia.js. It can be run locally for development and is configured for container-based deployment.
 
-## Contents
+> **Live application:** https://reserveit-bpgu.onrender.com  
+> **Source code:** https://github.com/Jayzee336/ReserveIT
 
+---
+
+## Table of contents
+
+- [Project overview](#project-overview)
 - [Features](#features)
-- [Roles and permissions](#roles-and-permissions)
+- [User roles](#user-roles)
+- [Booking lifecycle](#booking-lifecycle)
+- [Overtime calculation](#overtime-calculation)
 - [Technology stack](#technology-stack)
-- [Requirements](#requirements)
-- [Run locally on Windows](#run-locally-on-windows)
-- [Environment variables and Google sign-in](#environment-variables-and-google-sign-in)
-- [Create local test accounts](#create-local-test-accounts)
-- [Booking workflow notes](#booking-workflow-notes)
-- [Useful commands](#useful-commands)
+- [Production deployment architecture](#production-deployment-architecture)
+- [Clone and run locally on Windows](#clone-and-run-locally-on-windows)
+- [Environment configuration](#environment-configuration)
+- [Database and file storage](#database-and-file-storage)
+- [Deploying your own instance](#deploying-your-own-instance)
+- [Scheduled tasks and maintenance](#scheduled-tasks-and-maintenance)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
-- [Additional documentation](#additional-documentation)
-- [Security notes](#security-notes)
+- [Project documentation](#project-documentation)
+- [Security and data protection](#security-and-data-protection)
+
+---
+
+## Project overview
+
+ReserveIT helps an institution manage shared facilities and the people who use them. Instead of handling facility requests through disconnected messages or manual schedules, users can submit booking requests through the application and authorized administrators can process them using a consistent workflow.
+
+The system separates ordinary users, facility administrators, and super administrators. Facility administrators are assigned to specific facilities, while super administrators have system-wide administrative access.
+
+The application stores operational records in a relational database. Uploaded consent letters are stored separately in private object storage so that access can be checked before a file is downloaded.
 
 ## Features
 
-- **Facility reservations:** Browse available facilities and submit booking requests.
-- **Booking approval workflow:** Authorized facility administrators can review and approve or decline requests for facilities assigned to them.
-- **Role-based access control:** Separates regular users, facility administrators, and super administrators.
-- **Facility management:** Authorized super administrators can create and update facility records.
-- **Facility-admin assignments:** Super administrators can assign eligible facility administrators to facilities. Facility administrators' access is scoped to their assignments.
-- **Booking updates and cancellation:** Users can update pending booking details and cancel bookings according to the application's booking rules.
-- **Check-in and check-out:** Authorized facility administrators can check in and check out bookings for facilities they manage.
-- **Active-booking monitoring:** Administrator views can display active bookings and calculate overtime information.
-- **Overtime billing:** Booking records support overtime tracking and fee calculation based on the configured rate and booking duration.
-- **Unapproved-booking cleanup:** Includes a command and system settings for managing the cleanup of eligible unapproved bookings. Review the current settings and operations documentation before enabling automatic cleanup.
-- **Activity logging:** Records selected system activities for administrative review.
-- **Consent and document workflows:** Supports consent-related document handling and authorized downloads.
-- **User concerns:** Users can submit concerns and view replies through the support workflow.
-- **Google sign-in:** Optional Google OAuth sign-in when valid credentials and callback settings are configured.
+### User and account management
 
-The exact actions available to an account depend on its role, facility assignments, application settings, and the current implementation.
+- Account registration, login, email verification, password reset, and logout.
+- Profile management, including name, username, email, and password.
+- Role-based access and active/inactive account controls.
+- Temporary passwords for administrator-created accounts, with a forced password-change flow.
+- Optional Google sign-in when OAuth credentials are configured.
 
-## Roles and permissions
+### Facility discovery and scheduling
 
-| Role | Purpose |
+- Browse facilities and view facility details.
+- View facility schedules and existing booking availability.
+- Calendar and schedule-grid views.
+- Facility information, capacity, location, requirements, and supported manpower options.
+- Facility administrators can be assigned to one or more facilities.
+
+### Booking management
+
+- Submit facility booking requests with event details, date, start/end time, attendee count, notes, and optional manpower requirements.
+- Validate booking dates, operating hours, duration, capacity, time intervals, and conflicting reservations.
+- Pending and approved booking states.
+- Edit eligible pending bookings and cancel bookings with a recorded reason.
+- Facility-scoped approval and decline workflows.
+- Approval attribution and database notifications for booking updates.
+- Optional or required consent-letter upload, depending on facility and system rules.
+
+### Check-in, check-out, and operations
+
+- Authorized booking owners and administrators can check in and check out eligible approved bookings.
+- Configurable early check-in allowance.
+- Active-booking monitoring for administrators.
+- Overtime duration and fee calculation at checkout.
+- Overtime rate and fee snapshots saved to the booking so later changes to the system rate do not rewrite completed charges.
+- Administrator-only recording of manual overtime payment receipt.
+
+### Administration and support
+
+- Super Admin facility management and Facility Admin assignment.
+- Booking approval and operational dashboards.
+- Configurable booking rules, operating hours, approval scope, cleanup buffer, advance booking window, duration limits, consent requirements, overtime fee, grace period, and unapproved-booking retention.
+- User concerns/support tickets with administrator replies.
+- Activity and notification records.
+
+---
+
+## User roles
+
+| Role | Responsibilities |
 |---|---|
-| `user` | Regular account that can use booking and supported user-facing workflows. |
-| `facility_admin` | Manages bookings and check-in/check-out for facilities assigned to that administrator. |
-| `super_admin` | Performs higher-level facility and administrator management and has broader administrative access. |
+| **User** (`user`) | Browse facilities and schedules, submit and manage their own eligible bookings, check in/out their own approved bookings, manage their profile, and submit/view concerns. |
+| **Facility Admin** (`facility_admin`) | Manage bookings and operations for facilities assigned to them, review requests, approve or decline, check in/out, monitor active bookings, and respond to concerns. |
+| **Super Admin** (`super_admin`) | System-wide administration, including facilities, users, Facility Admin assignments, booking settings, approvals, concerns, and operational monitoring. |
 
-A facility administrator's role alone does not necessarily grant access to every facility. The administrator must be assigned to the relevant facility. Create administrator accounts only when you are authorized to do so.
+**Important:** A Facility Admin's role does not automatically grant access to every facility. Their permissions are limited by the facility assignments configured by a Super Admin.
+
+---
+
+## Booking lifecycle
+
+A typical booking follows this process:
+
+1. A user selects a facility and submits a booking request.
+2. Laravel validates the request and checks the facility's rules and schedule conflicts.
+3. Depending on the configured auto-approval policy, the booking becomes **Pending** or **Approved**.
+4. An authorized administrator reviews pending requests and approves or declines them when manual review is required.
+5. The user checks in for an approved booking within the allowed check-in window.
+6. The user or an authorized administrator checks out the booking after use.
+7. At checkout, the system records the checkout time and calculates any applicable overtime charge.
+
+### Main booking rules
+
+The server validates the booking rather than relying only on frontend checks. Rules include:
+
+- Facility existence and booking date/time validity.
+- Configured maximum booking duration and advance booking window.
+- Operating hours and 15-minute time increments.
+- Facility capacity and applicable manpower availability.
+- Conflicts with pending and approved bookings.
+- Configured cleanup buffer between neighboring bookings.
+- Consent-document requirements where applicable.
+- Consent uploads limited to PDF, DOC, or DOCX files up to 5 MB.
+
+A pending request is not the same as an approved reservation. Pending requests may temporarily hold a time slot while awaiting review.
+
+---
+
+## Overtime calculation
+
+ReserveIT calculates overtime when an eligible booking is checked out.
+
+### Calculation rules
+
+1. The system combines the booking date and scheduled end time to determine when the booking should finish.
+2. The configured **overtime grace period** is added to the scheduled end time.
+3. Overtime is counted only when the booking was checked in on or before its scheduled end time and checkout occurs after the grace period.
+4. The overtime duration is measured in whole minutes after the grace period.
+5. The hourly fee is prorated by the number of overtime minutes and rounded to two decimal places.
+
+**Formula:**
+
+```text
+Overtime Minutes = Checkout Time - (Scheduled End Time + Grace Period)
+
+Overtime Fee = (Overtime Minutes / 60) × Hourly Overtime Rate
+```
+
+The overtime fee is set to zero when the booking is not eligible for overtime or checkout occurs within the grace period.
+
+### Example
+
+Assume the configured hourly rate is **₱150.00** and the grace period is **15 minutes**.
+
+- Scheduled end: 10:00 AM
+- Grace period ends: 10:15 AM
+- Actual checkout: 10:45 AM
+- Chargeable overtime: 30 minutes
+
+```text
+(30 / 60) × ₱150.00 = ₱75.00
+```
+
+The overtime fee is therefore **₱75.00**.
+
+The rate and final fee are stored as snapshots on the booking at checkout. Changing the system-wide hourly rate later does not alter an already finalized booking fee. A positive fee is marked unpaid until an authorized Facility Admin or Super Admin records receipt of payment; booking owners cannot mark an overtime fee as paid.
+
+---
 
 ## Technology stack
 
-- **Backend:** PHP 8.2+, Laravel 12
-- **Frontend:** React 18, Inertia.js, Vite, Tailwind CSS
-- **Routing helpers:** Ziggy
-- **Database:** SQLite for a simple local setup; MySQL is also documented in the operations guide
-- **Authentication integration:** Laravel Socialite for Google OAuth
-- **Testing:** PHPUnit / Laravel feature tests
+| Layer | Technology | Purpose |
+|---|---|---|
+| Backend | PHP 8.2+ / Laravel 12 | Routing, authentication, validation, authorization, business logic, database access, and file workflows |
+| Frontend | React 18 | Interactive user interface |
+| Server/client bridge | Inertia.js 2 | Connects Laravel routes and React pages without a separate frontend API for most workflows |
+| Styling | Tailwind CSS | Responsive interface and component styling |
+| Build tooling | Vite 7 / Node.js | Frontend development server and production asset compilation |
+| UI libraries | Lucide React, Framer Motion, Sonner, FullCalendar | Icons, motion, toast notifications, and calendar views |
+| Routing helpers | Ziggy | Named Laravel routes in frontend components |
+| Authentication integration | Laravel Socialite | Optional Google OAuth sign-in |
+| Database access | Laravel Eloquent ORM | Models, relationships, queries, and migrations |
+| Automated tests | PHPUnit / Laravel test framework | Feature and application behavior tests |
 
-## Requirements
+---
 
-Install the following before starting:
+## Production deployment architecture
 
-- PHP 8.2 or newer, with the Laravel-required extensions, including PDO SQLite when using SQLite
-- Composer
-- Node.js 18 or newer and npm
+The current hosted ReserveIT deployment uses the following services:
+
+| Component | Service / technology | What it does |
+|---|---|---|
+| Web hosting | **Render** (Docker Web Service) | Builds and runs the Laravel application and serves HTTP traffic |
+| Container image | **Docker** | Packages the PHP application, Composer dependencies, NGINX/PHP-FPM runtime, and built frontend assets |
+| Production database | **Neon PostgreSQL** | Stores users, facilities, bookings, settings, notifications, and other relational application records |
+| Private file storage | **Tigris object storage** (S3-compatible) | Stores uploaded booking consent letters privately |
+| Frontend build | **Node.js and Vite** during Docker image build | Compiles React/CSS assets into the production build |
+
+### How deployment works
+
+The repository's `Dockerfile` uses a multi-stage build:
+
+1. A Node.js 22 Alpine stage installs frontend dependencies and runs `npm run build`.
+2. A PHP Composer stage installs production PHP dependencies.
+3. The final image uses the Serversideup PHP 8.3 FPM + NGINX image.
+4. The final image includes the Laravel application, Composer dependencies, and compiled frontend assets.
+5. Render routes HTTP traffic to the container's configured port (**10000**). The container health-check path is `/up`.
+
+The Docker startup configuration enables safe Laravel startup automation and forward database migrations. Production database migrations should still be reviewed before deployment.
+
+### Important deployment notes
+
+- The current hosted app is separate from a developer's local database and local files.
+- Render environment variables contain deployment-specific configuration and secrets; they are not stored in this repository.
+- The production database is PostgreSQL on Neon, not the local SQLite database used by the simple Windows setup below.
+- Consent letters use the private Tigris disk. They are not intended to be publicly accessible through a direct public URL.
+- Laravel scheduler definitions are included in the project. A scheduler process or scheduled job must be configured in the hosting environment for scheduled commands to execute continuously.
+
+---
+
+## Clone and run locally on Windows
+
+The following instructions use **Command Prompt** and a local SQLite database. They are suitable for a fresh development copy.
+
+### Prerequisites
+
+Install:
+
 - Git
+- PHP 8.2 or newer, with required Laravel extensions and PDO SQLite enabled
+- Composer
+- Node.js (22 LTS is recommended for consistency with the Docker frontend build) and npm
 
-On Windows, you can use XAMPP for PHP or another PHP environment. Make sure Command Prompt uses the intended PHP installation. Check the installed tools:
+XAMPP can provide PHP on Windows. Ensure the PHP executable you intend to use is available in your terminal's PATH.
+
+Check the installed tools:
 
 ```bat
+git --version
 php -v
 composer --version
 node -v
 npm -v
 ```
 
-## Run locally on Windows
-
-Open Command Prompt in the folder where you want to store the project.
-
 ### 1. Clone the repository
+
+Open Command Prompt in the folder where you keep your projects:
 
 ```bat
 git clone https://github.com/Jayzee336/ReserveIT.git
 cd ReserveIT
 ```
 
-If you already have the repository cloned, open Command Prompt in your existing project directory instead of cloning it again.
+To work from the UI/UX engineering branch instead of the repository's default branch:
 
-### 2. Install dependencies
+```bat
+git checkout feature/reserveit-uiux-engineering-upgrade
+git pull origin feature/reserveit-uiux-engineering-upgrade
+```
+
+### 2. Install backend and frontend dependencies
 
 ```bat
 composer install
 npm install
 ```
 
-### 3. Create the local environment file
+### 3. Create your local environment file
 
-The real `.env` file is intentionally not committed to GitHub.
+The real `.env` file is intentionally excluded from Git:
 
 ```bat
 copy .env.example .env
 ```
 
-Open `.env` in your editor and set the appropriate application URL and database settings. For a basic local SQLite setup, use these values as a guide:
+Open `.env` and confirm the local application and SQLite settings. For a basic local setup, use:
 
 ```dotenv
 APP_NAME=ReserveIT
@@ -115,17 +285,17 @@ APP_URL=http://127.0.0.1:8000
 DB_CONNECTION=sqlite
 ```
 
-Keep the other required variables in the copied `.env` file. Do not replace the entire file with only this snippet.
+Keep the other variables already present in the copied file. Do not replace the whole file with this short snippet.
 
 ### 4. Create the SQLite database file
 
-If `database\database.sqlite` does not exist, create an empty file from Command Prompt:
+Run this from the project root:
 
 ```bat
 if not exist database\database.sqlite type nul > database\database.sqlite
 ```
 
-Make sure PDO SQLite is enabled for the PHP CLI. If you use MySQL instead, create a local database and update the appropriate `DB_*` variables in `.env`.
+Make sure the PHP CLI has the PDO SQLite extension enabled. If you prefer MySQL or PostgreSQL for local development, create a database and configure the matching `DB_*` variables instead.
 
 ### 5. Generate the application key and run migrations
 
@@ -135,169 +305,273 @@ php artisan optimize:clear
 php artisan migrate
 ```
 
-Migrations create the database tables; they **do not** copy user accounts, facilities, bookings, or other records from another developer's computer.
+Migrations create the schema in your own local database. They do not copy the hosted application's user accounts, facilities, bookings, or other records.
 
-> **Warning:** Avoid `php artisan migrate:fresh` unless you intentionally want to delete all tables and data in the selected database. Never run it against a database containing information you need to keep.
+> **Data safety:** Do not run `php artisan migrate:fresh` on a database containing data you want to keep. It drops all tables before rebuilding them.
 
 ### 6. Start the application
 
-Open two Command Prompt windows in the project folder.
+Open **two Command Prompt windows** in the ReserveIT project directory.
 
-**Window 1 — Laravel server**
+**Window 1 — Laravel backend**
 
 ```bat
 php artisan serve
 ```
 
-**Window 2 — Vite development server**
+**Window 2 — Vite frontend**
 
 ```bat
 npm run dev
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser. Keep both terminal windows running during development.
+Open the application at:
 
-To create a production-style frontend build, run:
+http://127.0.0.1:8000
+
+Keep both terminal windows running while developing.
+
+### 7. Build frontend assets for a production-style check
+
+Stop the Vite development server if needed, then run:
 
 ```bat
 npm run build
 ```
 
-## Environment variables and Google sign-in
+---
 
-- Keep `.env` local. It may contain the application key, database credentials, and OAuth secrets.
-- Use `.env.example` as a template only; do not put real secrets in it.
-- Google sign-in is optional for local testing. To enable it, create your own OAuth client and configure `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` in your local `.env`.
-- For the local URL above, the callback is typically `http://127.0.0.1:8000/auth/google/callback`, provided that this matches the callback route and the URI registered in Google Cloud Console.
-- Never reuse someone else's OAuth secret. A deployed site needs its own correct HTTPS callback URL configured both in the hosting environment and in Google Cloud Console.
+## Environment configuration
 
-After changing environment values, clear the cached configuration:
+The repository includes `.env.example` as a starting point. The values below are examples and placeholders; use your own service credentials.
 
-```bat
-php artisan config:clear
+### Local development
+
+The default example configuration uses SQLite, local filesystem storage, database-backed sessions/queues/cache, and log-based mail. This allows basic development without connecting to the production services.
+
+### Google sign-in (optional)
+
+To enable Google OAuth, configure your own OAuth client and set:
+
+```dotenv
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/auth/google/callback
 ```
 
-## Create local test accounts
+The redirect URI must match the callback route and the URI registered in Google Cloud Console. For a deployed site, use the exact HTTPS callback URL for that deployment.
 
-A new local database starts without the accounts from another developer's computer. Register a regular user through the application if registration is enabled.
+### Production environment variables
 
-The role names used by the application are `user`, `facility_admin`, and `super_admin`. For local testing, you can create accounts with Laravel Tinker.
+Configure production values through Render's Environment settings or your chosen hosting provider's secret manager. Do not commit real values.
 
-Start Tinker:
+| Variable | Purpose |
+|---|---|
+| `APP_NAME` | Application display name |
+| `APP_ENV` | Set to `production` |
+| `APP_KEY` | Laravel encryption key generated for the deployment |
+| `APP_DEBUG` | Set to `false` in production |
+| `APP_URL` | Public HTTPS URL of the deployed application |
+| `DB_CONNECTION` | Use `pgsql` for Neon PostgreSQL |
+| `DB_HOST`, `DB_PORT` | PostgreSQL host and port supplied by Neon |
+| `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Database name and credentials supplied by Neon |
+| `DB_SSLMODE` | Use the SSL mode required by the Neon connection details, commonly `require` |
+| `TIGRIS_ACCESS_KEY_ID` | Tigris access key |
+| `TIGRIS_SECRET_ACCESS_KEY` | Tigris secret key |
+| `TIGRIS_ENDPOINT` | Tigris S3-compatible endpoint |
+| `TIGRIS_REGION` | Tigris region; the configuration defaults to `auto` |
+| `TIGRIS_BUCKET` | Private bucket name for consent letters |
+| `TIGRIS_USE_PATH_STYLE_ENDPOINT` | Tigris endpoint addressing option; match the value provided for your bucket |
 
-```bat
-php artisan tinker
+Optional integrations such as Google OAuth and mail delivery require their own environment variables and provider configuration. Never copy production secrets into `.env.example`, screenshots, issue reports, or documentation.
+
+---
+
+## Database and file storage
+
+### Neon PostgreSQL — production database
+
+The hosted deployment uses Neon PostgreSQL for persistent relational data, including:
+
+- User accounts, roles, and account status.
+- Facilities and Facility Admin assignments.
+- Booking requests, approvals, cancellations, check-in/check-out records, and overtime billing snapshots.
+- System settings.
+- Notifications, concerns, and related application records.
+
+Laravel migrations define the database schema. When deploying your own instance, point the application to your own Neon database (or another supported database) and run migrations against that database.
+
+### SQLite — simple local development database
+
+The Windows quick-start instructions use a local SQLite file at:
+
+```text
+database/database.sqlite
 ```
 
-Run **one snippet at a time**. Replace the sample names, email addresses, and passwords for your local test database.
+This database belongs only to that local clone. It is not synchronized with Neon or another developer's database.
 
-### 1. Regular user
+### Tigris — private consent-letter storage
 
-```php
-$user = \App\Models\User::create([
-    'name' => 'Local Test User',
-    'email' => 'local-user@example.test',
-    'password' => \Illuminate\Support\Facades\Hash::make('CHANGE-THIS-LOCAL-TEST-PASSWORD'),
-    'role' => 'user',
-    'is_active' => true,
-    'must_change_password' => false,
-]);
+Booking consent letters are uploaded to the configured **Tigris S3-compatible object-storage disk**, under the `consent-letters/` prefix.
 
-$user->forceFill(['email_verified_at' => now()])->save();
+- Files are stored with generated names rather than relying on the original filename as the object key.
+- The original filename is retained as booking metadata for display.
+- The Tigris disk is configured with **private visibility**.
+- Downloads go through an authenticated application endpoint that checks the requester's permissions.
+- Super Admins can access consent documents across the system; Facility Admins are limited to their assigned facilities; unauthorized users are denied.
+- The application accepts PDF, DOC, and DOCX consent files up to 5 MB.
+
+The bucket credentials must be configured in the hosting environment. Do not make the consent bucket public or expose its secret keys.
+
+### Facility images
+
+Facility images use Laravel's public filesystem disk in the current configuration. This is separate from the private Tigris consent-letter disk. If you deploy to an environment with ephemeral local filesystems, configure durable storage for facility images before relying on locally uploaded images across container restarts or redeployments.
+
+---
+
+## Deploying your own instance
+
+The current project is configured for Docker-based hosting and can be adapted to another platform that supports the included Dockerfile.
+
+### Render + Neon + Tigris deployment outline
+
+1. Create a PostgreSQL project/database in Neon.
+2. Create a private Tigris bucket for consent-letter objects and generate its access credentials.
+3. Push the application repository to GitHub.
+4. In Render, create a **Docker Web Service** connected to the repository.
+5. Set the required production environment variables in Render:
+   - Laravel application settings (`APP_KEY`, `APP_ENV`, `APP_DEBUG`, and `APP_URL`);
+   - Neon PostgreSQL connection values (`DB_CONNECTION=pgsql`, host, port, database, username, password, and SSL mode);
+   - Tigris credentials and bucket settings.
+6. Deploy the service and inspect the build/runtime logs.
+7. Confirm that database migrations complete successfully.
+8. Verify login, booking creation, approval, check-in/check-out, consent upload, and authorized consent download.
+9. Configure and verify a scheduler process for Laravel's scheduled commands.
+
+The repository's Dockerfile configures the web container to listen on port 10000 and exposes Laravel's `/up` health-check endpoint. If adapting the Dockerfile to another host, follow that host's port and health-check requirements.
+
+**Do not use a production database for experiments with destructive migration commands or demo seeders.** Back up the database and review migrations before applying changes.
+
+---
+
+## Scheduled tasks and maintenance
+
+The Laravel scheduler defines these recurring commands:
+
+| Command | Schedule | Purpose |
+|---|---|---|
+| `bookings:check-overtime` | Every 5 minutes | Checks active checked-in bookings that have passed their scheduled end and sends operational notifications. |
+| `bookings:purge-unapproved` | Daily | Deletes eligible pending bookings older than the configured retention period when automatic cleanup is enabled. |
+
+### Unapproved-booking cleanup
+
+- A setting of `0` disables automatic cleanup.
+- The settings interface offers retention choices of 7 or 14 days.
+- Only eligible bookings with `pending` status are targeted by the cleanup command.
+- Approved bookings are not targeted.
+- This operation permanently deletes matching pending booking records; it is not an archive operation.
+
+Preview the records that would be deleted without deleting them:
+
+```bash
+php artisan bookings:purge-unapproved --dry-run
 ```
 
-### 2. Facility administrator
+Run the actual cleanup only when you intentionally want to delete eligible records:
 
-```php
-$admin = \App\Models\User::create([
-    'name' => 'Local Facility Admin',
-    'email' => 'local-facility-admin@example.test',
-    'password' => \Illuminate\Support\Facades\Hash::make('CHANGE-THIS-LOCAL-TEST-PASSWORD'),
-    'role' => 'facility_admin',
-    'is_active' => true,
-    'must_change_password' => false,
-]);
-
-$admin->forceFill(['email_verified_at' => now()])->save();
+```bash
+php artisan bookings:purge-unapproved
 ```
 
-A facility administrator may also need to be assigned to one or more facilities through the application's facility-admin assignment interface before they can manage those facilities.
+### Useful maintenance commands
 
-### 3. Super administrator
+Run these from the project root:
 
-```php
-$admin = \App\Models\User::create([
-    'name' => 'Local Super Admin',
-    'email' => 'local-super-admin@example.test',
-    'password' => \Illuminate\Support\Facades\Hash::make('CHANGE-THIS-LOCAL-TEST-PASSWORD'),
-    'role' => 'super_admin',
-    'is_active' => true,
-    'must_change_password' => false,
-]);
-
-$admin->forceFill(['email_verified_at' => now()])->save();
-```
-
-Type `exit` to leave Tinker. Use unique email addresses. The sample password is a placeholder: replace it with a strong local testing password and never use it on a public deployment.
-
-These snippets create accounts in **your local database only**. They do not create accounts for other people who clone the repository. If a snippet fails because a field is not fillable or does not exist in your current schema, check the `User` model and migrations before proceeding.
-
-## Booking workflow notes
-
-- Users submit booking requests through the booking interface.
-- Booking decisions are restricted by role and facility assignment.
-- Facility administrators should only manage bookings for facilities assigned to them.
-- Check-in/check-out actions are restricted to authorized accounts and eligible booking states.
-- Overtime fees depend on the booking's timing and configured billing settings.
-- Automatic cleanup behavior depends on the current command and system settings. Review the operations guide and settings in your installation before enabling or relying on scheduled cleanup.
-
-For the exact lifecycle rules and configuration details, see the [workflow documentation](docs/workflows.md) and the [operations guide](docs/operations.md).
-
-## Useful commands
-
-Run these from the project directory:
-
-```bat
+```bash
 php artisan route:list
 php artisan migrate:status
-php artisan test
 php artisan optimize:clear
+php artisan test
 npm run build
 ```
+
+For queued work, ensure the configured queue worker is running. The default project configuration uses database-backed queues.
+
+---
 
 ## Testing
 
-Run the Laravel test suite with:
+Run the Laravel test suite:
 
-```bat
+```bash
 php artisan test
 ```
 
-Tests exercise application behavior such as booking approval, role and facility authorization, check-in/check-out, facility management, consent downloads, booking updates, authentication, and profile workflows.
+Some useful focused test commands:
 
-A passing test suite is useful verification, but it does not replace manual testing of the user interface and deployment configuration.
+```bash
+php artisan test --filter=BookingApprovalWorkflowTest
+php artisan test --filter=BookingUpdateTest
+php artisan test --filter=BookingCheckInOutTest
+php artisan test --filter=BookingSchedulePrivacyTest
+php artisan test --filter=ConsentDownloadTest
+php artisan test --filter=FacilityAdminAssignmentTest
+php artisan test --filter=ProfileTest
+```
+
+Build the frontend:
+
+```bash
+npm run build
+```
+
+Tests cover important application behavior such as authentication, booking validation and approval, facility-scoped authorization, check-in/check-out, overtime billing, consent-file downloads, profile updates, and administrative workflows. Run the tests in your own environment before releasing changes; the existence of tests does not mean they have already passed in every environment.
+
+---
 
 ## Troubleshooting
 
-- **`php` is not recognized or the version is too old:** Add the correct PHP installation to Windows `PATH`, reopen Command Prompt, and run `php -v`.
-- **SQLite database or driver errors:** Verify `DB_CONNECTION=sqlite`, confirm `database\database.sqlite` exists, and ensure PDO SQLite is enabled for the PHP CLI.
-- **Missing tables:** Check `.env` and run `php artisan migrate`.
-- **Frontend changes are not visible:** Ensure `npm run dev` is running, or run `npm run build` and refresh the page.
-- **Google sign-in fails:** Check the OAuth client credentials, authorized redirect URI, and `GOOGLE_REDIRECT_URI`; then run `php artisan config:clear`.
-- **Laravel cannot write cache or compiled views:** Check write access to `storage` and `bootstrap/cache`, then run `php artisan optimize:clear`.
-- **A facility administrator cannot manage a facility:** Verify that the account is active and assigned to that facility.
+| Problem | What to check |
+|---|---|
+| `php` is not recognized | Add the intended PHP installation to Windows PATH, reopen the terminal, and run `php -v`. |
+| Composer dependency installation fails | Confirm PHP version/extensions and run `composer diagnose`. |
+| SQLite driver/database error | Check `DB_CONNECTION=sqlite`, confirm `database/database.sqlite` exists, and enable PDO SQLite for the PHP CLI. |
+| Database tables are missing | Check the active `.env` connection, then run `php artisan migrate:status` and apply pending migrations. |
+| Frontend changes do not appear | Confirm `npm run dev` is running, or run `npm run build` and refresh the page. |
+| Google sign-in fails | Check OAuth credentials, registered callback URL, and `GOOGLE_REDIRECT_URI`; then run `php artisan config:clear`. |
+| Consent upload/download fails | Verify Tigris credentials, endpoint, bucket name, private bucket access, and application logs. |
+| Laravel cannot write cache or compiled views | Check write permissions for `storage` and `bootstrap/cache`, then run `php artisan optimize:clear`. |
+| Facility Admin cannot manage a facility | Confirm the account is active and assigned to that facility. |
+| Scheduled commands do not run | Confirm that a scheduler process or scheduled job is configured and running in the hosting environment. |
 
-## Additional documentation
+---
 
-- [Architecture](docs/architecture.md) — system design, technology stack, data flow, authorization, and frontend/backend communication
-- [Database](docs/database.md) — schemas, relationships, migrations, and file storage
-- [Workflows](docs/workflows.md) — booking lifecycle, business rules, roles, approvals, support, and operations
-- [Operations](docs/operations.md) — environment configuration, maintenance, deployment checks, testing, and troubleshooting
+## Project documentation
 
-## Security notes
+More detailed technical documentation is available in the `docs/` directory:
 
-- Never commit `.env`, database files containing personal data, OAuth secrets, API keys, or passwords.
-- Use synthetic data for demonstrations and development.
-- Set `APP_DEBUG=false` in production and configure secrets through the hosting provider's environment settings.
+- [Architecture](docs/architecture.md) — application structure, request lifecycle, authorization, and frontend/backend communication.
+- [Database](docs/database.md) — database tables, relationships, migrations, and storage behavior.
+- [Workflows](docs/workflows.md) — booking lifecycle, validation rules, approvals, check-in/check-out, and overtime behavior.
+- [Operations](docs/operations.md) — local operations, environment configuration, deployment checks, maintenance, and troubleshooting.
+
+---
+
+## Security and data protection
+
+- Never commit `.env`, database files containing personal information, passwords, API keys, OAuth secrets, or storage credentials.
+- Use separate credentials and databases for local development, testing, and production.
+- Keep consent-letter storage private. Serve documents through the application's authorized download flow.
+- Set `APP_DEBUG=false` in production.
+- Use HTTPS for deployed environments and configure OAuth callback URLs accordingly.
 - Back up important databases before applying migrations.
-- Review and test authorization, validation, storage, scheduled tasks, and deployment settings before using the application with real users or sensitive information.
+- Review migration and cleanup behavior before running commands against production data.
+- Use synthetic test data for development and demonstrations.
+- Do not publish real user credentials or temporary passwords in this repository.
+
+---
+
+## License
+
+No separate project license is currently declared in the repository. Contact the project maintainers before redistributing or reusing the application outside its intended context.
