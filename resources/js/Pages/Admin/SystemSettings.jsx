@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     ShieldCheck,
     Clock3,
@@ -67,10 +67,27 @@ export default function SystemSettings({ settings }) {
     const [overtimeGrace, setOvertimeGrace] = useState(settings.overtime_grace_minutes ?? 0);
 
     const [saving, setSaving] = useState(false);
+    const [hasChanges, setHasChanges] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
     const [saveMessageType, setSaveMessageType] = useState('');
 
-    const saveSettings = (updatedPayload = {}) => {
+    const markChanged = () => {
+        setHasChanges(true);
+        setSaveMessage('');
+        setSaveMessageType('');
+    };
+
+    useEffect(() => {
+        const warnBeforeLeave = (event) => {
+            if (!hasChanges || saving) return;
+            event.preventDefault();
+            event.returnValue = '';
+        };
+        window.addEventListener('beforeunload', warnBeforeLeave);
+        return () => window.removeEventListener('beforeunload', warnBeforeLeave);
+    }, [hasChanges, saving]);
+
+    const saveSettings = () => {
         if (saving) return;
 
         setSaving(true);
@@ -89,7 +106,6 @@ export default function SystemSettings({ settings }) {
             closing_time: closingTime,
             early_check_in_minutes: earlyCheckIn,
             overtime_grace_minutes: overtimeGrace,
-            ...updatedPayload,
         };
 
         router.patch(route('admin.settings.update'), payload, {
@@ -97,19 +113,12 @@ export default function SystemSettings({ settings }) {
             onSuccess: () => {
                 setSaveMessageType('success');
                 setSaveMessage('Settings saved successfully.');
+                setHasChanges(false);
             },
             onError: (errors) => {
-                const timeError = errors.opening_time || errors.closing_time;
-                if (timeError) {
-                    // Restore the last server-saved values when the operating-hours pair is invalid.
-                    setOpeningTime(settings.opening_time?.slice(0, 5) ?? '08:00');
-                    setClosingTime(settings.closing_time?.slice(0, 5) ?? '00:00');
-                    setSaveMessageType('error');
-                    setSaveMessage(timeError);
-                    return;
-                }
+                const firstError = Object.values(errors)[0];
                 setSaveMessageType('error');
-                setSaveMessage('Could not save settings. Please check the values and try again.');
+                setSaveMessage(firstError || 'Could not save settings. Please check the values and try again.');
             },
             onFinish: () => setSaving(false),
         });
@@ -160,21 +169,23 @@ export default function SystemSettings({ settings }) {
                             System configuration
                         </p>
                         <p className="mt-1 text-sm text-slate-500">
-                            Changes are saved when you select an option or finish editing a field.
+                            Edit the settings below, then select Save Changes to apply them together.
                         </p>
                     </div>
 
                     <div className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold ${
-                        saving
+                        saving || hasChanges
                             ? 'bg-amber-50 text-amber-700'
                             : 'bg-emerald-50 text-emerald-700'
                     }`}>
                         {saving ? (
                             <Clock3 className="h-4 w-4 animate-pulse" />
+                        ) : hasChanges ? (
+                            <AlertTriangle className="h-4 w-4" />
                         ) : (
                             <CheckCircle2 className="h-4 w-4" />
                         )}
-                        {saving ? 'Saving changes…' : 'Ready'}
+                        {saving ? 'Saving changes…' : hasChanges ? 'Unsaved changes' : 'All changes saved'}
                     </div>
                 </div>
 
@@ -217,7 +228,7 @@ export default function SystemSettings({ settings }) {
                                     onChange={(e) => {
                                         const value = e.target.value;
                                         setApprovalScope(value);
-                                        saveSettings({ auto_approve_scope: value });
+                                        markChanged();
                                     }}
                                     className={inputClass}
                                 >
@@ -252,9 +263,7 @@ export default function SystemSettings({ settings }) {
                                     onClick={() => {
                                         const nextValue = !requireConsent;
                                         setRequireConsent(nextValue);
-                                        saveSettings({
-                                            require_consent_letter: nextValue,
-                                        });
+                                        markChanged();
                                     }}
                                     className={`relative mt-1 h-7 w-12 shrink-0 rounded-full transition ${
                                         requireConsent ? 'bg-emerald-600' : 'bg-slate-300'
@@ -287,10 +296,8 @@ export default function SystemSettings({ settings }) {
                                     max="120"
                                     value={cleanupBuffer}
                                     disabled={saving}
-                                    onChange={(e) => setCleanupBuffer(e.target.value)}
-                                    onBlur={() => saveSettings({
-                                        cleanup_buffer_minutes: cleanupBuffer,
-                                    })}
+                                    onChange={(e) => { setCleanupBuffer(e.target.value); markChanged(); }}
+                                    
                                     className={inputClass}
                                 />
                                 <p className="mt-1 text-xs text-slate-500">
@@ -309,10 +316,8 @@ export default function SystemSettings({ settings }) {
                                     max="24"
                                     value={maxBookingDuration}
                                     disabled={saving}
-                                    onChange={(e) => setMaxBookingDuration(e.target.value)}
-                                    onBlur={() => saveSettings({
-                                        max_booking_duration: maxBookingDuration,
-                                    })}
+                                    onChange={(e) => { setMaxBookingDuration(e.target.value); markChanged(); }}
+                                    
                                     className={inputClass}
                                 />
                                 <p className="mt-1 text-xs text-slate-500">
@@ -330,10 +335,8 @@ export default function SystemSettings({ settings }) {
                                     min="1"
                                     value={maxAdvanceDays}
                                     disabled={saving}
-                                    onChange={(e) => setMaxAdvanceDays(e.target.value)}
-                                    onBlur={() => saveSettings({
-                                        max_advance_days: maxAdvanceDays,
-                                    })}
+                                    onChange={(e) => { setMaxAdvanceDays(e.target.value); markChanged(); }}
+                                    
                                     className={inputClass}
                                 />
                                 <p className="mt-1 text-xs text-slate-500">
@@ -353,30 +356,30 @@ export default function SystemSettings({ settings }) {
                             <div>
                                 <label className={labelClass} htmlFor="opening-time">Opening Time</label>
                                 <input id="opening-time" type="time" value={openingTime} disabled={saving}
-                                    onChange={(e) => setOpeningTime(e.target.value)}
-                                    onBlur={() => saveSettings({ opening_time: openingTime })}
+                                    onChange={(e) => { setOpeningTime(e.target.value); markChanged(); }}
+                                    
                                     className={inputClass} />
                             </div>
                             <div>
                                 <label className={labelClass} htmlFor="closing-time">Closing Time</label>
                                 <input id="closing-time" type="time" value={closingTime} disabled={saving}
-                                    onChange={(e) => setClosingTime(e.target.value)}
-                                    onBlur={() => saveSettings({ closing_time: closingTime })}
+                                    onChange={(e) => { setClosingTime(e.target.value); markChanged(); }}
+                                    
                                     className={inputClass} />
                                 <p className="mt-1 text-xs text-slate-500">12:00 AM means the end of the booking day (midnight).</p>
                             </div>
                             <div>
                                 <label className={labelClass} htmlFor="early-check-in">Early Check-in Allowance (Minutes)</label>
                                 <input id="early-check-in" type="number" min="0" max="180" value={earlyCheckIn} disabled={saving}
-                                    onChange={(e) => setEarlyCheckIn(e.target.value)}
-                                    onBlur={() => saveSettings({ early_check_in_minutes: earlyCheckIn })}
+                                    onChange={(e) => { setEarlyCheckIn(e.target.value); markChanged(); }}
+                                    
                                     className={inputClass} />
                             </div>
                             <div>
                                 <label className={labelClass} htmlFor="overtime-grace">Overtime Grace Period (Minutes)</label>
                                 <input id="overtime-grace" type="number" min="0" max="180" value={overtimeGrace} disabled={saving}
-                                    onChange={(e) => setOvertimeGrace(e.target.value)}
-                                    onBlur={() => saveSettings({ overtime_grace_minutes: overtimeGrace })}
+                                    onChange={(e) => { setOvertimeGrace(e.target.value); markChanged(); }}
+                                    
                                     className={inputClass} />
                                 <p className="mt-1 text-xs text-slate-500">Grace time is excluded before overtime fees begin.</p>
                             </div>
@@ -401,7 +404,7 @@ export default function SystemSettings({ settings }) {
                                 step="0.01"
                                 value={fee}
                                 disabled={saving}
-                                onChange={(e) => setFee(e.target.value)}
+                                onChange={(e) => { setFee(e.target.value); markChanged(); }}
                                 className={`${inputClass} pl-9`}
                             />
                         </div>
@@ -444,9 +447,7 @@ export default function SystemSettings({ settings }) {
                                             aria-pressed={selected}
                                             onClick={() => {
                                                 setAutoPurgeDays(option.days);
-                                                saveSettings({
-                                                    auto_purge_unapproved_days: option.days,
-                                                });
+                                                markChanged();
                                             }}
                                             className={`rounded-xl border-2 p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-[#6A535C]/30 ${
                                                 selected
@@ -496,6 +497,16 @@ export default function SystemSettings({ settings }) {
                         )}
                     </SectionCard>
                 </div>
+            <div className="sticky bottom-4 z-20 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 px-5 py-4 shadow-lg backdrop-blur">
+                <p className="text-sm text-slate-500">
+                    {hasChanges ? 'You have unsaved changes. Save to apply them.' : 'Your booking settings are up to date.'}
+                </p>
+                <button type="button" onClick={saveSettings} disabled={!hasChanges || saving}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#58434B] focus:outline-none focus:ring-2 focus:ring-[#6A535C]/30 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                    {saving ? <Clock3 className="h-4 w-4 animate-pulse" /> : <CheckCircle2 className="h-4 w-4" />}
+                    {saving ? 'Saving…' : 'Save Changes'}
+                </button>
+            </div>
             </div>
         </AuthenticatedLayout>
     );
