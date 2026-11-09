@@ -385,33 +385,58 @@ export default function SystemSettings({ settings }) {
                             </div>
                         </div>
                     </SectionCard>
+                    <div className="xl:col-span-2">
                     <SectionCard
                         icon={Wallet}
                         title="Financial Policies"
-                        description="Configure the hourly charge used when a booking exceeds its scheduled end time."
+                        description="Set the overtime rate and preview how the hourly fee translates into shorter overtime periods."
                     >
-                        <label className={labelClass} htmlFor="overtime-fee">
-                            Overtime Fee (Per Hour)
-                        </label>
-                        <div className="relative mt-2">
-                            <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-slate-500">
-                                ₱
-                            </span>
-                            <input
-                                id="overtime-fee"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={fee}
-                                disabled={saving}
-                                onChange={(e) => { setFee(e.target.value); markChanged(); }}
-                                className={`${inputClass} pl-9`}
-                            />
+                        <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
+                            <div>
+                                <label className={labelClass} htmlFor="overtime-fee">
+                                    Overtime Fee (Per Hour)
+                                </label>
+                                <div className="relative mt-2">
+                                    <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-semibold text-slate-500">
+                                        ₱
+                                    </span>
+                                    <input
+                                        id="overtime-fee"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={fee}
+                                        disabled={saving}
+                                        onChange={(e) => { setFee(e.target.value); markChanged(); }}
+                                        className={`${inputClass} pl-9`}
+                                    />
+                                </div>
+                                <p className="mt-2 text-sm text-slate-500">
+                                    Current rate: ₱{Number(fee || 0).toFixed(2)} per hour.
+                                </p>
+                            </div>
+
+                            <div className="rounded-xl border border-[#6A535C]/15 bg-[#6A535C]/5 p-4">
+                                <div className="mb-3">
+                                    <p className="text-sm font-semibold text-slate-800">Rate breakdown</p>
+                                    <p className="mt-1 text-xs leading-5 text-slate-500">
+                                        Illustrative prorated amounts based on the hourly rate, before any configured grace period.
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {[{ label: '15 minutes', minutes: 15 }, { label: '30 minutes', minutes: 30 }, { label: '1 hour', minutes: 60 }].map((period) => (
+                                        <div key={period.minutes} className="rounded-lg border border-white bg-white px-3 py-3">
+                                            <p className="text-xs text-slate-500">{period.label}</p>
+                                            <p className="mt-1 text-base font-bold text-[#6A535C]">
+                                                ₱{((Number(fee) || 0) * period.minutes / 60).toFixed(2)}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                        <p className="mt-2 text-sm text-slate-500">
-                            Current rate: ₱{Number(fee || 0).toFixed(2)} per hour.
-                        </p>
                     </SectionCard>
+                    </div>
 
                     <div className="xl:col-span-2">
                     <SectionCard
