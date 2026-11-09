@@ -50,9 +50,9 @@ class DemoScenarioSeeder extends Seeder
         if ($this->productionMode) {
             $temporaryPassword = env('RESERVEIT_DEMO_TEMP_PASSWORD');
 
-            if (! is_string($temporaryPassword) || strlen($temporaryPassword) < 20) {
+            if (! is_string($temporaryPassword) || $temporaryPassword === '') {
                 throw new RuntimeException(
-                    'For a production demo seed, set RESERVEIT_DEMO_TEMP_PASSWORD to a temporary password at least 20 characters long.'
+                    'For a production demo seed, set RESERVEIT_DEMO_TEMP_PASSWORD to a non-empty temporary password.'
                 );
             }
 
