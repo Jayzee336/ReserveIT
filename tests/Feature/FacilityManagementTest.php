@@ -190,6 +190,25 @@ class FacilityManagementTest extends TestCase
         $this->assertSame('Updated Facility Name', $facility->name);
     }
 
+    public function test_facility_admin_managed_facilities_uses_the_shared_facility_management_screen_and_only_assigned_facilities(): void
+    {
+        $admin = User::factory()->create(['role' => 'facility_admin']);
+        $assigned = $this->createFacility('managed-assigned', 'Assigned Facility');
+        $unassigned = $this->createFacility('managed-unassigned', 'Unassigned Facility');
+        $assigned->facilityAdmins()->attach($admin);
+
+        $this->actingAs($admin)
+            ->get(route('facilitator.managed-facilities.index'))
+            ->assertOk()
+            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+                ->component('Admin/Facilities')
+                ->has('facilities', 1)
+                ->where('facilities.0.id', $assigned->id)
+                ->where('auth.user.role', 'facility_admin')
+                ->has('facilityAdmins', 0)
+            );
+    }
+
     public function test_facility_admin_cannot_update_an_unassigned_facility(): void
     {
         $admin = User::factory()->create([

@@ -1054,18 +1054,18 @@ export default function Facilities({
             user={currentUser}
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Facility Configuration &amp; Management
+                    {isFacilityAdmin ? 'Managed Facilities' : 'Facility Configuration &amp; Management'}
                 </h2>
             }
         >
-            <Head title="Facility Management" />
+            <Head title={isFacilityAdmin ? "Managed Facilities" : "Facility Management"} />
 
             <div className="py-6">
                 <div className="mx-auto w-full max-w-none px-4 sm:px-6 lg:px-8 2xl:px-10">
                     <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900">
-                                Facility Settings
+                                {isFacilityAdmin ? 'Managed Facilities' : 'Facility Settings'}
                             </h1>
                             <p className="text-sm text-gray-500">
                                 {isSuperAdmin
