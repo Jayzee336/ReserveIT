@@ -491,7 +491,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             $row = [
                 'id' => $booking->id,
-                'facility_id' => $booking->facility_id,
                 'date' => $booking->date?->format('Y-m-d'),
                 'booking_date' => $booking->booking_date?->format('Y-m-d'),
                 'end_date' => $booking->end_date?->format('Y-m-d'),
@@ -502,6 +501,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ];
 
             if ($canViewDetails) {
+                $row['facility_id'] = $booking->facility_id;
                 $row['facility_name'] = $booking->facility?->name ?? 'Facility';
                 $row += [
                     'user' => $booking->user ? [

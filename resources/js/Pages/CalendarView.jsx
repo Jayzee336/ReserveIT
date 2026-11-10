@@ -258,56 +258,25 @@ export function CalendarView({
                             }
 
                             return (
-                                <div
-                                    key={day.key}
-                                    className={`group min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 text-left sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F7F0F3]' : 'bg-white'}`}
-                                >
-                                    <div className="flex items-center justify-between gap-1">
-                                        <button
-                                            type="button"
-                                            onClick={() => selectDate(day.key)}
-                                            aria-pressed={day.isSelected}
-                                            aria-label={`Select ${formatLongDate(day.key)}`}
-                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition hover:ring-2 hover:ring-[#846A75] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75] sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#6A535C] text-white' : day.isToday ? 'border border-[#846A75] text-[#6A535C]' : 'text-slate-700'}`}
-                                        >
-                                            {day.dayNumber}
-                                        </button>
-                                        {(day.bookings.length > 0 || day.closures.length > 0) && (
-                                            <span className="flex items-center gap-1">
-                                                {day.bookings.length > 0 && <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-600 sm:text-[10px]">{day.bookings.length}</span>}
-                                                {day.closures.length > 0 && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[8px] font-bold text-amber-800 sm:text-[9px]">C</span>}
-                                            </span>
-                                        )}
+                                <div key={day.key} className={`group relative min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F7F0F3]' : 'bg-white'}`}>
+                                    <button type="button" onClick={() => selectDate(day.key)} aria-pressed={day.isSelected} aria-label={`Select ${formatLongDate(day.key)}`} className="absolute inset-0 z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#846A75]" />
+                                    <div className="pointer-events-none relative z-10 flex items-center justify-between gap-1">
+                                        <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#6A535C] text-white' : day.isToday ? 'border border-[#846A75] text-[#6A535C]' : 'text-slate-700'}`}>{day.dayNumber}</span>
+                                        {(day.bookings.length > 0 || day.closures.length > 0) && <span className="flex items-center gap-1">{day.bookings.length > 0 && <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-600 sm:text-[10px]">{day.bookings.length}</span>}{day.closures.length > 0 && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[8px] font-bold text-amber-800 sm:text-[9px]">C</span>}</span>}
                                     </div>
-                                    <div className="mt-1 space-y-1">
-                                        {day.closures.length > 0 && <span className="block truncate rounded bg-amber-100 px-1 py-0.5 text-[8px] font-semibold leading-3 text-amber-800 sm:px-1.5 sm:text-[10px] sm:leading-4">Closure</span>}
+                                    <div className="relative z-10 mt-1 space-y-1">
+                                        {day.closures.length > 0 && <span className="pointer-events-none block truncate rounded bg-amber-100 px-1 py-0.5 text-[8px] font-semibold leading-3 text-amber-800 sm:px-1.5 sm:text-[10px] sm:leading-4">Closure</span>}
                                         {day.bookings.slice(0, 2).map((booking) => {
-                                            const facility = facilityById.get(String(booking.facility_id));
+                                            const facility = booking.can_view_details ? facilityById.get(String(booking.facility_id)) : null;
                                             const approved = booking.status === 'approved';
-                                            const label = booking.can_view_details ? (facility?.name || 'Facility') : 'Reserved';
+                                            const label = booking.can_view_details ? (facility?.name || booking.facility_name || 'Facility') : 'Reserved';
                                             const timeLabel = `${formatTime(booking.start_time)}–${formatTime(booking.end_time)}`;
-                                            const chipClass = `block w-full truncate rounded px-1 py-0.5 text-left text-[8px] font-semibold leading-3 sm:px-1.5 sm:text-[10px] sm:leading-4 ${approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`;
-
-                                            if (!booking.can_view_details) {
-                                                return <span key={booking.id} title={`Reserved · ${timeLabel}`} className={chipClass}><span className="block truncate">{label}<span className="font-medium opacity-80"> · {timeLabel}</span></span></span>;
-                                            }
-
-                                            return (
-                                                <button
-                                                    key={booking.id}
-                                                    type="button"
-                                                    title={`${label} · ${timeLabel} · ${booking.status}`}
-                                                    aria-label={`View ${label} booking, ${timeLabel}, ${booking.status}`}
-                                                    onClick={() => setViewingBooking({ ...booking, facility })}
-                                                    className={`${chipClass} transition hover:ring-2 hover:ring-[#846A75] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]`}
-                                                >
-                                                    <span className="block truncate">{label}<span className="font-medium opacity-80"> · {timeLabel}</span></span>
-                                                </button>
-                                            );
+                                            return <button key={booking.id} type="button" title={booking.can_view_details ? `${label} · ${timeLabel} · ${booking.status}` : `Reserved · ${timeLabel} · ${booking.status}`} aria-label={booking.can_view_details ? `View ${label} booking, ${timeLabel}, ${booking.status}` : `View reserved time, ${timeLabel}, status ${booking.status}`} onClick={(event) => { event.stopPropagation(); setViewingBooking({ ...booking, facility }); }} className={`relative z-20 block w-full truncate rounded px-1 py-0.5 text-left text-[8px] font-semibold leading-3 transition hover:ring-2 hover:ring-[#846A75] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75] sm:px-1.5 sm:text-[10px] sm:leading-4 ${approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}><span className="block truncate">{label}<span className="font-medium opacity-80"> · {timeLabel}</span></span></button>;
                                         })}
-                                        {day.bookings.length > 2 && <span className="block truncate px-1 text-[8px] font-semibold text-slate-500 sm:text-[10px]">+{day.bookings.length - 2} more</span>}
+                                        {day.bookings.length > 2 && <span className="pointer-events-none relative z-10 block truncate px-1 text-[8px] font-semibold text-slate-500 sm:text-[10px]">+{day.bookings.length - 2} more</span>}
                                     </div>
                                 </div>
+                            );
                             );
                         })}
                     </div>
@@ -370,37 +339,15 @@ export function CalendarView({
                             </div>
                         ) : (
                             visibleDailyBookings.map((booking) => (
-                                <button
-                                    key={booking.id}
-                                    type="button"
-                                    disabled={!booking.can_view_details}
-                                    onClick={() => booking.can_view_details && setViewingBooking(booking)}
-                                    className={`w-full rounded-xl border border-slate-200 p-3 text-left ${booking.can_view_details ? 'transition hover:border-[#A98C97] hover:bg-[#F7F0F3]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]' : 'cursor-default'}`}
-                                >
-                                    <div className="flex flex-wrap items-start justify-between gap-2">
-                                        <div className="min-w-0">
-                                            <h4 className="break-words text-sm font-bold text-slate-800">{booking.can_view_details ? (booking.facility?.name || 'Facility') : 'Reserved'}</h4>
-                                            {booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date || booking.booking_date).slice(0, 10) && (
-                                                <p className="mt-1 break-words text-[10px] text-slate-500">
-                                                    {formatLongDate(booking.date || booking.booking_date)} – {formatLongDate(booking.end_date)}
-                                                </p>
-                                            )}
-                                            <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
-                                                <Clock3 className="h-3.5 w-3.5 shrink-0" />
-                                                {formatTime(booking.start_time)} – {formatTime(booking.end_time)} each day
-                                            </p>
-                                        </div>
-                                        <span className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold uppercase ${statusStyles[booking.status] || 'border-slate-200 bg-slate-50 text-slate-600'}`}>
-                                            {booking.can_view_details ? booking.status : 'Reserved'}
-                                        </span>
-                                    </div>
-                                    {booking.can_view_details && (
-                                        <div className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-600">
-                                            <p>{booking.user?.name || booking.guest_name || 'Reservation'}</p>
-                                            {booking.notes && <p className="mt-1 line-clamp-2 text-slate-500">{booking.notes}</p>}
-                                        </div>
-                                    )}
+                                <button key={booking.id} type="button" onClick={() => setViewingBooking(booking)} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-[#A98C97] hover:bg-[#F7F0F3]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]">
+                                    <div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0">
+                                        <h4 className="break-words text-sm font-bold text-slate-800">{booking.can_view_details ? (booking.facility?.name || booking.facility_name || 'Facility') : 'Reserved'}</h4>
+                                        {booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date || booking.booking_date).slice(0, 10) && <p className="mt-1 break-words text-[10px] text-slate-500">{formatLongDate(booking.date || booking.booking_date)} – {formatLongDate(booking.end_date)}</p>}
+                                        <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500"><Clock3 className="h-3.5 w-3.5 shrink-0" />{formatTime(booking.start_time)} – {formatTime(booking.end_time)}</p>
+                                    </div><span className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold uppercase ${statusStyles[booking.status] || 'border-slate-200 bg-slate-50 text-slate-600'}`}>{booking.status}</span></div>
+                                    {booking.can_view_details ? <div className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-600"><p>{booking.user?.name || booking.guest_name || 'Reservation'}</p>{booking.notes && <p className="mt-1 line-clamp-2 text-slate-500">{booking.notes}</p>}</div> : <p className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-500">Details not disclosed for privacy. Select to view reservation time and status.</p>}
                                 </button>
+                            ))
                             ))
                         )}
 
@@ -410,29 +357,49 @@ export function CalendarView({
             </div>
 
             {viewingBooking && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-                    <button type="button" aria-label="Close booking details" className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setViewingBooking(null)} />
-                    <section role="dialog" aria-modal="true" aria-labelledby="calendar-booking-details-title" className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
-                        <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
-                            <div>
-                                <p className="text-xs font-semibold uppercase tracking-wide text-[#846A75]">Reservation details</p>
-                                <h2 id="calendar-booking-details-title" className="mt-1 text-lg font-bold text-slate-900">{viewingBooking.facility_name || viewingBooking.facility?.name || 'Facility booking'}</h2>
-                                <p className="mt-1 text-xs text-slate-500">{formatLongDate(viewingBooking.date || viewingBooking.booking_date)}</p>
-                            </div>
-                            <button type="button" aria-label="Close" onClick={() => setViewingBooking(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">×</button>
-                        </div>
-                        <div className="space-y-3 p-5 text-sm">
-                            <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Status</span><span className="rounded-full border px-2 py-1 text-xs font-bold uppercase">{viewingBooking.status}</span></div>
-                            <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Time</span><strong>{formatTime(viewingBooking.start_time)} – {formatTime(viewingBooking.end_time)}</strong></div>
-                            {viewingBooking.end_date && String(viewingBooking.end_date).slice(0, 10) !== String(viewingBooking.date || viewingBooking.booking_date).slice(0, 10) && <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Date range</span><strong>{formatLongDate(viewingBooking.date || viewingBooking.booking_date)} – {formatLongDate(viewingBooking.end_date)}</strong></div>}
-                            <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Booked by</span><strong>{viewingBooking.user?.name || viewingBooking.guest_name || 'Reservation owner'}</strong></div>
-                            {viewingBooking.user?.email && <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Email</span><strong className="break-all text-right">{viewingBooking.user.email}</strong></div>}
-                            {viewingBooking.guest_email && <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Guest email</span><strong className="break-all text-right">{viewingBooking.guest_email}</strong></div>}
-                            {viewingBooking.guest_phone && <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Contact</span><strong>{viewingBooking.guest_phone}</strong></div>}
-                            {viewingBooking.attendees && <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Attendees</span><strong>{viewingBooking.attendees}</strong></div>}
-                            {viewingBooking.notes && <div className="border-t border-slate-100 pt-3"><p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Purpose / Notes</p><p className="whitespace-pre-wrap break-words text-slate-700">{viewingBooking.notes}</p></div>}
-                        </div>
-                        <div className="border-t border-slate-100 px-5 py-3 text-right"><button type="button" onClick={() => setViewingBooking(null)} className="rounded-lg bg-[#6A535C] px-4 py-2 text-sm font-semibold text-white hover:bg-[#543F48]">Close</button></div>
+                <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto p-3 sm:p-5">
+                    <button type="button" aria-label="Close booking details" className="absolute inset-0 bg-slate-950/55 backdrop-blur-sm" onClick={() => setViewingBooking(null)} />
+                    <section role="dialog" aria-modal="true" aria-labelledby="calendar-booking-details-title" className="relative my-auto max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                        {(() => {
+                            const canView = Boolean(viewingBooking.can_view_details);
+                            const startDate = viewingBooking.date || viewingBooking.booking_date;
+                            const endDate = viewingBooking.end_date || startDate;
+                            const status = String(viewingBooking.status || 'reserved').toLowerCase();
+                            const notes = String(viewingBooking.notes || '').replace(/\r/g, '');
+                            const event = notes.match(/^Event:\s*(.*?)\s*\|\s*Dept:\s*(.*?)\s*\|\s*Desig:\s*(.*?)(?:\n|$)/i);
+                            const purpose = notes.match(/Purpose:\s*(.*?)(?:\s*\|\s*Facilitator:|$)/i);
+                            const facilitator = notes.match(/Facilitator:\s*(.*)$/im);
+                            const info = event ? { event: event[1].trim(), department: event[2].trim(), designation: event[3].trim(), purpose: purpose?.[1]?.trim(), facilitator: facilitator?.[1]?.trim() } : { event: '', department: '', designation: '', purpose: notes.trim(), facilitator: '' };
+                            const Field = ({ label, value, wide = false }) => <div className={`rounded-xl border border-slate-100 bg-slate-50/80 p-3 ${wide ? 'sm:col-span-2' : ''}`}><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</p><p className="mt-1 break-words text-sm font-medium text-slate-800">{value || 'Not provided'}</p></div>;
+                            return <>
+                                <header className="sticky top-0 z-10 border-b border-slate-100 bg-white px-4 py-4 sm:px-6"><div className="flex items-start justify-between gap-3"><div className="min-w-0">
+                                    <div className="mb-2 flex flex-wrap items-center gap-2">{canView && viewingBooking.facility?.type && <span className="rounded-full bg-[#F7F0F3] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#543F48]">{viewingBooking.facility.type}</span>}<span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${statusStyles[status] || 'border-slate-200 bg-slate-50 text-slate-700'}`}>{status}</span></div>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#846A75]">{canView ? 'Booking details' : 'Reservation details'}</p>
+                                    <h2 id="calendar-booking-details-title" className="mt-1 break-words text-lg font-bold text-slate-900">{canView ? (viewingBooking.facility?.name || viewingBooking.facility_name || 'Facility booking') : 'Reserved time slot'}</h2>
+                                    {canView && <p className="mt-1 break-all text-[10px] text-slate-400">Booking ID: {viewingBooking.id}</p>}<p className="mt-1 text-xs text-slate-500">{formatLongDate(startDate)}</p>
+                                </div><button type="button" aria-label="Close" onClick={() => setViewingBooking(null)} className="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">×</button></div>
+                                {canView && status === 'pending' && <p className="mt-3 rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">Pending approval: this time slot is temporarily held for the request. It is not a confirmed reservation until an administrator approves it.</p>}
+                                {canView && status === 'approved' && <p className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs leading-5 text-emerald-800">Approved: this reservation is confirmed.</p>}</header>
+                                {canView ? <div className="space-y-5 p-4 sm:p-6">
+                                    <section><h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-700">Reservation schedule</h3><div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3 sm:grid-cols-4">
+                                        <div><p className="text-[10px] font-semibold text-slate-500">Start date</p><p className="mt-1 text-sm font-medium text-slate-800">{formatLongDate(startDate)}</p></div><div><p className="text-[10px] font-semibold text-slate-500">End date</p><p className="mt-1 text-sm font-medium text-slate-800">{formatLongDate(endDate)}</p></div><div><p className="text-[10px] font-semibold text-slate-500">Start time</p><p className="mt-1 text-sm font-medium text-slate-800">{formatTime(viewingBooking.start_time)}</p></div><div><p className="text-[10px] font-semibold text-slate-500">End time</p><p className="mt-1 text-sm font-medium text-slate-800">{formatTime(viewingBooking.end_time)}</p></div>
+                                    </div></section>
+                                    <section><h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-700">Attendance and requester</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <Field label="Number of attendees" value={viewingBooking.attendees ? `${viewingBooking.attendees} people` : 'Not specified'} /><Field label="Booked by" value={viewingBooking.user?.name || viewingBooking.guest_name || 'Reservation owner'} />{(viewingBooking.user?.email || viewingBooking.guest_email) && <Field label="Email" value={viewingBooking.user?.email || viewingBooking.guest_email} />}{viewingBooking.guest_phone && <Field label="Contact number" value={viewingBooking.guest_phone} />}{viewingBooking.needs_manpower && <Field label="TDEVS manpower" value="Requested" />}
+                                    </div></section>
+                                    <section><h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-700">Booking information</h3><div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <Field label="Event" value={info.event} /><Field label="Department" value={info.department} /><Field label="Designation" value={info.designation} /><Field label="Facilitator" value={info.facilitator} /><Field label="Purpose / notes" value={info.purpose} wide />
+                                    </div></section>
+                                </div> : <div className="space-y-4 p-4 sm:p-6">
+                                    <div className="rounded-xl border border-slate-100 bg-slate-50 p-4"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Reservation schedule</p><div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                                        <div><p className="text-xs text-slate-500">Date</p><p className="mt-1 text-sm font-semibold text-slate-800">{formatLongDate(startDate)}{endDate !== startDate ? ` – ${formatLongDate(endDate)}` : ''}</p></div><div><p className="text-xs text-slate-500">Start time</p><p className="mt-1 text-sm font-semibold text-slate-800">{formatTime(viewingBooking.start_time)}</p></div><div><p className="text-xs text-slate-500">End time</p><p className="mt-1 text-sm font-semibold text-slate-800">{formatTime(viewingBooking.end_time)}</p></div>
+                                    </div></div>
+                                    <div className="rounded-xl border border-slate-200 bg-white p-4"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Booking status</p><p className="mt-2 text-sm font-semibold capitalize text-slate-800">{status}</p></div>
+                                    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600"><p className="font-semibold text-slate-800">Details not disclosed for privacy</p><p className="mt-1 text-xs leading-5">The reservation time and status are visible, but the facility and requester information, purpose, and other booking details are restricted.</p></div>
+                                </div>}
+                                <footer className="sticky bottom-0 border-t border-slate-100 bg-white px-4 py-3 text-right sm:px-6"><button type="button" onClick={() => setViewingBooking(null)} className="rounded-lg bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#543F48]">Close</button></footer>
+                            </>;
+                        })()}
                     </section>
                 </div>
             )}

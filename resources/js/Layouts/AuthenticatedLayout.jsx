@@ -504,6 +504,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     </div>
 
                     <nav className="mt-6 space-y-1 px-3">
+                        {!collapsed && <div className="px-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-purple-200">My Workspace</div>}
                         <NavLink
                             href={route('dashboard')}
                             active={route().current('dashboard')}
@@ -575,12 +576,6 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                         {isFacilityAdmin && (
                             <>
-                                {!collapsed && (
-                                    <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-purple-200">
-                                        My Workspace
-                                    </div>
-                                )}
-
                                 <NavLink
                                     href={route('bookings.index')}
                                     active={route().current('bookings.index')}
@@ -588,6 +583,15 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     collapsed={collapsed}
                                 >
                                     My Bookings
+                                </NavLink>
+
+                                <NavLink
+                                    href={route('activity-plans.index')}
+                                    active={(route().current('activity-plans.index') || route().current('activity-plans.show'))}
+                                    icon={CalendarDays}
+                                    collapsed={collapsed}
+                                >
+                                    Activity Plans
                                 </NavLink>
 
                                 <NavLink
@@ -615,15 +619,6 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 </NavLink>
 
                                 <NavLink
-                                    href={route('activity-plans.index')}
-                                    active={(route().current('activity-plans.index') || route().current('activity-plans.show'))}
-                                    icon={CalendarDays}
-                                    collapsed={collapsed}
-                                >
-                                    Activity Plans
-                                </NavLink>
-
-                                <NavLink
                                     href={route('facilitator.managed-facilities.index')}
                                     active={route().current('facilitator.managed-facilities.index')}
                                     icon={Building2}
@@ -644,10 +639,14 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         )}
 
                         {isSuperAdmin && (
+                            <NavLink href={route('activity-plans.index')} active={(route().current('activity-plans.index') || route().current('activity-plans.show'))} icon={CalendarDays} collapsed={collapsed}>Activity Plans</NavLink>
+                        )}
+
+                        {isSuperAdmin && (
                             <>
                                 {!collapsed && (
                                     <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-purple-200">
-                                        Admin
+                                        Super Administration
                                     </div>
                                 )}
 
@@ -658,15 +657,6 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     collapsed={collapsed}
                                 >
                                     Booking Approvals
-                                </NavLink>
-
-                                <NavLink
-                                    href={route('activity-plans.index')}
-                                    active={(route().current('activity-plans.index') || route().current('activity-plans.show'))}
-                                    icon={CalendarDays}
-                                    collapsed={collapsed}
-                                >
-                                    Activity Plans
                                 </NavLink>
 
                                 <NavLink
