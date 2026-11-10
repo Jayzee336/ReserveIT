@@ -296,7 +296,7 @@ export default function FacilityBookingSettings({
                                                 {formatClosureDate(period.scheduled_start_at)} – {formatClosureDate(period.scheduled_end_at)}
                                             </p>
                                             <p className="mt-1 text-[11px] text-slate-500">
-                                                {Array.isArray(period.affected_user_ids) ? period.affected_user_ids.length : 0} affected booking owner(s) notified
+                                                {Number(period.affected_user_count ?? 0)} affected booking owner(s) notified
                                             </p>
                                         </div>
                                         <button
