@@ -6,6 +6,7 @@ import { ArrowLeft, Printer, CheckCircle } from 'lucide-react';
 export default function Receipt({ auth, booking }) {
     const facility = booking?.facility ?? {};
     const bookingDate = booking?.date || booking?.booking_date;
+    const bookingEndDate = booking?.end_date || bookingDate;
     const formatDate = (value) => {
         if (!value) return 'Not provided';
         const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
@@ -95,8 +96,12 @@ export default function Receipt({ auth, booking }) {
                                         <dd className="mt-1 font-medium text-gray-900">{facility.location || '—'}</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-sm text-gray-500">Reservation date</dt>
+                                        <dt className="text-sm text-gray-500">Start date</dt>
                                         <dd className="mt-1 font-medium text-gray-900">{formatDate(bookingDate)}</dd>
+                                    </div>
+                                    <div>
+                                        <dt className="text-sm text-gray-500">End date</dt>
+                                        <dd className="mt-1 font-medium text-gray-900">{formatDate(bookingEndDate)}</dd>
                                     </div>
                                     <div>
                                         <dt className="text-sm text-gray-500">Start time</dt>
