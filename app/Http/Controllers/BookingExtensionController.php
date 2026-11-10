@@ -166,6 +166,7 @@ class BookingExtensionController extends Controller
                 'status' => 'created',
                 'extension' => $extension,
                 'facility_name' => $facility->name,
+                'facility_id' => $facility->getKey(),
             ];
         });
 
@@ -183,6 +184,8 @@ class BookingExtensionController extends Controller
                 'requested_end_time' => $messages[$result['status']] ?? 'The extension request could not be submitted.',
             ]);
         }
+
+        $facility = Facility::query()->findOrFail($result['facility_id']);
 
         $facility->facilityAdmins()
             ->where('is_active', true)
