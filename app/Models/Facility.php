@@ -16,6 +16,7 @@ class Facility extends Model
         'allowTdevsManpower' => 'boolean',
         'capacity' => 'integer',
         'booking_lead_time_days' => 'integer',
+        'is_available' => 'boolean',
     ];
 
     public function facilityAdmins()
@@ -31,6 +32,11 @@ class Facility extends Model
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function unavailabilityPeriods()
+    {
+        return $this->hasMany(FacilityUnavailabilityPeriod::class);
     }
 
     public function scopeForUser(Builder $query, User $user): Builder
