@@ -42,7 +42,14 @@ class ActivityPlanController extends Controller
         }
 
         $facilityQuery = Facility::query()
-            ->with('operatingHours')
+            ->with([
+                'operatingHours',
+                'unavailabilityPeriods' => fn ($query) => $query
+                    ->whereNull('ended_at')
+                    ->whereNotNull('scheduled_start_at')
+                    ->where('scheduled_end_at', '>=', now())
+                    ->orderBy('scheduled_start_at'),
+            ])
             ->where('is_available', true)
             ->orderBy('name');
 
