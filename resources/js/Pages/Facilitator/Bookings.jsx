@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
 import BookingConsentAttachment from '@/Components/BookingConsentAttachment';
@@ -1011,6 +1011,14 @@ export default function Bookings({
                             className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none focus:border-[#A98C97] focus:ring-2 focus:ring-[#EFE4E9]"
                         />
                     </div>
+
+                    <Link
+                        href={route('overtime-extensions.index')}
+                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D9C8CF] bg-white px-4 py-2.5 text-sm font-semibold text-[#543F48] shadow-sm transition hover:bg-[#F7F0F3]"
+                    >
+                        <Clock className="h-4 w-4" />
+                        Extension requests
+                    </Link>
 
                     <select
                         value={statusFilter}
