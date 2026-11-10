@@ -339,7 +339,7 @@ class BookingExtensionController extends Controller
                 return ['status' => 'conflict'];
             }
 
-            $booking->update(['end_time' => $requestedEnd]);
+            $booking->update(['end_time' => $requestedEnd . ':00']);
 
             $lockedRequest->update([
                 'status' => 'approved',
