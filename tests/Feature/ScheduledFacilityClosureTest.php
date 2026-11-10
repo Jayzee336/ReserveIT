@@ -7,6 +7,7 @@ use App\Models\Facility;
 use App\Models\FacilityUnavailabilityPeriod;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -131,15 +132,15 @@ class ScheduledFacilityClosureTest extends TestCase
 
         $notificationMessage = $affectedUser->notifications()->firstOrFail()->data['message'];
         $this->assertStringContainsString(
-            \\Carbon\\Carbon::parse($date)->format('M d, Y'),
+            Carbon::parse($date)->format('M d, Y'),
             $notificationMessage
         );
         $this->assertStringNotContainsString(
-            \\Carbon\\Carbon::parse($secondSessionDate)->format('M d, Y'),
+            Carbon::parse($secondSessionDate)->format('M d, Y'),
             $notificationMessage
         );
         $this->assertStringNotContainsString(
-            \\Carbon\\Carbon::parse($thirdSessionDate)->format('M d, Y'),
+            Carbon::parse($thirdSessionDate)->format('M d, Y'),
             $notificationMessage
         );
 
