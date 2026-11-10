@@ -68,15 +68,14 @@ class FacilityAvailabilityController extends Controller
                 ->whereNotNull('user_id')
                 ->whereIn('status', ['pending', 'approved'])
                 ->where(function ($query) use ($today, $currentTime) {
-                    $query->where(function ($futureDates) use ($today) {
-                        $futureDates->whereDate('booking_date', '>', $today)
-                            ->orWhereDate('date', '>', $today)
-                            ->orWhereDate('end_date', '>=', $today);
-                    })->orWhere(function ($todayBookings) use ($today, $currentTime) {
-                        $todayBookings->where(function ($dateFields) use ($today) {
-                            $dateFields->whereDate('booking_date', $today)
-                                ->orWhereDate('date', $today);
-                        })->where('end_time', '>', $currentTime);
+                    $query->whereRaw(
+                        'COALESCE(end_date, date, booking_date) > ?',
+                        [$today]
+                    )->orWhere(function ($todayEnd) use ($today, $currentTime) {
+                        $todayEnd->whereRaw(
+                            'COALESCE(end_date, date, booking_date) = ?',
+                            [$today]
+                        )->where('end_time', '>', $currentTime);
                     });
                 })
                 ->pluck('user_id')
