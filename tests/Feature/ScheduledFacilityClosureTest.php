@@ -227,6 +227,40 @@ class ScheduledFacilityClosureTest extends TestCase
         $this->assertDatabaseCount('bookings', 1);
     }
 
+    public function test_pending_booking_cannot_be_approved_when_it_overlaps_a_scheduled_closure(): void
+    {
+        $this->setBookingDefaults();
+
+        $facility = $this->createFacility('scheduled-closure-approval-facility');
+        $owner = $this->createUser();
+        $admin = $this->createUser('facility_admin');
+        $superAdmin = $this->createUser('super_admin');
+        $facility->facilityAdmins()->attach($admin);
+        $date = today()->addDays(3)->toDateString();
+
+        $booking = Booking::create([
+            'facility_id' => $facility->id,
+            'user_id' => $owner->id,
+            'date' => $date,
+            'booking_date' => $date,
+            'end_date' => $date,
+            'start_time' => '10:00:00',
+            'end_time' => '12:00:00',
+            'status' => 'pending',
+            'attendees' => 10,
+            'needs_manpower' => false,
+            'notes' => 'Pending booking overlapping a closure.',
+        ]);
+
+        $this->scheduleClosure($facility, $superAdmin, $date);
+
+        $this->actingAs($admin)
+            ->patch(route('facilitator.bookings.approve', $booking))
+            ->assertRedirect();
+
+        $this->assertSame('pending', $booking->fresh()->status);
+    }
+
     public function test_facility_admin_cannot_schedule_closure_for_an_unassigned_facility(): void
     {
         $facility = $this->createFacility('scheduled-closure-access-facility');
