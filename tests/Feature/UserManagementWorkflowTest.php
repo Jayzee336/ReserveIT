@@ -58,7 +58,7 @@ class UserManagementWorkflowTest extends TestCase
     public function test_editing_facility_admin_details_without_assignment_data_preserves_assignments(): void
     {
         $superAdmin = User::factory()->create(['role' => 'super_admin']);
-        $facilityAdmin = User::factory()->create(['role' => 'facility_admin']);
+        $facilityAdmin = User::factory()->create(['role' => 'facility_admin', 'username' => 'existingfacilityadmin']);
         $facility = $this->createFacility('user-edit-preserve-assignment');
         $facilityAdmin->managedFacilities()->attach($facility);
 
