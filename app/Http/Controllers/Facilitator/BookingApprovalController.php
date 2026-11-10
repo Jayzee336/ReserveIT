@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Facilitator;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Facility;
+use App\Models\FacilityOperatingHour;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\BookingOperationsNotification;
@@ -162,9 +163,13 @@ class BookingApprovalController extends Controller
         $result = DB::transaction(function () use ($booking, $user) {
             // Match booking creation's lock order so concurrent requests
             // for the same facility serialize before checking availability.
-            Facility::whereKey($booking->facility_id)
+            $lockedFacility = Facility::whereKey($booking->facility_id)
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            if (! $lockedFacility->is_available) {
+                return 'facility_unavailable';
+            }
 
             $lockedBooking = Booking::query()
                 ->whereKey($booking->getKey())
@@ -183,6 +188,36 @@ class BookingApprovalController extends Controller
                 (int) ($settings->cleanup_buffer_minutes ?? 30)
             );
 
+            $bookingDate = $lockedBooking->date ?? $lockedBooking->booking_date;
+            $dayOfWeek = Carbon::parse($bookingDate)->dayOfWeek;
+            $facilityHours = FacilityOperatingHour::query()
+                ->where('facility_id', $lockedFacility->getKey())
+                ->where('day_of_week', $dayOfWeek)
+                ->first();
+
+            if ($facilityHours) {
+                if ($facilityHours->is_closed) {
+                    return 'outside_hours';
+                }
+
+                $openingMinutes = ((int) substr((string) $facilityHours->opens_at, 0, 2) * 60)
+                    + (int) substr((string) $facilityHours->opens_at, 3, 2);
+                $closingTime = substr((string) $facilityHours->closes_at, 0, 5);
+                $closingMinutes = $closingTime === '00:00'
+                    ? 1440
+                    : ((int) substr($closingTime, 0, 2) * 60) + (int) substr($closingTime, 3, 2);
+                $startTime = Carbon::parse($lockedBooking->start_time);
+                $endTime = Carbon::parse($lockedBooking->end_time);
+                $startMinutes = ((int) $startTime->format('H') * 60) + (int) $startTime->format('i');
+                $endMinutes = $lockedBooking->end_time === '00:00'
+                    ? 1440
+                    : ((int) $endTime->format('H') * 60) + (int) $endTime->format('i');
+
+                if ($startMinutes < $openingMinutes || $startMinutes >= $closingMinutes || $endMinutes > $closingMinutes) {
+                    return 'outside_hours';
+                }
+            }
+
             if ($this->hasConflict($lockedBooking, $bufferMinutes)) {
                 return 'conflict';
             }
@@ -195,6 +230,20 @@ class BookingApprovalController extends Controller
 
             return 'approved';
         });
+
+        if ($result === 'facility_unavailable') {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This facility is currently unavailable. The booking cannot be approved until the facility is restored.',
+            ]);
+        }
+
+        if ($result === 'outside_hours') {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This booking falls outside the facility operating hours. Update the booking or its operating hours before approving it.',
+            ]);
+        }
 
         if ($result === 'conflict') {
             return redirect()->back()->with('toast', [
