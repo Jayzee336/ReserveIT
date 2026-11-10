@@ -112,6 +112,30 @@ class ActivityPlanWorkflowTest extends TestCase
         parent::tearDown();
     }
 
+    public function test_activity_plan_submission_rejects_sessions_that_overlap_a_scheduled_closure(): void
+    {
+        $facility = $this->createFacility('activity-plan-scheduled-closure-room');
+        $user = $this->createVerifiedUser();
+        $superAdmin = $this->createVerifiedUser('super_admin');
+
+        $this->actingAs($superAdmin)
+            ->post(route('admin.facilities.scheduled-closures.store', $facility), [
+                'reason' => 'Electrical maintenance',
+                'scheduled_start_at' => '2026-11-16T09:30',
+                'scheduled_end_at' => '2026-11-16T09:45',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($user)
+            ->from(route('activity-plans.index'))
+            ->post(route('activity-plans.store'), $this->activityPlanPayload($facility))
+            ->assertSessionHasErrors('sessions.0.date');
+
+        $this->assertDatabaseCount('activity_plans', 0);
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
     public function test_user_can_submit_a_recurring_plan_with_separate_booking_sessions(): void
     {
         $user = $this->createVerifiedUser();
