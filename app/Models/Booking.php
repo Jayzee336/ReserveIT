@@ -24,6 +24,7 @@ class Booking extends Model
         'guest_email',
         'guest_phone',
         'date',
+        'end_date',
         'booking_date',
         'start_time',
         'end_time',
@@ -55,6 +56,7 @@ class Booking extends Model
     // Automatically converts fields to their appropriate PHP types.
     protected $casts = [
         'date' => 'date:Y-m-d',
+        'end_date' => 'date:Y-m-d',
         'booking_date' => 'date:Y-m-d',
         'needs_manpower' => 'boolean',
         'consent_file_uploaded' => 'boolean',
