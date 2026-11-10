@@ -257,19 +257,21 @@ function FacilityDetailsModal({
                                 <p className="mt-1 break-words text-xs text-slate-600">{facility.unavailable_reason}</p>
                             )}
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => onToggleAvailability(facility, facility.is_available === false)}
-                            className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold transition ${facility.is_available === false ? 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' : 'border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
-                        >
-                            {facility.is_available === false ? 'Mark available' : 'Mark unavailable'}
-                        </button>
-                        <Link
-                            href={route('admin.facilities.booking-settings', facility.id)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
-                        >
-                            Configure hours
-                        </Link>
+                        <div className="flex shrink-0 flex-wrap items-center gap-2">
+                            <Link
+                                href={route('admin.facilities.booking-settings', facility.id)}
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-[#BDA8B0] hover:bg-[#F7F0F3]"
+                            >
+                                Configure hours
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={() => onToggleAvailability(facility, facility.is_available === false)}
+                                className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold transition ${facility.is_available === false ? 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' : 'border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
+                            >
+                                {facility.is_available === false ? 'Mark available' : 'Mark unavailable'}
+                            </button>
+                        </div>
                     </div>
 
                     {facility.facility_admins?.length > 0 && (
@@ -294,11 +296,11 @@ function FacilityDetailsModal({
                 </div>
 
                 {(isSuperAdmin || isFacilityAdmin) && (
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between gap-3">
+                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3">
                         {isSuperAdmin && <button
                             type="button"
                             onClick={() => onDelete(facility)}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold transition"
+                            className="mr-auto inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold transition"
                         >
                             <Trash2 className="h-4 w-4" />
                             Delete Facility

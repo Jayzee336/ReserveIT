@@ -309,3 +309,17 @@
         outline-offset: 3px;
     }
 }
+
+
+/* Hover feedback for Activity Plan actions and supporting document controls. */
+@layer components {
+    .ri-hover-action {
+        transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .ri-hover-action:hover {
+        color: var(--ri-brand-strong);
+        background-color: var(--ri-brand-soft);
+        border-color: var(--ri-border-strong);
+    }
+}
