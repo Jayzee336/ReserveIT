@@ -67,11 +67,35 @@ class BookingSchedulePrivacyTest extends TestCase
                 ->where('serverBookings.0.can_view_details', false)
                 ->missing('serverBookings.0.user')
                 ->missing('serverBookings.0.user_id')
+                ->missing('serverBookings.0.facility_name')
                 ->missing('serverBookings.0.guest_name')
                 ->missing('serverBookings.0.guest_email')
                 ->missing('serverBookings.0.notes')
                 ->missing('serverBookings.0.approved_by')
                 ->missing('serverBookings.0.approved_at')
+            );
+    }
+
+    public function test_facility_admin_all_facilities_view_hides_booking_details_for_unassigned_facilities(): void
+    {
+        $admin = User::factory()->create(['role' => 'facility_admin']);
+        $owner = User::factory()->create(['role' => 'user']);
+        $assigned = $this->createFacility('schedule-all-assigned', 'Assigned Facility');
+        $unassigned = $this->createFacility('schedule-all-unassigned', 'Unassigned Facility');
+        $assigned->facilityAdmins()->attach($admin);
+        $booking = $this->createBooking($unassigned, $owner);
+
+        $this->actingAs($admin)
+            ->get(route('schedule.index', ['date' => '2026-11-15', 'view' => 'all']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('serverBookings', 1)
+                ->where('serverBookings.0.id', $booking->id)
+                ->where('serverBookings.0.can_view_details', false)
+                ->missing('serverBookings.0.facility_name')
+                ->missing('serverBookings.0.user')
+                ->missing('serverBookings.0.guest_email')
+                ->missing('serverBookings.0.notes')
             );
     }
 
