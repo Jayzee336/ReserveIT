@@ -150,6 +150,62 @@ class ActivityPlanWorkflowTest extends TestCase
         $this->assertDatabaseCount('bookings', 0);
     }
 
+    public function test_lobby_requires_three_calendar_days_for_each_activity_plan_session(): void
+    {
+        $user = $this->createVerifiedUser();
+        $facility = $this->createFacility('activity-plan-lobby');
+        $facility->update([
+            'name' => 'Lobby',
+            'booking_lead_time_days' => 3,
+        ]);
+
+        $payload = $this->activityPlanPayload($facility);
+        $payload['start_date'] = '2026-11-12';
+        $payload['end_date'] = '2026-11-12';
+        $payload['recurrence_days'] = [4];
+        $payload['sessions'] = [[
+            'date' => '2026-11-12',
+            'start_time' => '09:00',
+            'end_time' => '10:00',
+            'attendees' => 25,
+            'needs_manpower' => false,
+            'notes' => 'Too soon',
+        ]];
+
+        $this->actingAs($user)
+            ->post(route('activity-plans.store'), $payload)
+            ->assertSessionHasErrors('sessions.0.date');
+
+        $this->assertDatabaseCount('activity_plans', 0);
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
+    public function test_facility_without_advance_notice_can_accept_a_tomorrow_activity_plan_session(): void
+    {
+        $user = $this->createVerifiedUser();
+        $facility = $this->createFacility();
+
+        $payload = $this->activityPlanPayload($facility);
+        $payload['start_date'] = '2026-11-11';
+        $payload['end_date'] = '2026-11-11';
+        $payload['recurrence_days'] = [3];
+        $payload['sessions'] = [[
+            'date' => '2026-11-11',
+            'start_time' => '09:00',
+            'end_time' => '10:00',
+            'attendees' => 25,
+            'needs_manpower' => false,
+            'notes' => 'Tomorrow is allowed for this facility',
+        ]];
+
+        $this->actingAs($user)
+            ->post(route('activity-plans.store'), $payload)
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseCount('activity_plans', 1);
+        $this->assertDatabaseCount('bookings', 1);
+    }
+
     public function test_facility_specific_maximum_booking_hours_is_enforced_for_activity_plan_sessions(): void
     {
         $user = $this->createVerifiedUser();
