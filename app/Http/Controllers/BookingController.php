@@ -623,9 +623,12 @@ class BookingController extends Controller
             ]);
         }
 
+        // Refresh the parent recurring plan after an individual session is cancelled.
+        $cancelledBooking = Booking::with(['facility', 'activityPlan'])->findOrFail($result['booking_id']);
+        $cancelledBooking->activityPlan?->syncStatus();
+
         // Notify after the cancellation transaction commits. Facility admins
         // only receive notices for facilities assigned to them.
-        $cancelledBooking = Booking::with('facility')->findOrFail($result['booking_id']);
         $facilityAdmins = $cancelledBooking->facility
             ? $cancelledBooking->facility->facilityAdmins()
                 ->where('is_active', true)
