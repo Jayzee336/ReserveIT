@@ -43,6 +43,30 @@ class BookingUpdateTest extends TestCase
         $this->assertTrue($booking->needs_manpower);
     }
 
+    public function test_facility_specific_advance_notice_is_enforced_for_booking_updates(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $facility->update(['booking_lead_time_days' => 3]);
+        $booking = $this->createBooking($user, $facility, 'pending');
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}", [
+                'date' => now()->addDays(2)->toDateString(),
+                'start_time' => '13:00',
+                'end_time' => '14:00',
+                'attendees' => 10,
+                'notes' => 'Too soon for this facility',
+                'needs_manpower' => false,
+            ])
+            ->assertSessionHasErrors('date');
+
+        $this->assertSame(
+            now()->addDay()->toDateString(),
+            $booking->fresh()->date->format('Y-m-d')
+        );
+    }
+
     public function test_facility_specific_maximum_booking_hours_is_enforced(): void
     {
         $user = User::factory()->create();
@@ -302,6 +326,7 @@ class BookingUpdateTest extends TestCase
             'location' => 'Building A',
             'requiresWeekendConsent' => false,
             'allowTdevsManpower' => true,
+            'booking_lead_time_days' => 0,
         ]);
     }
 

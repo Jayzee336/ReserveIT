@@ -136,6 +136,20 @@ class ActivityPlanWorkflowTest extends TestCase
         $this->assertDatabaseCount('bookings', 0);
     }
 
+    public function test_facility_specific_advance_notice_is_enforced_for_recurring_sessions(): void
+    {
+        $user = $this->createVerifiedUser();
+        $facility = $this->createFacility();
+        $facility->update(['booking_lead_time_days' => 7]);
+
+        $this->actingAs($user)
+            ->post(route('activity-plans.store'), $this->activityPlanPayload($facility))
+            ->assertSessionHasErrors('sessions.0.date');
+
+        $this->assertDatabaseCount('activity_plans', 0);
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
     public function test_facility_specific_maximum_booking_hours_is_enforced_for_activity_plan_sessions(): void
     {
         $user = $this->createVerifiedUser();
