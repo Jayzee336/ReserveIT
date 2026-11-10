@@ -686,10 +686,8 @@ class ActivityPlanController extends Controller
         $query = Booking::query()
             ->where('facility_id', $facilityId)
             ->whereIn('status', ['pending', 'approved'])
-            ->where(function ($dates) use ($date) {
-                $dates->whereDate('date', $date)
-                    ->orWhereDate('booking_date', $date);
-            });
+            ->whereRaw('COALESCE(date, booking_date) <= ?', [$date])
+            ->whereRaw('COALESCE(end_date, date, booking_date) >= ?', [$date]);
 
         if ($excludeIds !== []) {
             $query->whereNotIn('id', $excludeIds);
