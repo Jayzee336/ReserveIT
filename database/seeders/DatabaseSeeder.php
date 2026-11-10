@@ -139,6 +139,9 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        // Keep the second AVR available in fresh local and test databases.
+        $this->call(AvrTwoFacilitySeeder::class);
+
         // Seed the three reusable demo accounts after facilities exist.
         $this->call(UserSeeder::class);
     }
