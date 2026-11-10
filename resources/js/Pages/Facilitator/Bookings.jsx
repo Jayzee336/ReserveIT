@@ -182,7 +182,7 @@ function PendingBookingCard({
             className="cursor-pointer rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition hover:border-gray-200 hover:shadow-md"
             onClick={() => onView(booking)}
         >
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                     <h3 className="truncate font-semibold text-gray-900">
                         {booking.facility?.name ?? 'Unknown Facility'}
@@ -195,7 +195,7 @@ function PendingBookingCard({
                         </span>
                     </p>
 
-                    <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
+                    <p className="mt-1 flex min-w-0 items-start gap-1.5 break-words text-sm text-gray-500">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
                         {booking.date ?? booking.booking_date}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date ?? booking.booking_date).slice(0, 10) ? ' – ' + booking.end_date : ''} · {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
                     </p>
@@ -211,13 +211,13 @@ function PendingBookingCard({
             </div>
 
             <div
-                className="mt-4 flex gap-2"
+                className="mt-4 grid grid-cols-3 gap-2"
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
                     type="button"
                     onClick={() => onView(booking)}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
+                    className="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg bg-gray-100 px-2 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-200 sm:gap-1.5 sm:text-sm"
                 >
                     <Eye className="h-4 w-4" />
                     View
@@ -227,7 +227,7 @@ function PendingBookingCard({
                     type="button"
                     onClick={() => onApprove(booking.id)}
                     disabled={isProcessing}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                    className="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg bg-emerald-600 px-2 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-1.5 sm:text-sm"
                 >
                     <CheckCircle2 className="h-4 w-4" />
                     Approve
@@ -237,7 +237,7 @@ function PendingBookingCard({
                     type="button"
                     onClick={() => onDecline(booking.id)}
                     disabled={isProcessing}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:opacity-50"
+                    className="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg bg-red-50 px-2 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-1.5 sm:text-sm"
                 >
                     <XCircle className="h-4 w-4" />
                     Decline
@@ -1000,7 +1000,7 @@ export default function Bookings({
             <Head title="Booking Approvals" />
 
             <div className="space-y-6 px-3 py-4 sm:space-y-8 sm:px-6 sm:py-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                         <input
@@ -1023,7 +1023,7 @@ export default function Bookings({
                     <select
                         value={statusFilter}
                         onChange={handleStatusChange}
-                        className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-[#A98C97] focus:ring-2 focus:ring-[#EFE4E9] sm:w-56"
+                        className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-[#A98C97] focus:ring-2 focus:ring-[#EFE4E9] xl:w-56"
                     >
                         <option value="">All statuses</option>
                         <option value="pending">Pending</option>
@@ -1049,7 +1049,7 @@ export default function Bookings({
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3">
                                 {filteredPending.map((booking) => (
                                     <PendingBookingCard
                                         key={booking.id}
