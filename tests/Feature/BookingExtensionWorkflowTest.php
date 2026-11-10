@@ -7,6 +7,7 @@ use App\Models\BookingExtensionRequest;
 use App\Models\Facility;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -60,12 +61,49 @@ class BookingExtensionWorkflowTest extends TestCase
     {
         parent::setUp();
 
+        Carbon::setTestNow(Carbon::now()->startOfDay()->setTime(9, 45));
+
         SystemSetting::current()->update([
             'cleanup_buffer_minutes' => 0,
             'opening_time' => '08:00',
             'closing_time' => '00:00',
             'max_booking_duration' => 4,
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
+    public function test_scheduled_closure_blocks_an_overtime_extension_that_would_enter_its_window(): void
+    {
+        $owner = $this->createUser();
+        $superAdmin = $this->createUser('super_admin');
+        $facility = $this->createFacility('extension-scheduled-closure-room');
+        $booking = $this->createActiveBooking($facility, $owner);
+        $date = today()->toDateString();
+
+        $this->actingAs($superAdmin)
+            ->post(route('admin.facilities.scheduled-closures.store', $facility), [
+                'reason' => 'Electrical maintenance',
+                'scheduled_start_at' => $date . 'T10:15',
+                'scheduled_end_at' => $date . 'T10:45',
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($owner)
+            ->from(route('bookings.index'))
+            ->post(route('bookings.extensions.store', $booking), [
+                'requested_end_time' => '10:30',
+                'reason' => 'The activity needs another thirty minutes.',
+            ])
+            ->assertSessionHasErrors('requested_end_time');
+
+        $this->assertDatabaseCount('booking_extension_requests', 0);
+        $this->assertSame('10:00:00', $booking->fresh()->end_time);
     }
 
     public function test_booking_owner_can_request_an_extension_without_immediately_changing_the_booking(): void
