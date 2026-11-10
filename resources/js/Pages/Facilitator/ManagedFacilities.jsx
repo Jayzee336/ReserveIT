@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Pencil, MapPin, Users, Calendar, Building2, Save, X } from 'lucide-react';
+import { Pencil, MapPin, Users, Calendar, Building2, Save, X, Clock } from 'lucide-react';
 
 export default function ManagedFacilities({ facilities = [] }) {
     const [editingId, setEditingId] = useState(null);
@@ -240,6 +240,13 @@ export default function ManagedFacilities({ facilities = [] }) {
                                             className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#F7F0F3] hover:bg-[#EFE4E9] text-[#543F48] text-xs font-semibold rounded-lg"
                                         >
                                             <Calendar className="h-3.5 w-3.5" /> View
+                                        </Link>
+                                        <Link
+                                            href={route('admin.facilities.booking-settings', facility.id)}
+                                            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                            title="Configure facility operating hours"
+                                        >
+                                            <Clock className="h-3.5 w-3.5" /> Hours
                                         </Link>
                                     </div>
                                 </div>
