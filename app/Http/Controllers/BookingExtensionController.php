@@ -376,7 +376,7 @@ class BookingExtensionController extends Controller
                 'booking_not_active' => 'The booking is no longer checked in and active.',
                 'booking_changed' => 'The booking end time changed after the request. Submit a new extension request.',
                 'extension_window_closed' => 'The booking extension window has ended. The request can no longer be approved.',
-                'scheduled_closure' => 'The requested extension overlaps a scheduled facility closure.'
+                'scheduled_closure' => 'The requested extension overlaps a scheduled facility closure.',
                 'facility_closed' => 'The facility is closed on the booking date.',
                 'outside_hours' => 'The requested end time is outside facility hours or exceeds the maximum booking duration.',
                 'conflict' => 'Another active booking now overlaps the requested extension.',
