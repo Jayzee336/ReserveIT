@@ -6,7 +6,6 @@ import {
     AlertCircle,
     CheckCircle2,
     UserIcon,
-    Calendar as CalendarIcon,
     AlertTriangle,
 } from 'lucide-react';
 
@@ -48,16 +47,6 @@ const addDaysToLocalDate = (days) => {
     return getLocalDateString(date);
 };
 
-const isWeekendDate = (value) => {
-    if (!value) return false;
-
-    const [year, month, day] = value.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-    const weekday = date.getDay();
-
-    return weekday === 0 || weekday === 6;
-};
-
 /**
  * Unified Booking Modal — rendered identically whether triggered from
  * CalendarDashboard, FacilityDetails, or another page.
@@ -77,14 +66,13 @@ export default function BookingModal({
     const isAuthenticated = !!user;
     const [date, setDate] = useState(selectedDate || '');
     const [endDate, setEndDate] = useState(selectedDate || '');
-    const selectedWeekday = date ? new Date(date + 'T12:00:00').getDay() : new Date().getDay();
     const dateRangeWeekdays = useMemo(() => {
         if (!date || !endDate || endDate < date) return [];
         const days = new Set();
         const cursor = new Date(date + 'T12:00:00');
         const lastDate = new Date(endDate + 'T12:00:00');
         let scanned = 0;
-        while (cursor <= lastDate && scanned <= 31) {
+        while (cursor <= lastDate && scanned <= 366) {
             days.add(cursor.getDay());
             cursor.setDate(cursor.getDate() + 1);
             scanned += 1;
@@ -596,11 +584,7 @@ export default function BookingModal({
                     )}
                 </div>
 
-                <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <CalendarIcon className="h-4 w-4 text-gray-400" />
-                    </div>
-
+                <div className="grid gap-3 sm:grid-cols-2">
                     <label className="block">
                         <span className="mb-1.5 block text-xs font-semibold text-gray-600">Start date</span>
                         <input
@@ -608,6 +592,7 @@ export default function BookingModal({
                             required
                             value={date}
                             min={minDate}
+                            max={addDaysToLocalDate(Math.max(0, Number(page.props.systemSettings?.max_advance_days ?? 30)))}
                             disabled={!!selectedDate}
                             onChange={(e) => {
                                 const value = e.target.value;
