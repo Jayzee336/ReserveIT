@@ -74,18 +74,37 @@ export function CalendarView({
         const grouped = new Map();
 
         serverBookings.forEach((booking) => {
-            const bookingDate = String(booking.date || booking.booking_date || '').slice(0, 10);
-            if (!bookingDate || !['pending', 'approved'].includes(String(booking.status || '').toLowerCase())) {
+            const bookingStartDate = String(booking.date || booking.booking_date || '').slice(0, 10);
+            const bookingEndDate = String(booking.end_date || bookingStartDate).slice(0, 10);
+
+            if (
+                !bookingStartDate
+                || !bookingEndDate
+                || !['pending', 'approved'].includes(String(booking.status || '').toLowerCase())
+            ) {
                 return;
             }
 
-            if (!grouped.has(bookingDate)) grouped.set(bookingDate, []);
-            grouped.get(bookingDate).push(booking);
+            const cursor = parseLocalDate(bookingStartDate);
+            const lastDate = parseLocalDate(bookingEndDate);
+
+            // Render a multi-day reservation on every affected day in the
+            // currently selected month, including ranges that began earlier.
+            while (cursor <= lastDate) {
+                const key = dateKey(cursor);
+
+                if (cursor >= monthStart && cursor <= monthEnd) {
+                    if (!grouped.has(key)) grouped.set(key, []);
+                    grouped.get(key).push(booking);
+                }
+
+                cursor.setDate(cursor.getDate() + 1);
+            }
         });
 
         grouped.forEach((items) => items.sort((a, b) => String(a.start_time).localeCompare(String(b.start_time))));
         return grouped;
-    }, [serverBookings]);
+    }, [serverBookings, monthStart, monthEnd]);
 
     const calendarDays = useMemo(() => {
         const firstWeekday = monthStart.getDay();
