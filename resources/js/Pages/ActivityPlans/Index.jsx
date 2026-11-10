@@ -206,8 +206,8 @@ export default function Index({ plans, facilities = [] }) {
             return;
         }
 
-        if (sessions.length > 100) {
-            form.setError('sessions', 'A single activity plan can contain up to 100 sessions. Shorten the date range or create separate plans.');
+        if (sessions.length > 366) {
+            form.setError('sessions', 'A single activity plan can contain up to 366 sessions. Shorten the date range or create separate plans.');
             return;
         }
 
@@ -348,7 +348,7 @@ export default function Index({ plans, facilities = [] }) {
                                 ))}
                             </div>
                         )}
-                        {sessions.length > 100 && <p className="text-xs text-rose-600">The current form limit is 100 sessions. Shorten the range or split it into multiple plans.</p>}
+                        {sessions.length > 100 && <p className="text-xs text-rose-600">The current form limit is 366 sessions. Shorten the range or split it into multiple plans.</p>}
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
@@ -376,7 +376,7 @@ export default function Index({ plans, facilities = [] }) {
                         <p className="max-w-2xl text-xs leading-5 text-slate-500">
                             Each session is submitted as an individual booking. The facility administrator can review the complete plan or decide on individual sessions. The uploaded activity plan and consent letter are stored privately.
                         </p>
-                        <button type="submit" disabled={form.processing || sessions.length === 0 || sessions.length > 100 || facilities.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-[#6A535C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-50">
+                        <button type="submit" disabled={form.processing || sessions.length === 0 || sessions.length > 366 || facilities.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-[#6A535C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-50">
                             <Plus className="h-4 w-4" /> {form.processing ? 'Submitting…' : 'Submit activity plan'}
                         </button>
                     </div>
