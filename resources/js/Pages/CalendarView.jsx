@@ -70,6 +70,48 @@ export function CalendarView({
         [serverFacilities]
     );
 
+    const closuresByDate = useMemo(() => {
+        const grouped = new Map();
+
+        serverFacilities.forEach((facility) => {
+            (facility.unavailability_periods ?? []).forEach((period) => {
+                if (
+                    period.ended_at
+                    || !period.scheduled_start_at
+                    || !period.scheduled_end_at
+                ) {
+                    return;
+                }
+
+                const start = new Date(period.scheduled_start_at);
+                const end = new Date(period.scheduled_end_at);
+                if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+                    return;
+                }
+
+                const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 12);
+                const lastDate = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 12);
+                let scanned = 0;
+
+                while (cursor <= lastDate && scanned <= 370) {
+                    if (cursor >= monthStart && cursor <= monthEnd) {
+                        const key = dateKey(cursor);
+                        if (!grouped.has(key)) grouped.set(key, []);
+                        grouped.get(key).push({
+                            ...period,
+                            facility_name: facility.name,
+                        });
+                    }
+
+                    cursor.setDate(cursor.getDate() + 1);
+                    scanned += 1;
+                }
+            });
+        });
+
+        return grouped;
+    }, [serverFacilities, monthStart, monthEnd]);
+
     const bookingsByDate = useMemo(() => {
         const grouped = new Map();
 
@@ -123,13 +165,26 @@ export function CalendarView({
                 key,
                 dayNumber,
                 bookings: bookingsByDate.get(key) || [],
+                closures: closuresByDate.get(key) || [],
                 isToday: key === dateKey(new Date()),
                 isSelected: key === selectedDate,
             };
         });
-    }, [bookingsByDate, monthEnd, monthStart, selected, selectedDate]);
+    }, [bookingsByDate, closuresByDate, monthEnd, monthStart, selected, selectedDate]);
 
     const dailyBookings = bookingsByDate.get(selectedDate) || [];
+    const dailyClosures = closuresByDate.get(selectedDate) || [];
+    const formatClosureTime = (value) => {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
+            ? '—'
+            : date.toLocaleString('en-PH', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+            });
+    };
 
     const changeMonth = (offset) => {
         const nextMonth = new Date(selected.getFullYear(), selected.getMonth() + offset, 1, 12);
@@ -207,14 +262,28 @@ export function CalendarView({
                                         <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#6A535C] text-white' : day.isToday ? 'border border-[#846A75] text-[#6A535C]' : 'text-slate-700'}`}>
                                             {day.dayNumber}
                                         </span>
-                                        {day.bookings.length > 0 && (
-                                            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-600 sm:text-[10px]">
-                                                {day.bookings.length}
+                                        {(day.bookings.length > 0 || day.closures.length > 0) && (
+                                            <span className="flex items-center gap-1">
+                                                {day.bookings.length > 0 && (
+                                                    <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-600 sm:text-[10px]">
+                                                        {day.bookings.length}
+                                                    </span>
+                                                )}
+                                                {day.closures.length > 0 && (
+                                                    <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[8px] font-bold text-amber-800 sm:text-[9px]">
+                                                        C
+                                                    </span>
+                                                )}
                                             </span>
                                         )}
                                     </span>
 
                                     <div className="mt-1 space-y-1">
+                                        {day.closures.length > 0 && (
+                                            <span className="block truncate rounded bg-amber-100 px-1 py-0.5 text-[8px] font-semibold leading-3 text-amber-800 sm:px-1.5 sm:text-[10px] sm:leading-4">
+                                                Closure
+                                            </span>
+                                        )}
                                         {day.bookings.slice(0, 2).map((booking) => {
                                             const facility = facilityById.get(String(booking.facility_id));
                                             const approved = booking.status === 'approved';
@@ -266,6 +335,24 @@ export function CalendarView({
                     </div>
 
                     <div className="max-h-[520px] space-y-3 overflow-y-auto p-3 sm:p-4">
+                        {dailyClosures.length > 0 && (
+                            <div className="space-y-2">
+                                {dailyClosures.map((closure) => (
+                                    <div key={closure.id} className="rounded-xl border border-amber-200 bg-amber-50/80 p-3">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <p className="text-xs font-bold text-amber-900">
+                                                Scheduled closure · {closure.facility_name}
+                                            </p>
+                                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-800">
+                                                {formatClosureTime(closure.scheduled_start_at)} – {formatClosureTime(closure.scheduled_end_at)}
+                                            </span>
+                                        </div>
+                                        <p className="mt-1 break-words text-xs text-amber-800">{closure.reason}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                         {visibleDailyBookings.length === 0 ? (
                             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
                                 <CalendarDays className="mx-auto h-8 w-8 text-slate-300" />
