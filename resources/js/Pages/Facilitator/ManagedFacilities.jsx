@@ -93,7 +93,7 @@ export default function ManagedFacilities({ facilities = [] }) {
         <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-900">Managed Facilities</h1>}>
             <Head title="Managed Facilities" />
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-5 px-3 py-4 sm:space-y-6 sm:px-6 sm:py-6">
                 <div className="rounded-2xl border border-stone-100 bg-white p-5 shadow-sm">
                     <h1 className="font-semibold text-slate-900">Facilities You Oversee</h1>
                 </div>
