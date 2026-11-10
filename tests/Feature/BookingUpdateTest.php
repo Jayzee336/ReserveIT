@@ -67,6 +67,59 @@ class BookingUpdateTest extends TestCase
         );
     }
 
+    public function test_university_auditorium_accepts_an_edit_exactly_three_calendar_days_ahead(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility('University Auditorium');
+        $facility->update(['booking_lead_time_days' => 3]);
+        $booking = $this->createBooking($user, $facility, 'pending');
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}", [
+                'date' => now()->addDays(2)->toDateString(),
+                'start_time' => '13:00',
+                'end_time' => '14:00',
+                'attendees' => 10,
+                'notes' => 'Too soon',
+                'needs_manpower' => false,
+            ])
+            ->assertSessionHasErrors('date');
+
+        $acceptedDate = now()->addDays(3)->toDateString();
+
+        $this->put("/bookings/{$booking->id}", [
+            'date' => $acceptedDate,
+            'start_time' => '13:00',
+            'end_time' => '14:00',
+            'attendees' => 10,
+            'notes' => 'Exactly three calendar days ahead',
+            'needs_manpower' => false,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame($acceptedDate, $booking->fresh()->date->format('Y-m-d'));
+    }
+
+    public function test_facility_without_advance_notice_can_be_edited_for_tomorrow(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $booking = $this->createBooking($user, $facility, 'pending');
+        $tomorrow = now()->addDay()->toDateString();
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}", [
+                'date' => $tomorrow,
+                'start_time' => '13:00',
+                'end_time' => '14:00',
+                'attendees' => 10,
+                'notes' => 'No facility-specific lead time',
+                'needs_manpower' => false,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame($tomorrow, $booking->fresh()->date->format('Y-m-d'));
+    }
+
     public function test_facility_specific_maximum_booking_hours_is_enforced(): void
     {
         $user = User::factory()->create();
@@ -313,11 +366,11 @@ class BookingUpdateTest extends TestCase
         $this->assertSame('22:00', substr($booking->fresh()->end_time, 0, 5));
     }
 
-    private function createFacility(): Facility
+    private function createFacility(string $name = 'Booking Update Facility'): Facility
     {
         return Facility::create([
             'id' => 'booking-update-facility',
-            'name' => 'Booking Update Facility',
+            'name' => $name,
             'type' => 'Venue',
             'capacity' => 100,
             'description' => 'Facility for booking update tests',
