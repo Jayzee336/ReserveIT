@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ActivityPlanController;
 use App\Http\Controllers\FacilityAvailabilityController;
 use App\Http\Controllers\FacilityBookingSettingsController;
 use App\Http\Controllers\DeveloperContactController;
@@ -530,6 +531,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Booking Operations
     Route::post('/bookings', [BookingController::class, 'store'])
         ->name('bookings.store');
+
+    // Recurring semester activity plans and private supporting documents.
+    Route::post('/activity-plans', [ActivityPlanController::class, 'store'])
+        ->middleware('role:user,super_admin,facility_admin')
+        ->name('activity-plans.store');
+
+    Route::get('/activity-plans/{activityPlan}', [ActivityPlanController::class, 'show'])
+        ->middleware('role:user,super_admin,facility_admin')
+        ->name('activity-plans.show');
+
+    Route::get('/activity-plans/{activityPlan}/attachment', [ActivityPlanController::class, 'downloadAttachment'])
+        ->middleware('role:user,super_admin,facility_admin')
+        ->name('activity-plans.attachment');
+
+    Route::patch('/activity-plans/{activityPlan}/approve', [ActivityPlanController::class, 'approveAll'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('activity-plans.approve');
+
+    Route::patch('/activity-plans/{activityPlan}/decline', [ActivityPlanController::class, 'declineAll'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('activity-plans.decline');
 
     Route::get('/my-bookings', [BookingController::class, 'index'])
         ->name('bookings.index');
