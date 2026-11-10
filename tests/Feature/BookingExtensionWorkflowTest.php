@@ -191,4 +191,49 @@ class BookingExtensionWorkflowTest extends TestCase
         $this->assertSame('pending', $extension->fresh()->status);
         $this->assertSame('10:00:00', $booking->fresh()->end_time);
     }
+
+    public function test_another_user_cannot_request_an_extension_for_someone_elses_booking(): void
+    {
+        $owner = $this->createUser();
+        $otherUser = $this->createUser();
+        $facility = $this->createFacility('extension-owner-protection');
+        $booking = $this->createActiveBooking($facility, $owner);
+
+        $this->actingAs($otherUser)
+            ->post(route('bookings.extensions.store', $booking), [
+                'requested_end_time' => '10:30',
+                'reason' => 'The activity needs another thirty minutes.',
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('booking_extension_requests', 0);
+        $this->assertSame('10:00:00', $booking->fresh()->end_time);
+    }
+
+    public function test_a_booking_cannot_have_two_pending_extension_requests(): void
+    {
+        $owner = $this->createUser();
+        $facility = $this->createFacility('extension-one-pending');
+        $booking = $this->createActiveBooking($facility, $owner);
+
+        $first = $this->actingAs($owner)->post(
+            route('bookings.extensions.store', $booking),
+            [
+                'requested_end_time' => '10:30',
+                'reason' => 'The activity needs another thirty minutes.',
+            ]
+        );
+
+        $first->assertSessionHasNoErrors();
+
+        $this->from(route('bookings.index'))
+            ->post(route('bookings.extensions.store', $booking), [
+                'requested_end_time' => '11:00',
+                'reason' => 'The activity needs another full hour.',
+            ])
+            ->assertSessionHasErrors('requested_end_time');
+
+        $this->assertDatabaseCount('booking_extension_requests', 1);
+        $this->assertSame('10:00:00', $booking->fresh()->end_time);
+    }
 }
