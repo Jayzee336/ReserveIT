@@ -39,6 +39,11 @@ class Facility extends Model
         return $this->hasMany(FacilityUnavailabilityPeriod::class);
     }
 
+    public function operatingHours()
+    {
+        return $this->hasMany(FacilityOperatingHour::class)->orderBy('day_of_week');
+    }
+
     public function scopeForUser(Builder $query, User $user): Builder
     {
         if ($user->role === 'super_admin') {
