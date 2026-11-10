@@ -274,4 +274,25 @@ class BookingExtensionWorkflowTest extends TestCase
         $this->assertDatabaseCount('booking_extension_requests', 1);
         $this->assertSame('10:00:00', $booking->fresh()->end_time);
     }
+
+    public function test_facility_admin_can_request_an_extension_for_their_own_booking(): void
+    {
+        $facilityAdmin = $this->createUser('facility_admin');
+        $facility = $this->createFacility('extension-admin-owner-room');
+        $booking = $this->createActiveBooking($facility, $facilityAdmin);
+
+        $this->actingAs($facilityAdmin)
+            ->post(route('bookings.extensions.store', $booking), [
+                'requested_end_time' => '10:30',
+                'reason' => 'My activity needs another thirty minutes.',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('booking_extension_requests', [
+            'booking_id' => $booking->id,
+            'requested_by' => $facilityAdmin->id,
+            'status' => 'pending',
+        ]);
+        $this->assertSame('10:00:00', $booking->fresh()->end_time);
+    }
 }
