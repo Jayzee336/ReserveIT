@@ -35,6 +35,7 @@ const getNotificationCategory = (notification = {}) => {
     if (text.includes('cancel')) return { label: 'Cancelled', className: 'bg-amber-50 text-amber-700' };
     if (text.includes('reject') || text.includes('declin')) return { label: 'Rejected', className: 'bg-rose-50 text-rose-700' };
     if (text.includes('approv')) return { label: 'Approved', className: 'bg-emerald-50 text-emerald-700' };
+    if (text.includes('unavailable')) return { label: 'Facility', className: 'bg-slate-100 text-slate-700' };
     if (text.includes('request') || text.includes('submitted') || text.includes('new booking')) return { label: 'Request', className: 'bg-blue-50 text-blue-700' };
     return { label: 'Update', className: 'bg-stone-100 text-stone-600' };
 };
@@ -968,6 +969,16 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
                                 >
                                     View related booking
+                                    <ArrowUpRight className="h-4 w-4" />
+                                </Link>
+                            )}
+                            {viewingNotification.facility_url && (
+                                <Link
+                                    href={viewingNotification.facility_url}
+                                    onClick={() => setViewingNotification(null)}
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                                >
+                                    View facility
                                     <ArrowUpRight className="h-4 w-4" />
                                 </Link>
                             )}
