@@ -16,6 +16,7 @@ import {
     MessageCircleQuestion,
     Ticket,
     CalendarCheck,
+    Clock3,
     PanelLeftClose,
     PanelLeftOpen,
     Volume2,
@@ -553,6 +554,15 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 </NavLink>
 
                                 <NavLink
+                                    href={route('activity-plans.index')}
+                                    active={route().current('activity-plans.*')}
+                                    icon={CalendarDays}
+                                    collapsed={collapsed}
+                                >
+                                    Activity Plans
+                                </NavLink>
+
+                                <NavLink
                                     href={route('concerns.my-tickets')}
                                     active={route().current('concerns.my-tickets')}
                                     icon={Ticket}
@@ -575,12 +585,30 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 </NavLink>
 
                                 <NavLink
+                                    href={route('activity-plans.index')}
+                                    active={route().current('activity-plans.*')}
+                                    icon={CalendarDays}
+                                    collapsed={collapsed}
+                                >
+                                    Activity Plans
+                                </NavLink>
+
+                                <NavLink
                                     href={route('facilitator.managed-facilities.index')}
                                     active={route().current('facilitator.managed-facilities.index')}
                                     icon={Building2}
                                     collapsed={collapsed}
                                 >
                                     Managed Facilities
+                                </NavLink>
+
+                                <NavLink
+                                    href={route('overtime-extensions.index')}
+                                    active={route().current('overtime-extensions.index')}
+                                    icon={Clock3}
+                                    collapsed={collapsed}
+                                >
+                                    Extension Requests
                                 </NavLink>
 
                                 <NavLink
@@ -618,6 +646,24 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     collapsed={collapsed}
                                 >
                                     Booking Approvals
+                                </NavLink>
+
+                                <NavLink
+                                    href={route('activity-plans.index')}
+                                    active={route().current('activity-plans.*')}
+                                    icon={CalendarDays}
+                                    collapsed={collapsed}
+                                >
+                                    Activity Plans
+                                </NavLink>
+
+                                <NavLink
+                                    href={route('overtime-extensions.index')}
+                                    active={route().current('overtime-extensions.index')}
+                                    icon={Clock3}
+                                    collapsed={collapsed}
+                                >
+                                    Extension Requests
                                 </NavLink>
 
                                 <NavLink
