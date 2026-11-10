@@ -9,7 +9,6 @@ use App\Models\FacilityOperatingHour;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\ActivityPlanNotification;
-use App\Notifications\BookingOperationsNotification;
 use App\Support\ActivityPlanSchedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -544,7 +543,7 @@ class ActivityPlanController extends Controller
         $this->authorizePlanAccess($request->user(), $activityPlan);
 
         $activityPlan->load([
-            'facility:id,name,location,is_available,unavailable_reason',
+            'facility:id,name,location,is_available,unavailable_reason,capacity,allowTdevsManpower',
             'user:id,name,email',
             'bookings' => fn ($query) => $query->with('user:id,name')->orderBy('date')->orderBy('start_time'),
         ]);
