@@ -22,6 +22,49 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ActivityPlanController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        $plansQuery = ActivityPlan::query()
+            ->with([
+                'facility:id,name,location',
+                'user:id,name,email',
+                'bookings:id,activity_plan_id,date,start_time,end_time,status',
+            ])
+            ->latest();
+
+        if ($user->role === 'user') {
+            $plansQuery->where('user_id', $user->getKey());
+        } elseif ($user->role === 'facility_admin') {
+            $plansQuery->whereHas('facility', fn ($query) => $query->forUser($user));
+        }
+
+        $facilityQuery = Facility::query()
+            ->with('operatingHours')
+            ->where('is_available', true)
+            ->orderBy('name');
+
+        if ($user->role === 'facility_admin') {
+            $facilityQuery->forUser($user);
+        }
+
+        return Inertia::render('ActivityPlans/Index', [
+            'plans' => $plansQuery->paginate(10)->withQueryString(),
+            'facilities' => $facilityQuery->get([
+                'id',
+                'name',
+                'location',
+                'capacity',
+                'allowTdevsManpower',
+                'requirement',
+                'requiresWeekendConsent',
+                'booking_lead_time_days',
+                'is_available',
+            ]),
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
