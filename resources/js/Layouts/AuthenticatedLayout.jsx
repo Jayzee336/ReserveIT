@@ -576,6 +576,30 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         {isFacilityAdmin && (
                             <>
                                 <NavLink
+                                    href={route('bookings.index')}
+                                    active={route().current('bookings.index')}
+                                    icon={CalendarCheck}
+                                    collapsed={collapsed}
+                                >
+                                    My Bookings
+                                </NavLink>
+
+                                <NavLink
+                                    href={route('concerns.my-tickets')}
+                                    active={route().current('concerns.my-tickets')}
+                                    icon={Ticket}
+                                    collapsed={collapsed}
+                                >
+                                    My Tickets
+                                </NavLink>
+
+                                {!collapsed && (
+                                    <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-purple-200">
+                                        Facility Administration
+                                    </div>
+                                )}
+
+                                <NavLink
                                     href={route('facilitator.bookings.index')}
                                     active={route().current('facilitator.bookings.index')}
                                     icon={ClipboardCheck}
@@ -609,24 +633,6 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     collapsed={collapsed}
                                 >
                                     Extension Requests
-                                </NavLink>
-
-                                <NavLink
-                                    href={route('bookings.index')}
-                                    active={route().current('bookings.index')}
-                                    icon={CalendarCheck}
-                                    collapsed={collapsed}
-                                >
-                                    My Bookings
-                                </NavLink>
-
-                                <NavLink
-                                    href={route('concerns.my-tickets')}
-                                    active={route().current('concerns.my-tickets')}
-                                    icon={Ticket}
-                                    collapsed={collapsed}
-                                >
-                                    My Tickets
                                 </NavLink>
                             </>
                         )}

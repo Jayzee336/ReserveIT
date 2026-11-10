@@ -116,6 +116,10 @@ export default function FacilityBookingSettings({
         );
     };
 
+    const backHref = auth?.user?.role === 'facility_admin'
+        ? route('facilitator.managed-facilities.index')
+        : route('admin.facilities.index');
+
     return (
         <AuthenticatedLayout
             user={auth?.user}
@@ -125,11 +129,11 @@ export default function FacilityBookingSettings({
 
             <div className="mx-auto w-full max-w-4xl min-w-0 space-y-5 px-3 py-5 sm:px-6 sm:py-7">
                 <Link
-                    href={route('facility.show', facility.id)}
+                    href={backHref}
                     className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#6A535C]"
                 >
                     <ArrowLeft className="h-4 w-4" />
-                    Back to {facility.name}
+                    Back to Managed Facilities
                 </Link>
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
@@ -190,7 +194,7 @@ export default function FacilityBookingSettings({
 
                         <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
                             <Link
-                                href={route('facility.show', facility.id)}
+                                href={backHref}
                                 className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
                             >
                                 Cancel

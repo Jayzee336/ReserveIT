@@ -47,17 +47,12 @@ export default function Index({ plans, facilities = [] }) {
     const [sessions, setSessions] = useState([]);
     const [excludedDates, setExcludedDates] = useState([]);
     const [manualDate, setManualDate] = useState('');
-    const initialQuery = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-    const queryFacilityId = initialQuery?.get('facility_id');
-    const queryDate = initialQuery?.get('date');
-    const validQueryFacility = facilities.some((facility) => String(facility.id) === String(queryFacilityId));
-    const initialStartDate = queryDate && /^\d{4}-\d{2}-\d{2}$/.test(queryDate) ? queryDate : today;
     const form = useForm({
-        facility_id: validQueryFacility ? queryFacilityId : (facilities[0]?.id ?? ''),
+        facility_id: facilities[0]?.id ?? '',
         title: '',
         description: '',
-        start_date: initialStartDate,
-        end_date: initialStartDate > today ? initialStartDate : endDefault,
+        start_date: today,
+        end_date: endDefault,
         recurrence_days: [1, 2, 3, 4, 5],
         weekday_times: {
             0: { start_time: '09:00', end_time: '10:00' },
