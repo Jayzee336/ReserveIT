@@ -74,6 +74,30 @@ class FacilityAvailabilityTest extends TestCase
         $this->assertSame(0, $unaffectedUser->notifications()->count());
     }
 
+    public function test_users_cannot_create_bookings_for_a_facility_marked_unavailable(): void
+    {
+        $facility = $this->facility();
+        $facility->update([
+            'is_available' => false,
+            'unavailable_reason' => 'Electrical maintenance',
+        ]);
+        $user = User::factory()->create(['role' => 'user']);
+
+        $response = $this->actingAs($user)->post(
+            route('bookings.store'),
+            [
+                'facility_id' => $facility->id,
+                'date' => today()->addDays(2)->toDateString(),
+                'start_time' => '09:00',
+                'end_time' => '11:00',
+                'attendees' => 10,
+            ]
+        );
+
+        $response->assertSessionHasErrors('facility_id');
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
     public function test_facility_admin_cannot_change_availability_of_an_unassigned_facility(): void
     {
         $facility = $this->facility();
