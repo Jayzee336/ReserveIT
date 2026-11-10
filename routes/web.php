@@ -499,14 +499,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Browse Facilities
     Route::get('/facilities', function () {
         return Inertia::render('Facilities', [
-            'facilities' => Facility::all(),
+            'facilities' => Facility::with('operatingHours')->get(),
         ]);
     })->name('facilities.index');
 
     // Facility Details
     Route::get('/facility/{id}', function ($id) {
-        $facility = Facility::with('facilityAdmins:id,name,email')
-            ->findOrFail($id);
+        $facility = Facility::with([
+            'facilityAdmins:id,name,email',
+            'operatingHours',
+        ])->findOrFail($id);
 
         return Inertia::render('FacilityDetails', [
             'facility' => $facility,
