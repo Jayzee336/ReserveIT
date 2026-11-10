@@ -68,8 +68,30 @@ final class FacilityScheduleAvailability
         string $startTime,
         string $endTime
     ): bool {
+        return self::overlappingBookingDates(
+            $period,
+            $startDate,
+            $endDate,
+            $startTime,
+            $endTime
+        ) !== [];
+    }
+
+    /**
+     * Return only the daily reservation dates that actually intersect a
+     * scheduled closure. This lets notifications identify the affected
+     * dates of recurring plans and multi-day bookings precisely.
+     */
+    public static function overlappingBookingDates(
+        FacilityUnavailabilityPeriod $period,
+        string $startDate,
+        string $endDate,
+        string $startTime,
+        string $endTime
+    ): array {
         $cursor = Carbon::parse($startDate)->startOfDay();
         $lastDate = Carbon::parse($endDate)->startOfDay();
+        $overlappingDates = [];
 
         while ($cursor->lte($lastDate)) {
             $date = $cursor->toDateString();
@@ -84,13 +106,13 @@ final class FacilityScheduleAvailability
                 $bookingStart->lt($period->scheduled_end_at)
                 && $bookingEnd->gt($period->scheduled_start_at)
             ) {
-                return true;
+                $overlappingDates[] = $date;
             }
 
             $cursor->addDay();
         }
 
-        return false;
+        return $overlappingDates;
     }
 
     public static function bookingOverlapsPeriod(
@@ -105,6 +127,26 @@ final class FacilityScheduleAvailability
         }
 
         return self::periodOverlapsBooking(
+            $period,
+            Carbon::parse($startDate)->toDateString(),
+            Carbon::parse($endDate)->toDateString(),
+            substr((string) $booking->start_time, 0, 5),
+            substr((string) $booking->end_time, 0, 5)
+        );
+    }
+
+    public static function overlappingDatesForBooking(
+        FacilityUnavailabilityPeriod $period,
+        Booking $booking
+    ): array {
+        $startDate = $booking->date ?? $booking->booking_date;
+        $endDate = $booking->end_date ?? $startDate;
+
+        if (! $startDate || ! $endDate || ! $booking->start_time || ! $booking->end_time) {
+            return [];
+        }
+
+        return self::overlappingBookingDates(
             $period,
             Carbon::parse($startDate)->toDateString(),
             Carbon::parse($endDate)->toDateString(),
