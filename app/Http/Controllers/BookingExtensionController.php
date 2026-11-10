@@ -106,8 +106,15 @@ class BookingExtensionController extends Controller
                 ]);
             }
 
-            $date = $lockedBooking->date ?? $lockedBooking->booking_date;
+            $date = $lockedBooking->end_date
+                ?? $lockedBooking->date
+                ?? $lockedBooking->booking_date;
             $date = Carbon::parse($date)->startOfDay();
+
+            if (! $date->isToday()) {
+                return ['status' => 'not_extension_day'];
+            }
+
             $settings = SystemSetting::current();
 
             $hours = FacilityOperatingHour::query()
@@ -174,6 +181,7 @@ class BookingExtensionController extends Controller
             $messages = [
                 'facility_unavailable' => 'This facility is currently unavailable. An extension cannot be requested.',
                 'not_active' => 'An extension can only be requested for an approved booking that is checked in and not checked out.',
+                'not_extension_day' => 'An extension can only be requested on the final date of a multi-day booking.',
                 'pending_exists' => 'There is already a pending extension request for this booking.',
                 'facility_closed' => 'The facility is marked closed for this day.',
                 'outside_hours' => 'The requested end time exceeds facility hours or the maximum allowed booking duration.',
@@ -254,7 +262,12 @@ class BookingExtensionController extends Controller
                 return ['status' => 'booking_changed'];
             }
 
-            $date = Carbon::parse($booking->date ?? $booking->booking_date)->startOfDay();
+            $date = Carbon::parse($booking->end_date ?? $booking->date ?? $booking->booking_date)->startOfDay();
+
+            if (! $date->isToday()) {
+                return ['status' => 'extension_window_closed'];
+            }
+
             $settings = SystemSetting::current();
             $hours = FacilityOperatingHour::query()
                 ->where('facility_id', $facility->getKey())
@@ -336,6 +349,7 @@ class BookingExtensionController extends Controller
                 'facility_unavailable' => 'The facility is unavailable. Restore it before approving this extension.',
                 'booking_not_active' => 'The booking is no longer checked in and active.',
                 'booking_changed' => 'The booking end time changed after the request. Submit a new extension request.',
+                'extension_window_closed' => 'The booking extension window has ended. The request can no longer be approved.'
                 'facility_closed' => 'The facility is closed on the booking date.',
                 'outside_hours' => 'The requested end time is outside facility hours or exceeds the maximum booking duration.',
                 'conflict' => 'Another active booking now overlaps the requested extension.',
