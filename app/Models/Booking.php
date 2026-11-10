@@ -81,6 +81,11 @@ class Booking extends Model
         return $this->belongsTo(ActivityPlan::class);
     }
 
+    public function extensionRequests()
+    {
+        return $this->hasMany(BookingExtensionRequest::class, 'booking_id');
+    }
+
     // A booking belongs to one user.
     public function user()
     {
