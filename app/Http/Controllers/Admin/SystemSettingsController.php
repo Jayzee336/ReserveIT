@@ -25,7 +25,6 @@ class SystemSettingsController extends Controller
             'overtime_fee_per_hour' => ['nullable', 'numeric', 'min:0'],
             'cleanup_buffer_minutes' => ['nullable', 'integer', 'min:0', 'max:120'],
             'max_advance_days' => ['nullable', 'integer', 'min:1'],
-            'max_booking_duration' => ['nullable', 'integer', 'min:1', 'max:24'],
             'require_consent_letter' => ['nullable', 'boolean'],
             'auto_purge_unapproved_days' => ['nullable', 'integer', 'min:0', 'max:30'],
             'opening_time' => ['sometimes', 'required', 'date_format:H:i'],

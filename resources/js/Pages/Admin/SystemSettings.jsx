@@ -52,9 +52,6 @@ export default function SystemSettings({ settings }) {
     const [maxAdvanceDays, setMaxAdvanceDays] = useState(
         settings.max_advance_days ?? 30
     );
-    const [maxBookingDuration, setMaxBookingDuration] = useState(
-        settings.max_booking_duration ?? 4
-    );
     const [requireConsent, setRequireConsent] = useState(
         Boolean(settings.require_consent_letter)
     );
@@ -99,7 +96,6 @@ export default function SystemSettings({ settings }) {
             overtime_fee_per_hour: fee,
             cleanup_buffer_minutes: cleanupBuffer,
             max_advance_days: maxAdvanceDays,
-            max_booking_duration: maxBookingDuration,
             require_consent_letter: requireConsent,
             auto_purge_unapproved_days: autoPurgeDays,
             opening_time: openingTime,
@@ -302,26 +298,6 @@ export default function SystemSettings({ settings }) {
                                 />
                                 <p className="mt-1 text-xs text-slate-500">
                                     Time reserved between bookings.
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className={labelClass} htmlFor="max-duration">
-                                    Max Booking Span (Hours)
-                                </label>
-                                <input
-                                    id="max-duration"
-                                    type="number"
-                                    min="1"
-                                    max="24"
-                                    value={maxBookingDuration}
-                                    disabled={saving}
-                                    onChange={(e) => { setMaxBookingDuration(e.target.value); markChanged(); }}
-                                    
-                                    className={inputClass}
-                                />
-                                <p className="mt-1 text-xs text-slate-500">
-                                    Longest allowed booking duration.
                                 </p>
                             </div>
 

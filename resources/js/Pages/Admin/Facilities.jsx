@@ -34,7 +34,7 @@ const EMPTY_FORM = {
     requiresWeekendConsent: true,
     allowTdevsManpower: true,
     booking_lead_time_days: 3,
-    max_booking_hours: '',
+    max_booking_hours: 4,
     assigned_admin_ids: [],
 };
 
@@ -354,7 +354,7 @@ function FacilityFormModal({
                 Boolean(facility.requiresWeekendConsent),
             allowTdevsManpower: Boolean(facility.allowTdevsManpower),
             booking_lead_time_days: facility.booking_lead_time_days ?? 3,
-            max_booking_hours: facility.max_booking_hours ?? '',
+            max_booking_hours: facility.max_booking_hours ?? 4,
             assigned_admin_ids:
                 facility.facility_admins?.map((admin) => admin.id) ?? [],
         };
@@ -449,7 +449,7 @@ function FacilityFormModal({
         payload.append('location', form.location.trim());
         payload.append('requirement', form.requirement);
         payload.append('booking_lead_time_days', String(form.booking_lead_time_days ?? 3));
-        payload.append('max_booking_hours', form.max_booking_hours === '' ? '' : String(form.max_booking_hours));
+        payload.append('max_booking_hours', String(form.max_booking_hours ?? 4));
 
         // Always submit both booleans, including when unchecked.
         payload.append(
@@ -719,11 +719,10 @@ function FacilityFormModal({
                                 value={form.max_booking_hours ?? ''}
                                 onChange={(e) => updateField('max_booking_hours', e.target.value)}
                                 className={inputClass('max_booking_hours')}
-                                placeholder="Use system default"
                             />
                             <FieldError message={errors.max_booking_hours} />
                             <p className="mt-1 text-xs text-gray-500">
-                                Set a facility-specific maximum from 1 to 24 hours. Leave blank to use the Super Admin system default.
+                                Set the maximum booking duration for this facility, from 1 to 24 hours.
                             </p>
                         </div>
 

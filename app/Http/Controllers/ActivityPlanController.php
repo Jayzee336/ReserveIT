@@ -171,7 +171,6 @@ class ActivityPlanController extends Controller
             }
 
             $configuredMaxHours = $facility->max_booking_hours
-                ?? $settings->max_booking_duration
                 ?? 4;
             $sessionDurationMinutes = $sessionEndMinutes - $sessionStartMinutes;
 
