@@ -555,7 +555,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                                 <NavLink
                                     href={route('activity-plans.index')}
-                                    active={route().current('activity-plans.*')}
+                                    active={(route().current('activity-plans.index') || route().current('activity-plans.show'))}
                                     icon={CalendarDays}
                                     collapsed={collapsed}
                                 >
@@ -586,7 +586,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                                 <NavLink
                                     href={route('activity-plans.index')}
-                                    active={route().current('activity-plans.*')}
+                                    active={(route().current('activity-plans.index') || route().current('activity-plans.show'))}
                                     icon={CalendarDays}
                                     collapsed={collapsed}
                                 >
@@ -650,7 +650,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                                 <NavLink
                                     href={route('activity-plans.index')}
-                                    active={route().current('activity-plans.*')}
+                                    active={(route().current('activity-plans.index') || route().current('activity-plans.show'))}
                                     icon={CalendarDays}
                                     collapsed={collapsed}
                                 >
