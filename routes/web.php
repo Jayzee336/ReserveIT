@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\FacilityAvailabilityController;
 use App\Http\Controllers\DeveloperContactController;
 use App\Http\Controllers\UserConcernController;
 use App\Http\Controllers\NotificationController;
@@ -200,6 +201,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/admin/facilities/{facility}', [FacilityManagementController::class, 'update'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.facilities.update');
+
+    Route::patch('/admin/facilities/{facility}/availability', [FacilityAvailabilityController::class, 'update'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('admin.facilities.availability');
 
     Route::delete('/admin/facilities/{facility}', [FacilityManagementController::class, 'destroy'])
         ->middleware('role:super_admin')
