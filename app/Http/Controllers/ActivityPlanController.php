@@ -48,6 +48,14 @@ class ActivityPlanController extends Controller
 
         $facility = Facility::with('operatingHours')->findOrFail($validated['facility_id']);
 
+        if (Auth::user()->role === 'facility_admin') {
+            abort_unless(
+                $facility->facilityAdmins()->where('users.id', Auth::id())->exists(),
+                403,
+                'You can only submit activity plans for facilities assigned to you.'
+            );
+        }
+
         if (!$facility->is_available) {
             throw ValidationException::withMessages([
                 'facility_id' => 'This facility is temporarily unavailable and cannot accept activity plans.',
@@ -63,6 +71,15 @@ class ActivityPlanController extends Controller
         $days = array_values(array_unique(array_map('intval', $validated['recurrence_days'])));
         $sessions = collect($validated['sessions'])->values();
 
+        $dateSpan = Carbon::createFromFormat('!Y-m-d', $validated['start_date'])
+            ->diffInDays(Carbon::createFromFormat('!Y-m-d', $validated['end_date']));
+        if ($dateSpan > 365) {
+            throw ValidationException::withMessages([
+                'end_date' => 'An activity plan cannot span more than 366 calendar days.',
+            ]);
+        }
+
+        $seenSessionDates = [];
         foreach ($sessions as $index => $session) {
             $sessionDate = Carbon::createFromFormat('!Y-m-d', $session['date']);
 
@@ -73,7 +90,25 @@ class ActivityPlanController extends Controller
                 ]);
             }
 
-            if ($session['start_time'] >= $session['end_time']) {
+            if (!in_array($sessionDate->dayOfWeek, $days, true)) {
+                throw ValidationException::withMessages([
+                    "sessions.{$index}.date" => 'Every session must fall on one of the selected weekdays.',
+                ]);
+            }
+
+            if (isset($seenSessionDates[$session['date']])) {
+                throw ValidationException::withMessages([
+                    "sessions.{$index}.date" => 'Only one session per date is allowed in an activity plan.',
+                ]);
+            }
+            $seenSessionDates[$session['date']] = true;
+
+            $sessionStartMinutes = $this->minutes($session['start_time']);
+            $sessionEndMinutes = $session['end_time'] === '00:00'
+                ? 1440
+                : $this->minutes($session['end_time']);
+
+            if ($sessionEndMinutes <= $sessionStartMinutes) {
                 throw ValidationException::withMessages([
                     "sessions.{$index}.end_time" => 'The session end time must be later than its start time.',
                 ]);
@@ -207,11 +242,9 @@ class ActivityPlanController extends Controller
                 foreach ($sessions as $index => $session) {
                     $sessionDate = Carbon::createFromFormat('!Y-m-d', $session['date']);
 
-                    if ($sessionDate->gt(today()->addDays($maxDays))) {
-                        throw ValidationException::withMessages([
-                            "sessions.{$index}.date" => "A session exceeds the current {$maxDays}-day booking advance limit. Adjust the Super Admin booking policy or shorten this plan.",
-                        ]);
-                    }
+                    // Activity plans are intentionally allowed to cover a semester.
+                    // The 366-day plan limit above prevents unbounded generation; the
+                    // single-booking advance limit does not truncate recurring schedules.
 
                     $this->validateSessionHours(
                         $lockedFacility,
@@ -429,9 +462,13 @@ class ActivityPlanController extends Controller
             $plan->bookings()
                 ->whereIn('status', ['pending', 'approved'])
                 ->whereNull('checked_in_at')
+                ->whereNull('checked_out_at')
                 ->update([
                     'status' => 'declined',
+                    'decline_reason' => $validated['reason'],
                     'rejection_reason' => $validated['reason'],
+                    'approved_by' => $user->name,
+                    'approved_at' => now(),
                 ]);
 
             $plan->update([
@@ -565,10 +602,24 @@ class ActivityPlanController extends Controller
             ]);
         }
 
-        $maxDuration = max(1, (int) ($settings->max_booking_duration ?? 4)) * 60;
-        if (($endMinutes - $startMinutes) > $maxDuration) {
+        $maxHours = 4.0;
+        foreach ([
+            'max_booking_span_hours',
+            'max_booking_hours',
+            'max_booking_duration_hours',
+            'max_duration_hours',
+            'max_booking_duration',
+        ] as $column) {
+            $configured = $settings->getAttribute($column);
+            if ($configured !== null && is_numeric($configured)) {
+                $maxHours = max(0, (float) $configured);
+                break;
+            }
+        }
+
+        if (($endMinutes - $startMinutes) > ($maxHours * 60)) {
             throw ValidationException::withMessages([
-                'sessions' => 'A session exceeds the current maximum booking duration of ' . (int) $settings->max_booking_duration . ' hours.',
+                'sessions' => "A session exceeds the current maximum booking duration of {$maxHours} hours.",
             ]);
         }
     }
@@ -581,8 +632,8 @@ class ActivityPlanController extends Controller
         int $buffer,
         array $excludeIds = []
     ): bool {
-        $start = $this->minutes($startTime) - $buffer;
-        $end = ($endTime === '00:00' ? 1440 : $this->minutes($endTime)) + $buffer;
+        $start = $this->minutes($startTime);
+        $end = $endTime === '00:00' ? 1440 : $this->minutes($endTime);
 
         $query = Booking::query()
             ->where('facility_id', $facilityId)
