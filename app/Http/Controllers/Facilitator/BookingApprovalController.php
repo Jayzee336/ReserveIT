@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Facilitator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\ActivityPlan;
 use App\Models\Facility;
 use App\Models\FacilityOperatingHour;
 use App\Models\SystemSetting;
@@ -389,7 +390,9 @@ class BookingApprovalController extends Controller
             ]);
         }
 
+        $activityPlan = $booking->activityPlan;
         $booking->delete();
+        $activityPlan?->syncStatus();
 
         return redirect()->back()->with('toast', [
             'type' => 'success',
@@ -420,10 +423,16 @@ class BookingApprovalController extends Controller
                 });
             });
 
-        $count = (clone $query)->count();
+        $pastBookings = (clone $query)->get(['id', 'activity_plan_id']);
+        $count = $pastBookings->count();
 
         if ($count > 0) {
             (clone $query)->delete();
+
+            ActivityPlan::query()
+                ->whereIn('id', $pastBookings->pluck('activity_plan_id')->filter()->unique())
+                ->get()
+                ->each(fn (ActivityPlan $plan) => $plan->syncStatus());
         }
 
         return redirect()->back()->with('toast', [
