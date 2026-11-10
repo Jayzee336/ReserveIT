@@ -24,13 +24,21 @@ class FacilityBookingSettingsController extends Controller
     {
         $this->authorizeFacilityAccess($request, $facility);
 
-        $facility->load('operatingHours');
+        $facility->load([
+            'operatingHours',
+            'unavailabilityPeriods' => fn ($query) => $query
+                ->whereNull('ended_at')
+                ->whereNotNull('scheduled_start_at')
+                ->where('scheduled_end_at', '>=', now())
+                ->orderBy('scheduled_start_at'),
+        ]);
 
         $settings = SystemSetting::current();
 
         return Inertia::render('Admin/FacilityBookingSettings', [
             'facility' => $facility,
             'operatingHours' => $facility->operatingHours,
+            'scheduledClosures' => $facility->unavailabilityPeriods,
             'defaultOpeningTime' => substr((string) $settings->opening_time, 0, 5),
             'defaultClosingTime' => substr((string) $settings->closing_time, 0, 5),
             'dayNames' => self::DAY_NAMES,
