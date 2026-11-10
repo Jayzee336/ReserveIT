@@ -33,7 +33,7 @@ class ConsentDownloadTest extends TestCase
         Facility $facility,
         string $path = 'consent-letters/test-consent.pdf'
     ): Booking {
-        Storage::disk('local')->put($path, 'test consent file contents');
+        Storage::disk('tigris')->put($path, 'test consent file contents');
 
         return Booking::create([
             'facility_id' => $facility->id,
@@ -54,7 +54,7 @@ class ConsentDownloadTest extends TestCase
 
     public function test_assigned_facility_admin_can_download_consent_file(): void
     {
-        Storage::fake('local');
+        Storage::fake('tigris');
 
         $admin = User::factory()->create([
             'role' => 'facility_admin',
@@ -74,7 +74,7 @@ class ConsentDownloadTest extends TestCase
 
     public function test_unassigned_facility_admin_cannot_download_consent_file(): void
     {
-        Storage::fake('local');
+        Storage::fake('tigris');
 
         $admin = User::factory()->create([
             'role' => 'facility_admin',
@@ -91,7 +91,7 @@ class ConsentDownloadTest extends TestCase
 
     public function test_ordinary_user_cannot_download_consent_file(): void
     {
-        Storage::fake('local');
+        Storage::fake('tigris');
 
         $user = User::factory()->create([
             'role' => 'user',
@@ -108,7 +108,7 @@ class ConsentDownloadTest extends TestCase
 
     public function test_super_admin_can_download_consent_file(): void
     {
-        Storage::fake('local');
+        Storage::fake('tigris');
 
         $admin = User::factory()->create([
             'role' => 'super_admin',
@@ -126,7 +126,7 @@ class ConsentDownloadTest extends TestCase
 
     public function test_missing_consent_file_returns_not_found(): void
     {
-        Storage::fake('local');
+        Storage::fake('tigris');
 
         $admin = User::factory()->create([
             'role' => 'super_admin',
@@ -157,7 +157,7 @@ class ConsentDownloadTest extends TestCase
 
     public function test_consent_download_rejects_files_outside_consent_directory(): void
     {
-        Storage::fake('local');
+        Storage::fake('tigris');
 
         $admin = User::factory()->create([
             'role' => 'super_admin',
