@@ -140,6 +140,9 @@ class BookingApprovalController extends Controller
         $candidateEndDate = Carbon::parse($booking->end_date ?? $booking->date ?? $booking->booking_date)->toDateString();
         $candidateStart = Carbon::parse($booking->start_time);
         $candidateEnd = Carbon::parse($booking->end_time);
+        if (substr((string) $booking->end_time, 0, 5) === '00:00') {
+            $candidateEnd->addDay();
+        }
 
         $existingBookings = Booking::query()
             ->where('facility_id', $booking->facility_id)
