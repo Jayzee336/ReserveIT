@@ -538,6 +538,7 @@ export default function MyBookings({
 
     const extensionRequests = selectedDetailBooking?.extension_requests ?? [];
     const pendingExtensionRequest = extensionRequests.find((item) => item.status === 'pending');
+    const canRequestExtension = Boolean(selectedDetailBooking?.checked_in_at && !selectedDetailBooking?.checked_out_at);
     const selectedFacility = selectedDetailBooking?.facility;
     const capacity = selectedFacility?.capacity;
     const selectedBookingDate = String(
@@ -1204,13 +1205,15 @@ export default function MyBookings({
                                     </section>
                                 )}
 
-                                {selectedDetailBooking.checked_in_at && !selectedDetailBooking.checked_out_at && (
+                                {(canRequestExtension || extensionRequests.length > 0) && (
                                     <section className="rounded-lg border border-violet-100 bg-violet-50/50 p-3">
                                         <div className="flex flex-wrap items-start justify-between gap-2">
                                             <div>
-                                                <h3 className="text-sm font-bold text-gray-800">Request an overtime extension</h3>
+                                                <h3 className="text-sm font-bold text-gray-800">{canRequestExtension ? 'Request an overtime extension' : 'Overtime extension history'}</h3>
                                                 <p className="mt-1 text-xs leading-5 text-gray-600">
-                                                    Request additional time while this booking is active. The reservation end time changes only after an administrator approves the request.
+                                                    {canRequestExtension
+                                                        ? 'Request additional time while this booking is active. The reservation end time changes only after an administrator approves the request.'
+                                                        : 'Review previous extension requests and administrator decisions for this reservation.'}
                                                 </p>
                                             </div>
                                             {pendingExtensionRequest && (
@@ -1239,7 +1242,7 @@ export default function MyBookings({
                                             </div>
                                         )}
 
-                                        {pendingExtensionRequest ? (
+                                        {canRequestExtension && (pendingExtensionRequest ? (
                                             <p className="mt-3 text-xs font-medium text-amber-800">
                                                 Your request is waiting for the assigned Facility Admin or a Super Admin. The original booking end time remains in effect until approval.
                                             </p>
@@ -1303,7 +1306,7 @@ export default function MyBookings({
                                                     <p className="mt-2 text-xs text-gray-500">The booking already ends at midnight. An extension beyond the current day is not supported.</p>
                                                 )}
                                             </div>
-                                        )}
+                                        ))}
                                     </section>
                                 )}
 
