@@ -24,6 +24,11 @@ const localDate = (date) => {
 };
 
 const today = localDate(new Date());
+const addDaysToDateString = (days) => {
+    const date = new Date(`${today}T12:00:00`);
+    date.setDate(date.getDate() + days);
+    return localDate(date);
+};
 const endDefault = localDate(new Date(new Date().getFullYear(), new Date().getMonth() + 3, new Date().getDate(), 12));
 
 const formatDate = (value) => {
@@ -76,6 +81,9 @@ export default function Index({ plans, facilities = [] }) {
         () => facilities.find((facility) => String(facility.id) === String(form.data.facility_id)),
         [facilities, form.data.facility_id]
     );
+    const bookingLeadTimeDays = Math.max(0, Number(selectedFacility?.booking_lead_time_days ?? 0));
+    const earliestBookingDate = addDaysToDateString(bookingLeadTimeDays);
+    const sessionsBeforeLeadTime = sessions.filter((session) => session.date < earliestBookingDate);
 
     useEffect(() => {
         if (!form.data.start_date || !form.data.end_date) {
@@ -236,6 +244,14 @@ export default function Index({ plans, facilities = [] }) {
             return;
         }
 
+        if (sessionsBeforeLeadTime.length > 0) {
+            form.setError(
+                'sessions',
+                `Every session for this facility must be at least ${bookingLeadTimeDays} calendar days ahead. Adjust or remove: ${sessionsBeforeLeadTime.map((session) => formatDate(session.date)).join(', ')}.`
+            );
+            return;
+        }
+
         if (scheduledClosureConflicts.length > 0) {
             form.setError(
                 'sessions',
@@ -355,7 +371,7 @@ export default function Index({ plans, facilities = [] }) {
                                 <p className="mt-1 text-xs text-slate-500">Change a single date's time, attendees, manpower request, or notes without changing the other sessions.</p>
                             </div>
                             <div className="flex items-end gap-2">
-                                <label className="text-[10px] font-semibold text-slate-500">Add a date<input type="date" min={form.data.start_date} max={form.data.end_date} value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="mt-1 block rounded-lg border-slate-200 text-xs" /></label>
+                                <label className="text-[10px] font-semibold text-slate-500">Add a date<input type="date" min={form.data.start_date && form.data.start_date > earliestBookingDate ? form.data.start_date : earliestBookingDate} max={form.data.end_date} value={manualDate} onChange={(e) => setManualDate(e.target.value)} className="mt-1 block rounded-lg border-slate-200 text-xs" /></label>
                                 <button type="button" onClick={addSession} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"><Plus className="h-3.5 w-3.5" /> Add</button>
                             </div>
                         </div>
@@ -373,6 +389,16 @@ export default function Index({ plans, facilities = [] }) {
                                     ))}
                                 </div>
                             </div>
+                        )}
+                        {bookingLeadTimeDays > 0 && (
+                            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                                {selectedFacility?.name} requires {bookingLeadTimeDays} calendar days advance notice. Earliest session date: {formatDate(earliestBookingDate)}.
+                            </p>
+                        )}
+                        {sessionsBeforeLeadTime.length > 0 && (
+                            <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                                {sessionsBeforeLeadTime.length} generated session(s) are earlier than the required date. Remove or adjust those dates before submitting.
+                            </p>
                         )}
                         {form.errors.sessions && <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">{form.errors.sessions}</p>}
 
