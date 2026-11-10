@@ -357,7 +357,7 @@ class ActivityPlanController extends Controller
                         ]);
                     }
 
-                    $leadDays = max(0, (int) ($lockedFacility->booking_lead_time_days ?? 3));
+                    $leadDays = max(0, (int) ($lockedFacility->booking_lead_time_days ?? 0));
                     if ($bookingDate->lt(today()->addDays($leadDays))) {
                         throw ValidationException::withMessages([
                             "sessions.{$index}.date" => "The session on {$session['date']} requires at least {$leadDays} days advance notice for this facility.",
