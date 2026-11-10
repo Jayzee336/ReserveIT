@@ -98,14 +98,19 @@ export default function BookingModal({
         selectedFacilityHours.find((item) => Number(item.day_of_week) === weekday)
     );
     const isFacilityClosed = rangeSchedules.some((schedule) => schedule?.is_closed);
-    const openingMinutes = Math.max(toMins(globalOpening), ...rangeSchedules.map((schedule) =>
-        schedule && !schedule.is_closed ? toMins(String(schedule.opens_at ?? globalOpening).slice(0, 5)) : 0
-    ));
-    const closingMinutes = Math.min(globalClosing === '00:00' ? 1440 : toMins(globalClosing), ...rangeSchedules.map((schedule) => {
-        if (!schedule || schedule.is_closed) return 1440;
-        const closing = String(schedule.closes_at ?? globalClosing).slice(0, 5);
+    const openingCandidates = rangeSchedules.map((schedule) =>
+        schedule && !schedule.is_closed
+            ? toMins(String(schedule.opens_at ?? globalOpening).slice(0, 5))
+            : toMins(globalOpening)
+    );
+    const closingCandidates = rangeSchedules.map((schedule) => {
+        const closing = String(schedule?.closes_at ?? globalClosing).slice(0, 5);
         return closing === '00:00' ? 1440 : toMins(closing);
-    }));
+    });
+    const openingMinutes = openingCandidates.length ? Math.max(...openingCandidates) : toMins(globalOpening);
+    const closingMinutes = closingCandidates.length
+        ? Math.min(...closingCandidates)
+        : (globalClosing === '00:00' ? 1440 : toMins(globalClosing));
     const OPENING_TIME = String(Math.floor(openingMinutes / 60)).padStart(2, '0') + ':' + String(openingMinutes % 60).padStart(2, '0');
     const CLOSING_TIME = closingMinutes === 1440 ? '00:00' : String(Math.floor(closingMinutes / 60)).padStart(2, '0') + ':' + String(closingMinutes % 60).padStart(2, '0');
     const TIME_SLOTS = useMemo(() => {
@@ -627,6 +632,7 @@ export default function BookingModal({
                             required
                             value={endDate}
                             min={date || minDate}
+                            max={date ? addDaysToLocalDate(Math.max(0, Number(page.props.systemSettings?.max_advance_days ?? 30))) : undefined}
                             onChange={(e) => {
                                 setEndDate(e.target.value);
                                 setStartTime('');
