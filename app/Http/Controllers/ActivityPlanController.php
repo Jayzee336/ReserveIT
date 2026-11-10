@@ -152,12 +152,6 @@ class ActivityPlanController extends Controller
                 ]);
             }
 
-            $leadTimeDays = max(0, (int) ($facility->booking_lead_time_days ?? 3));
-            if ($sessionDate->lt(Carbon::today()->addDays($leadTimeDays))) {
-                throw ValidationException::withMessages([
-                    "sessions.{$index}.date" => "This facility requires at least {$leadTimeDays} days advance notice for bookings.",
-                ]);
-            }
 
             if (isset($seenSessionDates[$session['date']])) {
                 throw ValidationException::withMessages([
