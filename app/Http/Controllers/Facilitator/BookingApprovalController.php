@@ -113,7 +113,7 @@ class BookingApprovalController extends Controller
 
         return Booking::query()
             ->forUser($user)
-            ->with('facility', 'user');
+            ->with('facility', 'user', 'activityPlan');
     }
 
     /**
@@ -228,6 +228,8 @@ class BookingApprovalController extends Controller
                 'approved_at' => now(),
             ]);
 
+            $lockedBooking->activityPlan?->syncStatus();
+
             return 'approved';
         });
 
@@ -314,6 +316,7 @@ class BookingApprovalController extends Controller
         }
 
         $booking->refresh();
+        $booking->activityPlan?->syncStatus();
 
         // Notify the user who made the booking.
         if ($booking->user_id) {
