@@ -575,6 +575,12 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
                         {isFacilityAdmin && (
                             <>
+                                {!collapsed && (
+                                    <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-purple-200">
+                                        My Workspace
+                                    </div>
+                                )}
+
                                 <NavLink
                                     href={route('bookings.index')}
                                     active={route().current('bookings.index')}
