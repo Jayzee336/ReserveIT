@@ -80,7 +80,7 @@ The application stores operational records in a relational database. Uploaded co
 - Super Admin facility management and Facility Admin assignment.
 - Booking approval and operational dashboards.
 - Configurable booking rules, operating hours, approval scope, cleanup buffer, advance booking window, duration limits, consent requirements, overtime fee, grace period, and unapproved-booking retention.
-- User concerns/support tickets with administrator replies.
+- User concerns/support tickets submitted by users. Super Admins are responsible for reviewing, replying to, editing replies, and resolving concerns.
 - Activity and notification records.
 
 ---
@@ -90,8 +90,8 @@ The application stores operational records in a relational database. Uploaded co
 | Role | Responsibilities |
 |---|---|
 | **User** (`user`) | Browse facilities and schedules, submit and manage their own eligible bookings, check in/out their own approved bookings, manage their profile, and submit/view concerns. |
-| **Facility Admin** (`facility_admin`) | Manage bookings and operations for facilities assigned to them, review requests, approve or decline, check in/out, monitor active bookings, and respond to concerns. |
-| **Super Admin** (`super_admin`) | System-wide administration, including facilities, users, Facility Admin assignments, booking settings, approvals, concerns, and operational monitoring. |
+| **Facility Admin** (`facility_admin`) | Manage bookings and operations for facilities assigned to them, review requests, approve or decline, check in/out, and monitor active bookings. They cannot access system-wide concern management or reply to/resolve concerns. |
+| **Super Admin** (`super_admin`) | System-wide administration, including facilities, users, Facility Admin assignments, booking settings, approvals, concern replies and resolution, and operational monitoring. |
 
 **Important:** A Facility Admin's role does not automatically grant access to every facility. Their permissions are limited by the facility assignments configured by a Super Admin.
 
@@ -213,7 +213,8 @@ The Docker startup configuration enables safe Laravel startup automation and for
 - The current hosted app is separate from a developer's local database and local files.
 - Render environment variables contain deployment-specific configuration and secrets; they are not stored in this repository.
 - The production database is PostgreSQL on Neon, not the local SQLite database used by the simple Windows setup below.
-- Consent letters use the private Tigris disk. They are not intended to be publicly accessible through a direct public URL.
+- Booking consent letters use the private Tigris disk and are served through an authorized application download flow.
+- Facility images use Laravel's `public` local filesystem disk (`storage/app/public/facilities`). This is separate from both Neon and Tigris. On Render's default ephemeral filesystem, runtime-uploaded facility images can be lost when the service restarts or redeploys unless persistent storage is configured.
 - Laravel scheduler definitions are included in the project. A scheduler process or scheduled job must be configured in the hosting environment for scheduled commands to execute continuously.
 
 ---
@@ -391,7 +392,7 @@ Optional integrations such as Google OAuth and mail delivery require their own e
 
 ### Neon PostgreSQL — production database
 
-The hosted deployment uses Neon PostgreSQL for persistent relational data, including:
+Neon is the hosted application's **relational database**, not a file-storage service and not a seeder service. Laravel migrations create its table structure, and seeders (when intentionally run) insert initial/sample records into whichever database connection is configured. The hosted deployment uses Neon PostgreSQL for persistent relational data, including:
 
 - User accounts, roles, and account status.
 - Facilities and Facility Admin assignments.
@@ -413,7 +414,7 @@ This database belongs only to that local clone. It is not synchronized with Neon
 
 ### Tigris — private consent-letter storage
 
-Booking consent letters are uploaded to the configured **Tigris S3-compatible object-storage disk**, under the `consent-letters/` prefix.
+Tigris is used for **booking consent letters only** in the current implementation. Booking consent letters are uploaded to the configured **Tigris S3-compatible object-storage disk**, under the `consent-letters/` prefix.
 
 - Files are stored with generated names rather than relying on the original filename as the object key.
 - The original filename is retained as booking metadata for display.
@@ -426,7 +427,11 @@ The bucket credentials must be configured in the hosting environment. Do not mak
 
 ### Facility images
 
-Facility images use Laravel's public filesystem disk in the current configuration. This is separate from the private Tigris consent-letter disk. If you deploy to an environment with ephemeral local filesystems, configure durable storage for facility images before relying on locally uploaded images across container restarts or redeployments.
+Facility images are uploaded to Laravel's `public` filesystem disk, in the `facilities/` directory (physically `storage/app/public/facilities`), and displayed through the application's `/storage/...` public URL. The upload code explicitly uses `Storage`/Laravel's `public` disk; it does **not** send facility images to Neon or Tigris.
+
+- **Local development:** images are stored on the developer's local filesystem.
+- **Current Render deployment:** the application container's filesystem is ephemeral by default. Therefore, facility images uploaded at runtime may disappear after a restart or redeploy unless durable storage is configured.
+- **Recommended improvement:** move facility images to durable object storage. Tigris could be extended with a separate public-image disk/bucket or a carefully designed public prefix/policy, while keeping consent letters private. Do not make the existing consent-letter objects public.
 
 ---
 
