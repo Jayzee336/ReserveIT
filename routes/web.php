@@ -533,6 +533,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('bookings.store');
 
     // Recurring semester activity plans and private supporting documents.
+    Route::get('/activity-plans', [ActivityPlanController::class, 'index'])
+        ->middleware('role:user,super_admin,facility_admin')
+        ->name('activity-plans.index');
+
     Route::post('/activity-plans', [ActivityPlanController::class, 'store'])
         ->middleware('role:user,super_admin,facility_admin')
         ->name('activity-plans.store');
