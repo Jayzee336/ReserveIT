@@ -303,4 +303,48 @@ class ActivityPlanWorkflowTest extends TestCase
         $this->assertSame('cancelled', $session->fresh()->status);
         $this->assertSame('cancelled', $plan->fresh()->status);
     }
+
+    public function test_owner_cannot_move_a_pending_session_outside_its_activity_plan_date_range(): void
+    {
+        $owner = $this->createVerifiedUser();
+        $facility = $this->createFacility();
+        $plan = ActivityPlan::create([
+            'user_id' => $owner->id,
+            'facility_id' => $facility->id,
+            'title' => 'Date Range Guard Plan',
+            'description' => null,
+            'start_date' => '2026-11-16',
+            'end_date' => '2026-11-20',
+            'recurrence_days' => [1, 3],
+            'weekday_times' => [],
+            'status' => 'pending',
+        ]);
+
+        $session = Booking::create([
+            'facility_id' => $facility->id,
+            'activity_plan_id' => $plan->id,
+            'user_id' => $owner->id,
+            'date' => '2026-11-16',
+            'booking_date' => '2026-11-16',
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'status' => 'pending',
+            'attendees' => 10,
+            'needs_manpower' => false,
+            'notes' => 'Session date range guard',
+        ]);
+
+        $this->actingAs($owner)
+            ->put(route('bookings.update', $session->id), [
+                'date' => '2026-11-23',
+                'start_time' => '09:00',
+                'end_time' => '10:00',
+                'attendees' => 10,
+                'needs_manpower' => false,
+                'notes' => 'Attempt to move outside the plan',
+            ])
+            ->assertSessionHasErrors('date');
+
+        $this->assertSame('2026-11-16', $session->fresh()->date->format('Y-m-d'));
+    }
 }
