@@ -756,12 +756,6 @@ class BookingController extends Controller
             $settings
         );
 
-        $this->validateOperatingHours(
-            $validated['start_time'],
-            $validated['end_time'],
-            $settings
-        );
-
         $buffer = max(
             0,
             (int) ($settings->cleanup_buffer_minutes ?? 30)
