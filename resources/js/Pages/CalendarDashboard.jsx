@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { CalendarDays, Clock3, RefreshCw } from 'lucide-react';
 import { CalendarView } from './CalendarView';
 
@@ -108,6 +108,16 @@ export default function CalendarDashboard({
                                 <span>{formattedDate}</span>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="mb-5 flex justify-end">
+                        <Link
+                            href={route('activity-plans.index')}
+                            className="inline-flex items-center gap-2 rounded-xl border border-[#D9C8CF] bg-white px-4 py-2.5 text-sm font-semibold text-[#543F48] shadow-sm transition hover:bg-[#F7F0F3]"
+                        >
+                            <CalendarDays className="h-4 w-4" />
+                            Recurring activity plans
+                        </Link>
                     </div>
 
                     {canToggleScheduleView && (
