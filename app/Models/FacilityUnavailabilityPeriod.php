@@ -46,6 +46,9 @@ class FacilityUnavailabilityPeriod extends Model
             return true;
         }
 
-        return now()->betweenIncluded($this->scheduled_start_at, $this->scheduled_end_at);
+        $currentTime = now();
+
+        return $currentTime->gte($this->scheduled_start_at)
+            && $currentTime->lte($this->scheduled_end_at);
     }
 }
