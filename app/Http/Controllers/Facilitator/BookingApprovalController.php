@@ -122,7 +122,8 @@ class BookingApprovalController extends Controller
      */
     private function hasConflict(Booking $booking, int $bufferMinutes): bool
     {
-        $candidateDate = ($booking->date ?? $booking->booking_date)->format('Y-m-d');
+        $candidateStartDate = Carbon::parse($booking->date ?? $booking->booking_date)->toDateString();
+        $candidateEndDate = Carbon::parse($booking->end_date ?? $booking->date ?? $booking->booking_date)->toDateString();
         $candidateStart = Carbon::parse($booking->start_time);
         $candidateEnd = Carbon::parse($booking->end_time);
 
@@ -130,17 +131,19 @@ class BookingApprovalController extends Controller
             ->where('facility_id', $booking->facility_id)
             ->where('id', '!=', $booking->getKey())
             ->whereIn('status', ['pending', 'approved'])
-            ->where(function ($query) use ($candidateDate) {
-                $query->whereDate('date', $candidateDate)
-                    ->orWhereDate('booking_date', $candidateDate);
-            })
+            ->whereRaw('COALESCE(date, booking_date) <= ?', [$candidateEndDate])
+            ->whereRaw('COALESCE(end_date, date, booking_date) >= ?', [$candidateStartDate])
             ->get(['start_time', 'end_time']);
 
         foreach ($existingBookings as $existing) {
+            $existingEnd = Carbon::parse($existing->end_time);
+            if (substr((string) $existing->end_time, 0, 5) === '00:00') {
+                $existingEnd->addDay();
+            }
+
             $bufferedStart = Carbon::parse($existing->start_time)
                 ->subMinutes($bufferMinutes);
-            $bufferedEnd = Carbon::parse($existing->end_time)
-                ->addMinutes($bufferMinutes);
+            $bufferedEnd = $existingEnd->copy()->addMinutes($bufferMinutes);
 
             if (
                 $candidateStart->lt($bufferedEnd) &&
@@ -188,14 +191,25 @@ class BookingApprovalController extends Controller
                 (int) ($settings->cleanup_buffer_minutes ?? 30)
             );
 
-            $bookingDate = $lockedBooking->date ?? $lockedBooking->booking_date;
-            $dayOfWeek = Carbon::parse($bookingDate)->dayOfWeek;
-            $facilityHours = FacilityOperatingHour::query()
-                ->where('facility_id', $lockedFacility->getKey())
-                ->where('day_of_week', $dayOfWeek)
-                ->first();
+            $bookingStartDate = Carbon::parse($lockedBooking->date ?? $lockedBooking->booking_date)->startOfDay();
+            $bookingEndDate = Carbon::parse($lockedBooking->end_date ?? $lockedBooking->date ?? $lockedBooking->booking_date)->startOfDay();
+            $startTime = Carbon::parse($lockedBooking->start_time);
+            $endTime = Carbon::parse($lockedBooking->end_time);
+            $startMinutes = ((int) $startTime->format('H') * 60) + (int) $startTime->format('i');
+            $endMinutes = substr((string) $lockedBooking->end_time, 0, 5) === '00:00'
+                ? 1440
+                : ((int) $endTime->format('H') * 60) + (int) $endTime->format('i');
 
-            if ($facilityHours) {
+            for ($day = $bookingStartDate->copy(); $day->lte($bookingEndDate); $day->addDay()) {
+                $facilityHours = FacilityOperatingHour::query()
+                    ->where('facility_id', $lockedFacility->getKey())
+                    ->where('day_of_week', $day->dayOfWeek)
+                    ->first();
+
+                if (! $facilityHours) {
+                    continue;
+                }
+
                 if ($facilityHours->is_closed) {
                     return 'outside_hours';
                 }
@@ -206,14 +220,12 @@ class BookingApprovalController extends Controller
                 $closingMinutes = $closingTime === '00:00'
                     ? 1440
                     : ((int) substr($closingTime, 0, 2) * 60) + (int) substr($closingTime, 3, 2);
-                $startTime = Carbon::parse($lockedBooking->start_time);
-                $endTime = Carbon::parse($lockedBooking->end_time);
-                $startMinutes = ((int) $startTime->format('H') * 60) + (int) $startTime->format('i');
-                $endMinutes = $lockedBooking->end_time === '00:00'
-                    ? 1440
-                    : ((int) $endTime->format('H') * 60) + (int) $endTime->format('i');
 
-                if ($startMinutes < $openingMinutes || $startMinutes >= $closingMinutes || $endMinutes > $closingMinutes) {
+                if (
+                    $startMinutes < $openingMinutes
+                    || $startMinutes >= $closingMinutes
+                    || $endMinutes > $closingMinutes
+                ) {
                     return 'outside_hours';
                 }
             }
