@@ -224,17 +224,23 @@ class BookingApprovalController extends Controller
                     ->where('day_of_week', $day->dayOfWeek)
                     ->first();
 
-                if (! $facilityHours) {
-                    continue;
-                }
-
-                if ($facilityHours->is_closed) {
+                if ($facilityHours?->is_closed) {
                     return 'outside_hours';
                 }
 
-                $openingMinutes = ((int) substr((string) $facilityHours->opens_at, 0, 2) * 60)
-                    + (int) substr((string) $facilityHours->opens_at, 3, 2);
-                $closingTime = substr((string) $facilityHours->closes_at, 0, 5);
+                $openingTime = substr(
+                    (string) ($facilityHours?->opens_at ?? $settings->opening_time ?? '08:00'),
+                    0,
+                    5
+                );
+                $closingTime = substr(
+                    (string) ($facilityHours?->closes_at ?? $settings->closing_time ?? '00:00'),
+                    0,
+                    5
+                );
+
+                $openingMinutes = ((int) substr($openingTime, 0, 2) * 60)
+                    + (int) substr($openingTime, 3, 2);
                 $closingMinutes = $closingTime === '00:00'
                     ? 1440
                     : ((int) substr($closingTime, 0, 2) * 60) + (int) substr($closingTime, 3, 2);
