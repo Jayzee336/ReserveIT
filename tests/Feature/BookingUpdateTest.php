@@ -43,6 +43,27 @@ class BookingUpdateTest extends TestCase
         $this->assertTrue($booking->needs_manpower);
     }
 
+    public function test_facility_specific_maximum_booking_hours_is_enforced(): void
+    {
+        $user = User::factory()->create();
+        $facility = $this->createFacility();
+        $facility->update(['max_booking_hours' => 1]);
+        $booking = $this->createBooking($user, $facility, 'pending');
+
+        $this->actingAs($user)
+            ->put("/bookings/{$booking->id}", [
+                'date' => now()->addDays(2)->toDateString(),
+                'start_time' => '09:00',
+                'end_time' => '11:00',
+                'attendees' => 10,
+                'notes' => 'Exceeds facility duration',
+                'needs_manpower' => false,
+            ])
+            ->assertSessionHasErrors('end_time');
+
+        $this->assertSame('10:00', substr($booking->fresh()->end_time, 0, 5));
+    }
+
     public function test_user_cannot_edit_booking_into_a_consent_required_date_without_a_consent_letter(): void
     {
         $user = User::factory()->create();

@@ -34,6 +34,7 @@ const EMPTY_FORM = {
     requiresWeekendConsent: true,
     allowTdevsManpower: true,
     booking_lead_time_days: 3,
+    max_booking_hours: '',
     assigned_admin_ids: [],
 };
 
@@ -353,6 +354,7 @@ function FacilityFormModal({
                 Boolean(facility.requiresWeekendConsent),
             allowTdevsManpower: Boolean(facility.allowTdevsManpower),
             booking_lead_time_days: facility.booking_lead_time_days ?? 3,
+            max_booking_hours: facility.max_booking_hours ?? '',
             assigned_admin_ids:
                 facility.facility_admins?.map((admin) => admin.id) ?? [],
         };
@@ -447,6 +449,7 @@ function FacilityFormModal({
         payload.append('location', form.location.trim());
         payload.append('requirement', form.requirement);
         payload.append('booking_lead_time_days', String(form.booking_lead_time_days ?? 3));
+        payload.append('max_booking_hours', form.max_booking_hours === '' ? '' : String(form.max_booking_hours));
 
         // Always submit both booleans, including when unchecked.
         payload.append(
@@ -702,6 +705,26 @@ function FacilityFormModal({
                                 </option>
                             </select>
                             <FieldError message={errors.requirement} />
+                        </div>
+
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-700">
+                                Maximum Booking Duration (Hours)
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="24"
+                                step="1"
+                                value={form.max_booking_hours ?? ''}
+                                onChange={(e) => updateField('max_booking_hours', e.target.value)}
+                                className={inputClass('max_booking_hours')}
+                                placeholder="Use system default"
+                            />
+                            <FieldError message={errors.max_booking_hours} />
+                            <p className="mt-1 text-xs text-gray-500">
+                                Set a facility-specific maximum from 1 to 24 hours. Leave blank to use the Super Admin system default.
+                            </p>
                         </div>
 
                         <div>

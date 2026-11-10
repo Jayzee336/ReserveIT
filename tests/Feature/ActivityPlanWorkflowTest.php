@@ -136,6 +136,20 @@ class ActivityPlanWorkflowTest extends TestCase
         $this->assertDatabaseCount('bookings', 0);
     }
 
+    public function test_facility_specific_maximum_booking_hours_is_enforced_for_activity_plan_sessions(): void
+    {
+        $user = $this->createVerifiedUser();
+        $facility = $this->createFacility();
+        $facility->update(['max_booking_hours' => 1]);
+        $payload = $this->activityPlanPayload($facility);
+        $payload['sessions'][0]['end_time'] = '11:00';
+        $payload['weekday_times'][1] = ['start_time' => '09:00', 'end_time' => '11:00'];
+
+        $this->actingAs($user)
+            ->post(route('activity-plans.store'), $payload)
+            ->assertSessionHasErrors('sessions.0.end_time');
+    }
+
     public function test_user_can_submit_a_recurring_plan_with_separate_booking_sessions(): void
     {
         $user = $this->createVerifiedUser();

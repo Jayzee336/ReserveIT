@@ -170,6 +170,17 @@ class ActivityPlanController extends Controller
                 ]);
             }
 
+            $configuredMaxHours = $facility->max_booking_hours
+                ?? $settings->max_booking_duration
+                ?? 4;
+            $sessionDurationMinutes = $sessionEndMinutes - $sessionStartMinutes;
+
+            if ($sessionDurationMinutes > ((float) $configuredMaxHours * 60)) {
+                throw ValidationException::withMessages([
+                    "sessions.{$index}.end_time" => "A session cannot exceed {$configuredMaxHours} hours for this facility.",
+                ]);
+            }
+
             if (($sessionDate->dayOfWeek < 0) || ($sessionDate->dayOfWeek > 6)) {
                 throw ValidationException::withMessages([
                     "sessions.{$index}.date" => 'Please select a valid session date.',

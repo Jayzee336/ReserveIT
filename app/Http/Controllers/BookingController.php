@@ -32,6 +32,7 @@ class BookingController extends Controller
             'max_booking_span_hours',
             'max_booking_hours',
             'max_booking_duration_hours',
+            'max_booking_duration',
             'max_duration_hours',
         ];
 
