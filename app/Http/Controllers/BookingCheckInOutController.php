@@ -90,7 +90,9 @@ class BookingCheckInOutController extends Controller
 
             $now = Carbon::now();
             $today = $now->copy()->startOfDay();
-            $scheduledBookingDate = $lockedBooking->date ?? $lockedBooking->booking_date;
+            $scheduledBookingDate = $lockedBooking->end_date
+                ?? $lockedBooking->date
+                ?? $lockedBooking->booking_date;
 
             if (! $scheduledBookingDate) {
                 throw ValidationException::withMessages([
@@ -454,8 +456,9 @@ class BookingCheckInOutController extends Controller
             ->whereNull('checked_out_at')
             ->get()
             ->map(function (Booking $booking) use ($now, $feePerHour) {
+                $scheduledEndDate = $booking->end_date ?? $booking->date ?? $booking->booking_date;
                 $scheduledEnd = Carbon::parse(
-                    $booking->date->format('Y-m-d')
+                    Carbon::parse($scheduledEndDate)->format('Y-m-d')
                     . ' '
                     . $booking->end_time
                 );
@@ -490,6 +493,7 @@ class BookingCheckInOutController extends Controller
                         ?? $booking->guest_email
                         ?? '',
                     'date' => $booking->date,
+                    'end_date' => $booking->end_date ?? $booking->date,
                     'start_time' => $booking->start_time,
                     'end_time' => $booking->end_time,
                     'checked_in_at' => $booking->checked_in_at,
