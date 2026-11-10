@@ -213,19 +213,68 @@ export default function BookingModal({
             end: toEndMins(String(booking.end_time).slice(0, 5)) + cleanupBuffer,
         })), [existingBookings, facility?.id, date, endDate, cleanupBuffer]);
 
+    const minutesToTime = (minutes) => {
+        if (minutes >= 1440) return '00:00';
+        return String(Math.floor(minutes / 60)).padStart(2, '0')
+            + ':' + String(minutes % 60).padStart(2, '0');
+    };
+
+    const findScheduledClosureConflict = (requestedStartTime, requestedEndTime) => {
+        const periods = facility?.unavailability_periods ?? [];
+        if (!date || !endDate || endDate < date || !periods.length) return null;
+
+        const cursor = new Date(date + 'T12:00:00');
+        const lastDate = new Date(endDate + 'T12:00:00');
+
+        while (cursor <= lastDate) {
+            const day = getLocalDateString(cursor);
+            const requestedStart = new Date(day + 'T' + requestedStartTime + ':00');
+            const requestedEnd = new Date(day + 'T' + requestedEndTime + ':00');
+
+            if (requestedEndTime === '00:00') {
+                requestedEnd.setDate(requestedEnd.getDate() + 1);
+            }
+
+            const closure = periods.find((period) => {
+                if (period.ended_at || !period.scheduled_start_at || !period.scheduled_end_at) {
+                    return false;
+                }
+
+                const closureStart = new Date(period.scheduled_start_at);
+                const closureEnd = new Date(period.scheduled_end_at);
+
+                return (
+                    !Number.isNaN(closureStart.getTime())
+                    && !Number.isNaN(closureEnd.getTime())
+                    && requestedStart < closureEnd
+                    && requestedEnd > closureStart
+                );
+            });
+
+            if (closure) return closure;
+            cursor.setDate(cursor.getDate() + 1);
+        }
+
+        return null;
+    };
+
     const isTimeRangeUnavailable = (requestedStart, requestedEnd) =>
         blockedBookingRanges.some((range) =>
             requestedStart < range.end && requestedEnd > range.start
-        );
+        ) || Boolean(findScheduledClosureConflict(
+            minutesToTime(requestedStart),
+            minutesToTime(requestedEnd)
+        ));
 
     // A start option is unavailable when its starting point falls inside a
-    // reserved interval or cleanup buffer. End options additionally validate
-    // the entire requested range so users cannot select a conflicting duration.
+    // reserved interval or scheduled closure. End options validate the full range.
     const isStartTimeUnavailable = (time) => {
         const start = toMins(time);
+        const nextSlot = Math.min(start + SLOT_INTERVAL_MINUTES, 1440);
+
         return blockedBookingRanges.some((range) =>
             start >= range.start && start < range.end
-        );
+        ) || Boolean(findScheduledClosureConflict(time, minutesToTime(nextSlot)));
     };
 
     const isEndTimeUnavailable = (time) => {
