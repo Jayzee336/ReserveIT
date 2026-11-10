@@ -109,7 +109,13 @@ class ActivityPlanController extends Controller
                     break;
                 }
 
-                if ($left['start_time'] < $right['end_time'] && $left['end_time'] > $right['start_time']) {
+                $cleanupBuffer = max(0, (int) ($settings->cleanup_buffer_minutes ?? 30));
+                $leftStart = $this->minutes($left['start_time']) - $cleanupBuffer;
+                $leftEnd = ($left['end_time'] === '00:00' ? 1440 : $this->minutes($left['end_time'])) + $cleanupBuffer;
+                $rightStart = $this->minutes($right['start_time']);
+                $rightEnd = $right['end_time'] === '00:00' ? 1440 : $this->minutes($right['end_time']);
+
+                if ($rightStart < $leftEnd && $rightEnd > $leftStart) {
                     throw ValidationException::withMessages([
                         'sessions' => 'Two sessions in this activity plan overlap on ' . $left['date'] . '.',
                     ]);
@@ -253,7 +259,7 @@ class ActivityPlanController extends Controller
                         'booking_date' => $session['date'],
                         'start_time' => $session['start_time'],
                         'end_time' => $session['end_time'],
-                        'notes' => $plan->title . ($session['notes'] ? "\n" . $session['notes'] : '')
+                        'notes' => $plan->title . (!empty($session['notes']) ? "\n" . $session['notes'] : '')
                             . ($plan->description ? "\n" . $plan->description : ''),
                         'attendees' => (int) $session['attendees'],
                         'needs_manpower' => (bool) $session['needs_manpower'],
@@ -365,18 +371,18 @@ class ActivityPlanController extends Controller
                 }
             }
 
-            $plan->bookings()->where('status', 'pending')->update([
+                $plan->bookings()->where('status', 'pending')->update([
                 'status' => 'approved',
                 'approved_at' => now(),
                 'approved_by' => $user->name,
             ]);
 
             $plan->update([
-                'status' => 'approved',
                 'reviewed_by' => $user->id,
                 'reviewed_at' => now(),
                 'decline_reason' => null,
             ]);
+            $plan->syncStatus();
 
             return 'approved';
         });
@@ -422,17 +428,18 @@ class ActivityPlanController extends Controller
 
             $plan->bookings()
                 ->whereIn('status', ['pending', 'approved'])
+                ->whereNull('checked_in_at')
                 ->update([
                     'status' => 'declined',
                     'rejection_reason' => $validated['reason'],
                 ]);
 
             $plan->update([
-                'status' => 'declined',
                 'decline_reason' => $validated['reason'],
                 'reviewed_by' => $user->id,
                 'reviewed_at' => now(),
             ]);
+            $plan->syncStatus();
         });
 
         $activityPlan->user?->notify(new ActivityPlanNotification(
@@ -444,6 +451,21 @@ class ActivityPlanController extends Controller
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'The activity plan and its remaining active sessions were declined.',
+        ]);
+    }
+
+    public function show(Request $request, ActivityPlan $activityPlan)
+    {
+        $this->authorizePlanAccess($request->user(), $activityPlan);
+
+        $activityPlan->load([
+            'facility:id,name,location,is_available,unavailable_reason',
+            'user:id,name,email',
+            'bookings' => fn ($query) => $query->with('user:id,name')->orderBy('date')->orderBy('start_time'),
+        ]);
+
+        return Inertia::render('ActivityPlans/Show', [
+            'activityPlan' => $activityPlan,
         ]);
     }
 
@@ -574,9 +596,9 @@ class ActivityPlanController extends Controller
             $query->whereNotIn('id', $excludeIds);
         }
 
-        return $query->get(['start_time', 'end_time'])->contains(function (Booking $booking) use ($start, $end) {
-            $existingStart = $this->minutes($booking->start_time) - 30;
-            $existingEnd = ($booking->end_time === '00:00' ? 1440 : $this->minutes($booking->end_time)) + 30;
+        return $query->get(['start_time', 'end_time'])->contains(function (Booking $booking) use ($start, $end, $buffer) {
+            $existingStart = $this->minutes($booking->start_time) - $buffer;
+            $existingEnd = ($booking->end_time === '00:00' ? 1440 : $this->minutes($booking->end_time)) + $buffer;
 
             return $start < $existingEnd && $end > $existingStart;
         });
