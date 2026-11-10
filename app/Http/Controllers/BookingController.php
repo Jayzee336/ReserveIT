@@ -452,6 +452,7 @@ class BookingController extends Controller
                 'date_format:Y-m-d',
                 'after_or_equal:today',
             ],
+            'end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i'],
             'attendees' => ['required', 'integer', 'min:1'],
@@ -459,13 +460,27 @@ class BookingController extends Controller
             'notes' => ['nullable', 'string', 'max:10000'],
         ]);
 
+        $validated['end_date'] = $validated['end_date'] ?? $validated['date'];
+
+        if ($validated['end_date'] < $validated['date']) {
+            throw ValidationException::withMessages([
+                'end_date' => 'The reservation end date must be on or after the start date.',
+            ]);
+        }
+
         if ($booking->activityPlan) {
             $planStart = Carbon::parse($booking->activityPlan->start_date)->toDateString();
             $planEnd = Carbon::parse($booking->activityPlan->end_date)->toDateString();
 
-            if ($validated['date'] < $planStart || $validated['date'] > $planEnd) {
+            if (
+                $validated['date'] < $planStart
+                || $validated['date'] > $planEnd
+                || $validated['end_date'] < $planStart
+                || $validated['end_date'] > $planEnd
+            ) {
                 throw ValidationException::withMessages([
                     'date' => 'An individual session must remain within its activity plan date range.',
+                    'end_date' => 'An individual session must remain within its activity plan date range.',
                 ]);
             }
         }
@@ -503,13 +518,14 @@ class BookingController extends Controller
 
         $settings = SystemSetting::current();
         $bookingDate = Carbon::createFromFormat('!Y-m-d', $validated['date']);
+        $bookingEndDate = Carbon::createFromFormat('!Y-m-d', $validated['end_date']);
         $today = Carbon::today();
 
         $consentRequired = (bool) $settings->require_consent_letter
             || $facility->requirement === 'CONSENT_REQUIRED'
             || (
                 (bool) $facility->requiresWeekendConsent
-                && $bookingDate->isWeekend()
+                && $this->rangeIncludesWeekend($validated['date'], $validated['end_date'])
             );
 
         if ($consentRequired && ! $booking->consent_file_uploaded) {
@@ -527,9 +543,9 @@ class BookingController extends Controller
 
         $maxDays = max(0, (int) ($settings->max_advance_days ?? 30));
 
-        if ($bookingDate->gt($today->copy()->addDays($maxDays))) {
+        if ($bookingEndDate->gt($today->copy()->addDays($maxDays))) {
             return back()->withErrors([
-                'date' => "You can only book facilities up to {$maxDays} days in advance.",
+                'end_date' => "The reservation must end within the {$maxDays}-day booking advance window.",
             ]);
         }
 
@@ -539,8 +555,9 @@ class BookingController extends Controller
             $settings
         );
 
-        $this->validateFacilityOperatingHours(
+        $this->validateFacilityOperatingHoursForRange(
             $validated['date'],
+            $validated['end_date'],
             $validated['start_time'],
             $validated['end_time'],
             $facility,
@@ -570,8 +587,9 @@ class BookingController extends Controller
                 ]);
             }
 
-            $this->validateFacilityOperatingHours(
+            $this->validateFacilityOperatingHoursForRange(
                 $validated['date'],
+                $validated['end_date'],
                 $validated['start_time'],
                 $validated['end_time'],
                 $lockedFacility,
@@ -594,6 +612,7 @@ class BookingController extends Controller
             $conflict = $this->hasBookingConflict(
                 (string) $lockedBooking->facility_id,
                 $validated['date'],
+                $validated['end_date'],
                 $validated['start_time'],
                 $validated['end_time'],
                 $buffer,
@@ -609,6 +628,7 @@ class BookingController extends Controller
             $lockedBooking->update([
                 'date' => $validated['date'],
                 'booking_date' => $validated['date'],
+                'end_date' => $validated['end_date'],
                 'start_time' => $validated['start_time'],
                 'end_time' => $validated['end_time'],
                 'attendees' => (int) $validated['attendees'],
@@ -737,6 +757,7 @@ class BookingController extends Controller
                 'date_format:Y-m-d',
                 'after_or_equal:today',
             ],
+            'end_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i'],
             'notes' => ['nullable', 'string', 'max:10000'],
@@ -747,6 +768,7 @@ class BookingController extends Controller
             'needs_manpower' => ['nullable', 'boolean'],
         ]);
 
+        $validated['end_date'] = $validated['end_date'] ?? $validated['date'];
         $facility = Facility::findOrFail($validated['facility_id']);
 
         if (! $facility->is_available) {
@@ -756,13 +778,14 @@ class BookingController extends Controller
         }
 
         $bookingDate = Carbon::createFromFormat('!Y-m-d', $validated['date']);
+        $bookingEndDate = Carbon::createFromFormat('!Y-m-d', $validated['end_date']);
 
         $isConsentRequired =
             (bool) $settings->require_consent_letter
             || $facility->requirement === 'CONSENT_REQUIRED'
             || (
                 (bool) $facility->requiresWeekendConsent
-                && $bookingDate->isWeekend()
+                && $this->rangeIncludesWeekend($validated['date'], $validated['end_date'])
             );
 
         $leadTimeDays = max(0, (int) ($facility->booking_lead_time_days ?? 3));
@@ -803,9 +826,9 @@ class BookingController extends Controller
         $today = Carbon::today();
         $maxDays = max(0, (int) ($settings->max_advance_days ?? 30));
 
-        if ($bookingDate->gt($today->copy()->addDays($maxDays))) {
+        if ($bookingEndDate->gt($today->copy()->addDays($maxDays))) {
             return back()->withErrors([
-                'date' => "You can only book facilities up to {$maxDays} days in advance.",
+                'end_date' => "The reservation must end within the {$maxDays}-day booking advance window.",
             ]);
         }
 
@@ -869,8 +892,9 @@ class BookingController extends Controller
                     ]);
                 }
 
-                $this->validateFacilityOperatingHours(
+                $this->validateFacilityOperatingHoursForRange(
                     $validated['date'],
+                    $validated['end_date'],
                     $validated['start_time'],
                     $validated['end_time'],
                     $lockedFacility,
@@ -880,6 +904,7 @@ class BookingController extends Controller
                 $conflict = $this->hasBookingConflict(
                     (string) $facility->getKey(),
                     $validated['date'],
+                    $validated['end_date'],
                     $validated['start_time'],
                     $validated['end_time'],
                     $buffer
@@ -899,6 +924,7 @@ class BookingController extends Controller
                     'guest_phone' => $validated['guest_phone'] ?? null,
                     'date' => $validated['date'],
                     'booking_date' => $validated['date'],
+                    'end_date' => $validated['end_date'],
                     'start_time' => $validated['start_time'],
                     'end_time' => $validated['end_time'],
                     'notes' => $validated['notes'] ?? null,
