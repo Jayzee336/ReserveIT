@@ -113,7 +113,7 @@ export default function OvertimeExtensions({ extensionRequests }) {
                                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                                     <div className="rounded-lg bg-slate-50 p-3">
                                         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Booking date</p>
-                                        <p className="mt-1 text-sm font-bold text-slate-800">{formatDate(booking.date || booking.booking_date)}</p>
+                                        <p className="mt-1 text-sm font-bold text-slate-800">{formatDate(booking.date || booking.booking_date)}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date || booking.booking_date).slice(0, 10) ? ' – ' + formatDate(booking.end_date) : ''}</p>
                                     </div>
                                     <div className="rounded-lg bg-slate-50 p-3">
                                         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Current booking time</p>
