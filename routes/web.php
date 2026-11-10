@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\FacilityAvailabilityController;
+use App\Http\Controllers\FacilityBookingSettingsController;
 use App\Http\Controllers\DeveloperContactController;
 use App\Http\Controllers\UserConcernController;
 use App\Http\Controllers\NotificationController;
@@ -205,6 +206,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/admin/facilities/{facility}/availability', [FacilityAvailabilityController::class, 'update'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.facilities.availability');
+
+    Route::get('/admin/facilities/{facility}/booking-settings', [FacilityBookingSettingsController::class, 'edit'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('admin.facilities.booking-settings');
+
+    Route::put('/admin/facilities/{facility}/booking-settings', [FacilityBookingSettingsController::class, 'update'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('admin.facilities.booking-settings.update');
 
     Route::delete('/admin/facilities/{facility}', [FacilityManagementController::class, 'destroy'])
         ->middleware('role:super_admin')
@@ -424,6 +433,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         if ($isFacilityAdmin && !$availabilityOnly) {
             $facilityQuery->forUser($user);
         }
+
+        $facilityQuery->with('operatingHours');
 
         $bookingQuery = Booking::query()
             ->where(function ($query) use ($monthStart, $monthEnd) {
