@@ -209,6 +209,61 @@ class ActivityPlanWorkflowTest extends TestCase
             );
     }
 
+    public function test_approving_one_session_marks_the_parent_plan_partially_approved(): void
+    {
+        $owner = $this->createVerifiedUser();
+        $admin = $this->createVerifiedUser('facility_admin');
+        $facility = $this->createFacility('activity-plan-approval-room');
+        $facility->facilityAdmins()->attach($admin);
+
+        $plan = ActivityPlan::create([
+            'user_id' => $owner->id,
+            'facility_id' => $facility->id,
+            'title' => 'Partially Approved Plan',
+            'description' => null,
+            'start_date' => '2026-11-16',
+            'end_date' => '2026-11-18',
+            'recurrence_days' => [1, 3],
+            'weekday_times' => [],
+            'status' => 'pending',
+        ]);
+
+        $first = Booking::create([
+            'facility_id' => $facility->id,
+            'activity_plan_id' => $plan->id,
+            'user_id' => $owner->id,
+            'date' => '2026-11-16',
+            'booking_date' => '2026-11-16',
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'status' => 'pending',
+            'attendees' => 10,
+            'needs_manpower' => false,
+            'notes' => 'Monday session',
+        ]);
+
+        Booking::create([
+            'facility_id' => $facility->id,
+            'activity_plan_id' => $plan->id,
+            'user_id' => $owner->id,
+            'date' => '2026-11-18',
+            'booking_date' => '2026-11-18',
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'status' => 'pending',
+            'attendees' => 10,
+            'needs_manpower' => false,
+            'notes' => 'Wednesday session',
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('facilitator.bookings.approve', $first))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('approved', $first->fresh()->status);
+        $this->assertSame('partially_approved', $plan->fresh()->status);
+    }
+
     public function test_cancelling_one_plan_session_updates_the_parent_plan_status(): void
     {
         $owner = $this->createVerifiedUser();
