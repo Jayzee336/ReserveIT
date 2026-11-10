@@ -307,7 +307,7 @@ class BookingController extends Controller
         $status = $validated['status'] ?? null;
         $openBookingId = $validated['booking'] ?? null;
 
-        $query = Booking::with('facility')
+        $query = Booking::with(['facility', 'extensionRequests.requester', 'extensionRequests.reviewer'])
             ->where('user_id', Auth::id());
 
         if ($status) {
@@ -340,7 +340,7 @@ class BookingController extends Controller
         $openBooking = null;
 
         if ($openBookingId) {
-            $openBooking = Booking::with('facility')
+            $openBooking = Booking::with(['facility', 'extensionRequests.requester', 'extensionRequests.reviewer'])
                 ->where('user_id', Auth::id())
                 ->find($openBookingId);
         }
