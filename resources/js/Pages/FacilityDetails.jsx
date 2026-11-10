@@ -56,6 +56,7 @@ export default function FacilityDetails({
 
     const isAlwaysConsent =
         facility.requirement === 'CONSENT_REQUIRED';
+    const isFacilityAvailable = facility.is_available !== false;
 
     return (
         <>
@@ -126,6 +127,19 @@ export default function FacilityDetails({
                             </div>
                         </div>
 
+                        {!isFacilityAvailable && (
+                            <div className="mx-4 mt-4 flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-100 p-4 sm:mx-6 lg:mx-7" role="status">
+                                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-slate-600" />
+                                <div className="min-w-0">
+                                    <p className="text-sm font-bold text-slate-800">This facility is temporarily unavailable</p>
+                                    <p className="mt-1 break-words text-xs leading-relaxed text-slate-600">
+                                        {facility.unavailable_reason || 'The facility is not accepting new bookings at this time.'}
+                                    </p>
+                                    <p className="mt-1 text-xs text-slate-500">The facility administrator will mark it available again when it is ready.</p>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Facility information */}
                         <div className="p-4 sm:p-6 lg:p-7">
                             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8">
@@ -192,10 +206,11 @@ export default function FacilityDetails({
                                         <button
                                             type="button"
                                             onClick={() => setBookingOpen(true)}
-                                            className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-[#543F48] focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2"
+                                            disabled={!isFacilityAvailable}
+                                            className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-[#543F48] focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none"
                                         >
                                             <CalendarIcon className="h-4 w-4" />
-                                            Book this facility
+                                            {isFacilityAvailable ? 'Book this facility' : 'Temporarily unavailable'}
                                         </button>
                                     </div>
                                 </div>
@@ -240,7 +255,7 @@ export default function FacilityDetails({
                 </div>
 
                 {/* Booking modal */}
-                {bookingOpen && (
+                {bookingOpen && isFacilityAvailable && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5">
                         <button
                             type="button"
