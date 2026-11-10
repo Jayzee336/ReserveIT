@@ -57,6 +57,20 @@ export default function FacilityDetails({
     const isAlwaysConsent =
         facility.requirement === 'CONSENT_REQUIRED';
     const isFacilityAvailable = facility.is_available !== false;
+    const scheduledClosures = facility.unavailability_periods ?? [];
+    const formatScheduledDateTime = (value) => {
+        if (!value) return '—';
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
+            ? String(value)
+            : date.toLocaleString('en-PH', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+            });
+    };
 
     return (
         <>
@@ -215,6 +229,35 @@ export default function FacilityDetails({
                                     </div>
                                 </div>
                             </div>
+
+                            {scheduledClosures.length > 0 && (
+                                <section className="mt-6 border-t border-amber-100 pt-5">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <h3 className="flex items-center gap-2 text-sm font-bold text-amber-900">
+                                            <AlertCircle className="h-4 w-4" />
+                                            Scheduled maintenance and closures
+                                        </h3>
+                                        <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-800">
+                                            {scheduledClosures.length} upcoming
+                                        </span>
+                                    </div>
+                                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                        {scheduledClosures.map((period) => (
+                                            <article key={period.id} className="min-w-0 rounded-xl border border-amber-200 bg-amber-50/70 p-3">
+                                                <p className="break-words text-sm font-semibold text-amber-950">{period.reason}</p>
+                                                <p className="mt-1 text-xs leading-5 text-amber-800">
+                                                    {formatScheduledDateTime(period.scheduled_start_at)}
+                                                    <span className="mx-1">to</span>
+                                                    {formatScheduledDateTime(period.scheduled_end_at)}
+                                                </p>
+                                            </article>
+                                        ))}
+                                    </div>
+                                    <p className="mt-2 text-xs leading-5 text-amber-800">
+                                        Bookings that overlap these windows are blocked. Other time slots remain available.
+                                    </p>
+                                </section>
+                            )}
 
                             {/* Facility administrators */}
                             {facility.facility_admins?.length > 0 && (
