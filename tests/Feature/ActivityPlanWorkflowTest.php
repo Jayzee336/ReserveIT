@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Facility;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -89,6 +90,10 @@ class ActivityPlanWorkflowTest extends TestCase
     {
         parent::setUp();
 
+        // Keep the fixed semester fixtures valid regardless of the real date
+        // when this suite is executed in CI or on a developer machine.
+        Carbon::setTestNow('2026-11-10 08:00:00');
+
         Storage::fake('tigris');
         SystemSetting::current()->update([
             'auto_approve_scope' => 'disabled',
@@ -99,6 +104,12 @@ class ActivityPlanWorkflowTest extends TestCase
             'max_advance_days' => 30,
             'require_consent_letter' => false,
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     public function test_user_can_submit_a_recurring_plan_with_separate_booking_sessions(): void
