@@ -23,6 +23,7 @@ use App\Http\Controllers\Auth\SetPasswordController;
 use App\Models\Facility;
 use App\Models\Booking;
 use App\Support\BookingDashboardAnalytics;
+use Carbon\Carbon;
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
