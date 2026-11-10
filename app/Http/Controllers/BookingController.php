@@ -7,6 +7,7 @@ use App\Models\Facility;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\BookingOperationsNotification;
+use App\Support\FacilityScheduleAvailability;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -596,6 +597,20 @@ class BookingController extends Controller
                 $settings
             );
 
+            $scheduledClosure = FacilityScheduleAvailability::firstOverlappingClosure(
+                $lockedFacility,
+                $validated['date'],
+                $validated['end_date'],
+                $validated['start_time'],
+                $validated['end_time']
+            );
+
+            if ($scheduledClosure) {
+                throw ValidationException::withMessages([
+                    'date' => 'This reservation overlaps a scheduled facility closure: ' . $scheduledClosure->reason,
+                ]);
+            }
+
             $lockedBooking = Booking::whereKey($booking->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -900,6 +915,20 @@ class BookingController extends Controller
                     $lockedFacility,
                     $settings
                 );
+
+                $scheduledClosure = FacilityScheduleAvailability::firstOverlappingClosure(
+                    $lockedFacility,
+                    $validated['date'],
+                    $validated['end_date'],
+                    $validated['start_time'],
+                    $validated['end_time']
+                );
+
+                if ($scheduledClosure) {
+                    throw ValidationException::withMessages([
+                        'date' => 'This reservation overlaps a scheduled facility closure: ' . $scheduledClosure->reason,
+                    ]);
+                }
 
                 $conflict = $this->hasBookingConflict(
                     (string) $facility->getKey(),
