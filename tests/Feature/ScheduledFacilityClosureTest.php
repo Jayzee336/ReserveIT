@@ -86,20 +86,27 @@ class ScheduledFacilityClosureTest extends TestCase
         $facility->facilityAdmins()->attach($admin);
 
         $date = today()->addDays(3)->toDateString();
+        $secondSessionDate = today()->addDays(4)->toDateString();
+        $thirdSessionDate = today()->addDays(5)->toDateString();
 
-        Booking::create([
-            'facility_id' => $facility->id,
-            'user_id' => $affectedUser->id,
-            'date' => $date,
-            'booking_date' => $date,
-            'end_date' => $date,
-            'start_time' => '10:00:00',
-            'end_time' => '12:00:00',
-            'status' => 'approved',
-            'attendees' => 10,
-            'needs_manpower' => false,
-            'notes' => 'Overlaps the maintenance window.',
-        ]);
+        // One owner has three recurring session dates. The scheduled closure
+        // overlaps only the first session, so the notification must identify
+        // only that date rather than all sessions in the plan.
+        foreach ([$date, $secondSessionDate, $thirdSessionDate] as $sessionDate) {
+            Booking::create([
+                'facility_id' => $facility->id,
+                'user_id' => $affectedUser->id,
+                'date' => $sessionDate,
+                'booking_date' => $sessionDate,
+                'end_date' => $sessionDate,
+                'start_time' => '10:00:00',
+                'end_time' => '12:00:00',
+                'status' => 'approved',
+                'attendees' => 10,
+                'needs_manpower' => false,
+                'notes' => 'Recurring activity session.',
+            ]);
+        }
 
         Booking::create([
             'facility_id' => $facility->id,
@@ -121,6 +128,21 @@ class ScheduledFacilityClosureTest extends TestCase
         $this->assertSame([$affectedUser->id], $period->fresh()->affected_user_ids);
         $this->assertSame(1, $affectedUser->notifications()->count());
         $this->assertSame(0, $unaffectedUser->notifications()->count());
+
+        $notificationMessage = $affectedUser->notifications()->firstOrFail()->data['message'];
+        $this->assertStringContainsString(
+            \\Carbon\\Carbon::parse($date)->format('M d, Y'),
+            $notificationMessage
+        );
+        $this->assertStringNotContainsString(
+            \\Carbon\\Carbon::parse($secondSessionDate)->format('M d, Y'),
+            $notificationMessage
+        );
+        $this->assertStringNotContainsString(
+            \\Carbon\\Carbon::parse($thirdSessionDate)->format('M d, Y'),
+            $notificationMessage
+        );
+
         $this->assertTrue($facility->fresh()->is_available);
     }
 
