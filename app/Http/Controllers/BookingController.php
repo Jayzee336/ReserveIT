@@ -543,7 +543,7 @@ class BookingController extends Controller
 
         $maxDays = max(0, (int) ($settings->max_advance_days ?? 30));
 
-        if ($bookingEndDate->gt($today->copy()->addDays($maxDays))) {
+        if (! $booking->activityPlan && $bookingEndDate->gt($today->copy()->addDays($maxDays))) {
             return back()->withErrors([
                 'end_date' => "The reservation must end within the {$maxDays}-day booking advance window.",
             ]);
