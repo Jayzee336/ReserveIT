@@ -391,7 +391,7 @@ class BookingController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $booking = Booking::with('facility')
+        $booking = Booking::with(['facility', 'activityPlan'])
             ->where('user_id', Auth::id())
             ->findOrFail($id);
 
@@ -413,6 +413,17 @@ class BookingController extends Controller
             'needs_manpower' => ['required', 'boolean'],
             'notes' => ['nullable', 'string', 'max:10000'],
         ]);
+
+        if ($booking->activityPlan) {
+            $planStart = Carbon::parse($booking->activityPlan->start_date)->toDateString();
+            $planEnd = Carbon::parse($booking->activityPlan->end_date)->toDateString();
+
+            if ($validated['date'] < $planStart || $validated['date'] > $planEnd) {
+                throw ValidationException::withMessages([
+                    'date' => 'An individual session must remain within its activity plan date range.',
+                ]);
+            }
+        }
 
         $facility = $booking->facility;
 
