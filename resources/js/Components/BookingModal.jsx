@@ -162,17 +162,16 @@ export default function BookingModal({
         requireConsentGlobally || facilityConsentRequired;
 
     const today = useMemo(() => getLocalDateString(new Date()), []);
-    const consentLeadTimeDays = Math.max(0, Number(facility?.booking_lead_time_days ?? 3));
-    const earliestConsentDate = useMemo(
-        () => addDaysToLocalDate(consentLeadTimeDays),
-        [consentLeadTimeDays]
+    const bookingLeadTimeDays = Math.max(0, Number(facility?.booking_lead_time_days ?? 3));
+    const earliestBookingDate = useMemo(
+        () => addDaysToLocalDate(bookingLeadTimeDays),
+        [bookingLeadTimeDays]
     );
-    const minDate = isConsentRequired ? earliestConsentDate : today;
+    const minDate = earliestBookingDate;
 
     const isDateTooSoon =
-        isConsentRequired &&
         Boolean(date) &&
-        date < earliestConsentDate;
+        date < earliestBookingDate;
 
     const isToday = date === today;
 
@@ -634,9 +633,9 @@ export default function BookingModal({
                         Schedule
                     </h4>
 
-                    {isConsentRequired && (
-                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-600">
-                            {consentLeadTimeDays}-day lead time required
+                    {bookingLeadTimeDays > 0 && (
+                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                            {bookingLeadTimeDays}-day advance notice
                         </span>
                     )}
                 </div>
@@ -699,8 +698,8 @@ export default function BookingModal({
                     <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5">
                         <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
                         <p className="text-xs text-red-600">
-                            This facility requires {consentLeadTimeDays} days advance notice for consent-required bookings.
-                            Earliest: {earliestConsentDate}
+                            This facility requires at least {bookingLeadTimeDays} days advance notice for all bookings.
+                            Earliest available date: {earliestBookingDate}
                         </p>
                     </div>
                 )}

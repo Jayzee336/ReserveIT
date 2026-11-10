@@ -543,9 +543,9 @@ class BookingController extends Controller
         }
 
         $leadTimeDays = max(0, (int) ($facility->booking_lead_time_days ?? 3));
-        if ($consentRequired && $bookingDate->lt($today->copy()->addDays($leadTimeDays))) {
+        if ($bookingDate->lt($today->copy()->addDays($leadTimeDays))) {
             throw ValidationException::withMessages([
-                'date' => "This facility requires at least {$leadTimeDays} days advance notice for consent-required bookings.",
+                'date' => "This facility requires at least {$leadTimeDays} days advance notice.",
             ]);
         }
 
@@ -812,9 +812,9 @@ class BookingController extends Controller
             );
 
         $leadTimeDays = max(0, (int) ($facility->booking_lead_time_days ?? 3));
-        if ($isConsentRequired && $bookingDate->lt(Carbon::today()->addDays($leadTimeDays))) {
+        if ($bookingDate->lt(Carbon::today()->addDays($leadTimeDays))) {
             throw ValidationException::withMessages([
-                'date' => "This facility requires at least {$leadTimeDays} days advance notice for consent-required bookings.",
+                'date' => "This facility requires at least {$leadTimeDays} days advance notice.",
             ]);
         }
 

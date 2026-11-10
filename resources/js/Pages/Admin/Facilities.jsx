@@ -741,7 +741,7 @@ function FacilityFormModal({
                             />
                             <FieldError message={errors.booking_lead_time_days} />
                             <p className="mt-1 text-xs text-gray-500">
-                                Applied when a booking requires a consent letter. Set 0 to allow same-day requests. Default: 3 days.
+                                Applies to all bookings and recurring activity-plan sessions for this facility. Set 0 to allow same-day requests. Default: 3 days.
                             </p>
                         </div>
 
