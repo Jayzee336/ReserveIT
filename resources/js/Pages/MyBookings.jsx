@@ -252,13 +252,15 @@ const getStatus = (status) => {
 const isBookingCompleted = (booking) => {
     if (getStatus(booking?.status) !== 'approved') return false;
 
-    const bookingDate = String(booking?.date || booking?.booking_date || '').slice(0, 10);
+    const bookingEndDate = String(
+        booking?.end_date || booking?.date || booking?.booking_date || ''
+    ).slice(0, 10);
     const endTime = String(booking?.end_time || '').slice(0, 5);
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(bookingDate) || !/^\\d{2}:\\d{2}$/.test(endTime)) {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(bookingEndDate) || !/^\\d{2}:\\d{2}$/.test(endTime)) {
         return false;
     }
 
-    const endDateTime = new Date(`${bookingDate}T${endTime}:00`);
+    const endDateTime = new Date(bookingEndDate + 'T' + endTime + ':00');
     return !Number.isNaN(endDateTime.getTime()) && endDateTime.getTime() <= Date.now();
 };
 
@@ -454,6 +456,7 @@ export default function MyBookings({
         transform,
     } = useForm({
         date: '',
+        end_date: '',
         start_time: '',
         end_time: '',
         notes: '',
@@ -513,7 +516,8 @@ export default function MyBookings({
             searchableValues.some((value) =>
                 String(value ?? '').toLowerCase().includes(query)
             );
-        const matchesStartDate = !dateFrom || (bookingDate && bookingDate >= dateFrom);
+        const bookingEndDate = String(booking.end_date || bookingDate).slice(0, 10);
+        const matchesStartDate = !dateFrom || (bookingEndDate && bookingEndDate >= dateFrom);
         const matchesEndDate = !dateTo || (bookingDate && bookingDate <= dateTo);
 
         return matchesStatus && matchesSearch && matchesStartDate && matchesEndDate;
@@ -538,7 +542,12 @@ export default function MyBookings({
 
     const extensionRequests = selectedDetailBooking?.extension_requests ?? [];
     const pendingExtensionRequest = extensionRequests.find((item) => item.status === 'pending');
-    const canRequestExtension = Boolean(selectedDetailBooking?.checked_in_at && !selectedDetailBooking?.checked_out_at);
+    const bookingFinalDate = String(selectedDetailBooking?.end_date || selectedDetailBooking?.date || selectedDetailBooking?.booking_date || '').slice(0, 10);
+    const canRequestExtension = Boolean(
+        selectedDetailBooking?.checked_in_at
+        && !selectedDetailBooking?.checked_out_at
+        && bookingFinalDate === todayString
+    );
     const selectedFacility = selectedDetailBooking?.facility;
     const capacity = selectedFacility?.capacity;
     const selectedBookingDate = String(
@@ -593,6 +602,7 @@ export default function MyBookings({
 
         setData({
             date: booking.date ? String(booking.date).slice(0, 10) : '',
+            end_date: booking.end_date ? String(booking.end_date).slice(0, 10) : (booking.date ? String(booking.date).slice(0, 10) : ''),
             start_time: booking.start_time?.slice(0, 5) || '',
             end_time: booking.end_time?.slice(0, 5) || '',
             notes: booking.notes || '',
@@ -635,8 +645,8 @@ export default function MyBookings({
             return;
         }
 
-        if (!data.date || !data.start_time || !data.end_time) {
-            toast.error('Please complete the reservation date and times.');
+        if (!data.date || !data.end_date || !data.start_time || !data.end_time || data.end_date < data.date) {
+            toast.error('Please complete a valid reservation start date, end date, and time range.');
             return;
         }
 
@@ -691,7 +701,9 @@ export default function MyBookings({
 
         if (
             !data.date ||
+            !data.end_date ||
             data.date < getLocalDateString() ||
+            data.end_date < data.date ||
             invalidTimeRange ||
             invalidTimeInterval
         ) {
@@ -704,6 +716,7 @@ export default function MyBookings({
 
         transform((formData) => ({
             date: formData.date,
+            end_date: formData.end_date,
             start_time: formData.start_time,
             end_time: formData.end_time,
             attendees: Number(formData.attendees),
