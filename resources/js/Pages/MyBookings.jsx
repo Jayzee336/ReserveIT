@@ -951,7 +951,7 @@ export default function MyBookings({
                                             <div className="grid grid-cols-1 gap-2 rounded-lg border border-gray-100 bg-gray-50 p-3 sm:grid-cols-2">
                                                 <div className="flex min-w-0 items-start gap-2">
                                                     <Calendar className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#846A75]" />
-                                                    <span className="text-sm text-gray-800">{formatDate(booking.date)}</span>
+                                                    <span className="text-sm text-gray-800">{formatDate(booking.date)}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date).slice(0, 10) ? ' – ' + formatDate(booking.end_date) : ''}</span>
                                                 </div>
                                                 <div className="flex items-start gap-2">
                                                     <Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#846A75]" />
@@ -996,7 +996,7 @@ export default function MyBookings({
                                                         <div className="rounded-full bg-red-50 p-2"><AlertTriangle className="h-5 w-5 text-red-600" /></div>
                                                         <div>
                                                             <h3 className="font-bold text-gray-900">Cancel booking?</h3>
-                                                            <p className="mt-1 text-sm text-gray-600">Cancel your reservation for <strong>{facility.name}</strong> on {formatDate(booking.date)}?</p>
+                                                            <p className="mt-1 text-sm text-gray-600">Cancel your reservation for <strong>{facility.name}</strong> on {formatDate(booking.date)}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date).slice(0, 10) ? ' through ' + formatDate(booking.end_date) : ''}?</p>
                                                         </div>
                                                     </div>
                                                     <div className="mt-4">
@@ -1070,10 +1070,27 @@ export default function MyBookings({
                                             <label className="mb-1 block text-xs font-semibold text-gray-600">Date</label>
                                             {isEditing ? (
                                                 <>
-                                                    <input type="date" value={data.date} min={getLocalDateString()} onChange={(e) => setData('date', e.target.value)} required className="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-[#846A75] focus:ring-[#846A75]" />
+                                                    <input type="date" value={data.date} min={getLocalDateString()} onChange={(e) => {
+                                                        const nextDate = e.target.value;
+                                                        setData({
+                                                            ...data,
+                                                            date: nextDate,
+                                                            end_date: data.end_date < nextDate ? nextDate : data.end_date,
+                                                        });
+                                                    }} required className="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-[#846A75] focus:ring-[#846A75]" />
                                                     <FieldError message={errors.date} />
                                                 </>
-                                            ) : <p className="text-sm font-medium text-gray-900">{formatDate(selectedDetailBooking.date)}</p>}
+                                            ) : <p className="text-sm font-medium text-gray-900">{formatDate(selectedDetailBooking.date)}{selectedDetailBooking.end_date && String(selectedDetailBooking.end_date).slice(0, 10) !== String(selectedDetailBooking.date).slice(0, 10) ? ' – ' + formatDate(selectedDetailBooking.end_date) : ''}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="mb-1 block text-xs font-semibold text-gray-600">End Date</label>
+                                            {isEditing ? (
+                                                <>
+                                                    <input type="date" value={data.end_date} min={data.date || getLocalDateString()} onChange={(e) => setData('end_date', e.target.value)} required className="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-[#846A75] focus:ring-[#846A75]" />
+                                                    <FieldError message={errors.end_date} />
+                                                </>
+                                            ) : <p className="text-sm font-medium text-gray-900">{formatDate(selectedDetailBooking.end_date || selectedDetailBooking.date)}</p>}
                                         </div>
 
                                         {isEditing ? (
@@ -1438,7 +1455,7 @@ export default function MyBookings({
                                     <h3 id="save-confirm-title" className="text-base font-bold text-gray-900">Save booking changes?</h3>
                                     <p className="mt-2 text-sm text-gray-600">Your updated reservation details, including the TDEVS manpower request, will be submitted.</p>
                                     <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm">
-                                        <p className="font-semibold text-gray-800">{formatDate(data.date)}</p>
+                                        <p className="font-semibold text-gray-800">{formatDate(data.date)}{data.end_date && data.end_date !== data.date ? ' – ' + formatDate(data.end_date) : ''}</p>
                                         <p className="mt-1 text-gray-600">{formatTime(data.start_time)} – {formatTime(data.end_time)}</p>
                                         {hasCapacityLimit && <p className="mt-1 text-xs text-gray-500">Attendees: {data.attendees} / {capacity}</p>}
                                         <p className="mt-1 text-xs text-gray-500">TDEVS manpower: <strong>{canRequestManpower && data.needs_manpower ? 'Requested' : 'Not requested'}</strong></p>
