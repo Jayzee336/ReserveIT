@@ -10,6 +10,7 @@ use App\Models\FacilityOperatingHour;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\BookingOperationsNotification;
+use App\Support\FacilityScheduleAvailability;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -254,6 +255,18 @@ class BookingApprovalController extends Controller
                 }
             }
 
+            $scheduledClosure = FacilityScheduleAvailability::firstOverlappingClosure(
+                $lockedFacility,
+                $bookingStartDate->toDateString(),
+                $bookingEndDate->toDateString(),
+                substr((string) $lockedBooking->start_time, 0, 5),
+                substr((string) $lockedBooking->end_time, 0, 5)
+            );
+
+            if ($scheduledClosure) {
+                return 'scheduled_closure';
+            }
+
             if ($this->hasConflict($lockedBooking, $bufferMinutes)) {
                 return 'conflict';
             }
@@ -271,6 +284,13 @@ class BookingApprovalController extends Controller
             return redirect()->back()->with('toast', [
                 'type' => 'error',
                 'message' => 'This facility is currently unavailable. The booking cannot be approved until the facility is restored.',
+            ]);
+        }
+
+        if ($result === 'scheduled_closure') {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This booking overlaps a scheduled facility closure. Review the closure dates before approving it.',
             ]);
         }
 
