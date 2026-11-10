@@ -520,6 +520,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     'id',
                     'facility_id',
                     'date',
+                    'end_date',
                     'start_time',
                     'end_time',
                     'status',
