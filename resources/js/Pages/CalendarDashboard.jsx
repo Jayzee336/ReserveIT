@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { CalendarDays, Clock3 } from 'lucide-react';
+import { CalendarDays, Clock3, RefreshCw } from 'lucide-react';
 import { CalendarView } from './CalendarView';
 
 export default function CalendarDashboard({
