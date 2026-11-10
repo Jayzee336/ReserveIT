@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ArrowLeft, Clock3, Save } from 'lucide-react';
+import { ArrowLeft, Clock3, Save, CalendarClock, XCircle } from 'lucide-react';
 
 const DAYS = [
     'Sunday',
@@ -19,6 +19,7 @@ export default function FacilityBookingSettings({
     operatingHours = [],
     defaultOpeningTime = '08:00',
     defaultClosingTime = '17:00',
+    scheduledClosures = [],
 }) {
     const { auth } = usePage().props;
     const [hours, setHours] = useState(() => DAYS.map((day, dayOfWeek) => {
@@ -32,6 +33,63 @@ export default function FacilityBookingSettings({
         };
     }));
     const [isSaving, setIsSaving] = useState(false);
+    const toLocalDateTime = (date) => {
+        const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        return offsetDate.toISOString().slice(0, 16);
+    };
+    const [closureForm, setClosureForm] = useState(() => ({
+        reason: '',
+        scheduled_start_at: toLocalDateTime(new Date(Date.now() + 60 * 60 * 1000)),
+        scheduled_end_at: toLocalDateTime(new Date(Date.now() + 2 * 60 * 60 * 1000)),
+    }));
+    const [isSchedulingClosure, setIsSchedulingClosure] = useState(false);
+    const [restoringClosureId, setRestoringClosureId] = useState(null);
+
+    const formatClosureDate = (value) => value
+        ? new Date(value).toLocaleString('en-PH', {
+            month: 'short', day: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: '2-digit',
+        })
+        : '—';
+
+    const scheduleClosure = (event) => {
+        event.preventDefault();
+        if (isSchedulingClosure || !closureForm.reason.trim()) return;
+
+        setIsSchedulingClosure(true);
+        router.post(
+            route('admin.facilities.scheduled-closures.store', facility.id),
+            closureForm,
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Scheduled closure saved. Affected booking owners have been notified.');
+                    setClosureForm((current) => ({ ...current, reason: '' }));
+                },
+                onError: (errors) => toast.error(Object.values(errors)[0] || 'Review the scheduled closure dates.'),
+                onFinish: () => setIsSchedulingClosure(false),
+            }
+        );
+    };
+
+    const restoreScheduledClosure = (period) => {
+        if (restoringClosureId !== null) return;
+
+        setRestoringClosureId(period.id);
+        router.patch(
+            route('admin.facilities.scheduled-closures.restore', {
+                facility: facility.id,
+                period: period.id,
+            }),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success('Scheduled closure cancelled. Affected booking owners have been notified.'),
+                onError: (errors) => toast.error(Object.values(errors)[0] || 'Unable to cancel the scheduled closure.'),
+                onFinish: () => setRestoringClosureId(null),
+            }
+        );
+    };
 
     const updateDay = (dayOfWeek, field, value) => {
         setHours((current) => current.map((item) => (
@@ -147,6 +205,118 @@ export default function FacilityBookingSettings({
                             </button>
                         </div>
                     </form>
+                </section>
+
+                <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                    <div className="flex items-start gap-3">
+                        <span className="rounded-xl bg-amber-50 p-2 text-amber-700">
+                            <CalendarClock className="h-5 w-5" />
+                        </span>
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-wide text-[#846A75]">Temporary closure</p>
+                            <h2 className="mt-1 text-lg font-bold text-slate-900">Schedule a facility closure</h2>
+                            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500">
+                                Block a specific future date and time without making the facility unavailable for the entire day. Only owners with overlapping pending or approved bookings will be notified.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form onSubmit={scheduleClosure} className="mt-5 grid gap-4 sm:grid-cols-2">
+                        <label className="block text-xs font-semibold text-slate-600">
+                            Closure starts
+                            <input
+                                type="datetime-local"
+                                required
+                                min={toLocalDateTime(new Date()).slice(0, 16)}
+                                value={closureForm.scheduled_start_at}
+                                onChange={(event) => setClosureForm((current) => ({
+                                    ...current,
+                                    scheduled_start_at: event.target.value,
+                                    scheduled_end_at: current.scheduled_end_at <= event.target.value
+                                        ? event.target.value
+                                        : current.scheduled_end_at,
+                                }))}
+                                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-normal text-slate-800"
+                            />
+                        </label>
+                        <label className="block text-xs font-semibold text-slate-600">
+                            Closure ends
+                            <input
+                                type="datetime-local"
+                                required
+                                min={closureForm.scheduled_start_at}
+                                value={closureForm.scheduled_end_at}
+                                onChange={(event) => setClosureForm((current) => ({
+                                    ...current,
+                                    scheduled_end_at: event.target.value,
+                                }))}
+                                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-normal text-slate-800"
+                            />
+                        </label>
+                        <label className="block sm:col-span-2">
+                            <span className="text-xs font-semibold text-slate-600">Reason for closure</span>
+                            <textarea
+                                rows={3}
+                                required
+                                maxLength={2000}
+                                value={closureForm.reason}
+                                onChange={(event) => setClosureForm((current) => ({
+                                    ...current,
+                                    reason: event.target.value,
+                                }))}
+                                placeholder="Example: Electrical maintenance from 1:00 PM to 3:00 PM."
+                                className="mt-1 block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-normal text-slate-800"
+                            />
+                        </label>
+                        <div className="flex justify-end sm:col-span-2">
+                            <button
+                                type="submit"
+                                disabled={isSchedulingClosure || !closureForm.reason.trim()}
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                <CalendarClock className="h-4 w-4" />
+                                {isSchedulingClosure ? 'Saving closure…' : 'Save scheduled closure'}
+                            </button>
+                        </div>
+                    </form>
+
+                    <div className="mt-6 border-t border-slate-100 pt-5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h3 className="text-sm font-bold text-slate-900">Upcoming scheduled closures</h3>
+                            <span className="text-xs text-slate-500">{scheduledClosures.length} scheduled</span>
+                        </div>
+
+                        {scheduledClosures.length ? (
+                            <div className="mt-3 space-y-2">
+                                {scheduledClosures.map((period) => (
+                                    <div key={period.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="min-w-0">
+                                            <p className="break-words text-sm font-semibold text-slate-800">{period.reason}</p>
+                                            <p className="mt-1 text-xs text-slate-500">
+                                                {formatClosureDate(period.scheduled_start_at)} – {formatClosureDate(period.scheduled_end_at)}
+                                            </p>
+                                            <p className="mt-1 text-[11px] text-slate-500">
+                                                {Array.isArray(period.affected_user_ids) ? period.affected_user_ids.length : 0} affected booking owner(s) notified
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => restoreScheduledClosure(period)}
+                                            disabled={restoringClosureId === period.id}
+                                            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:opacity-50"
+                                        >
+                                            <XCircle className="h-3.5 w-3.5" />
+                                            {restoringClosureId === period.id ? 'Cancelling…' : 'Cancel closure'}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="mt-3 rounded-xl border border-dashed border-slate-200 px-4 py-7 text-center text-sm text-slate-500">
+                                No upcoming scheduled closures for this facility.
+                            </p>
+                        )}
+                    </div>
                 </section>
             </div>
         </AuthenticatedLayout>
