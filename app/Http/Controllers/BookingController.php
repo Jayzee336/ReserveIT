@@ -363,6 +363,12 @@ class BookingController extends Controller
             ]);
         }
 
+        if (! $facility->is_available) {
+            throw ValidationException::withMessages([
+                'facility' => 'This facility is temporarily unavailable. Contact its administrator before changing this booking.',
+            ]);
+        }
+
         if (
             $facility->capacity !== null &&
             (int) $validated['attendees'] > (int) $facility->capacity
@@ -436,9 +442,15 @@ class BookingController extends Controller
             $needsManpower,
             $buffer
         ) {
-            Facility::whereKey($facility->getKey())
+            $lockedFacility = Facility::whereKey($facility->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            if (! $lockedFacility->is_available) {
+                throw ValidationException::withMessages([
+                    'facility' => 'This facility became unavailable before the booking could be updated.',
+                ]);
+            }
 
             $lockedBooking = Booking::whereKey($booking->getKey())
                 ->lockForUpdate()
@@ -608,6 +620,12 @@ class BookingController extends Controller
 
         $facility = Facility::findOrFail($validated['facility_id']);
 
+        if (! $facility->is_available) {
+            throw ValidationException::withMessages([
+                'facility_id' => 'This facility is temporarily unavailable and cannot accept new bookings.',
+            ]);
+        }
+
         $bookingDate = Carbon::createFromFormat('!Y-m-d', $validated['date']);
 
         $isConsentRequired =
@@ -717,9 +735,15 @@ class BookingController extends Controller
                 $isSuperAdmin,
                 $buffer
             ) {
-                Facility::whereKey($facility->getKey())
+                $lockedFacility = Facility::whereKey($facility->getKey())
                     ->lockForUpdate()
                     ->firstOrFail();
+
+                if (! $lockedFacility->is_available) {
+                    throw ValidationException::withMessages([
+                        'facility_id' => 'This facility became unavailable before the booking could be saved.',
+                    ]);
+                }
 
                 $conflict = $this->hasBookingConflict(
                     (string) $facility->getKey(),
