@@ -182,14 +182,14 @@ export default function Dashboard({ auth, facilities }) {
                             <Link
                                 key={facility.id}
                                 href={`/facility/${facility.id}`}
-                                className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                                className={`group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${facility.is_available === false ? 'grayscale opacity-60 hover:opacity-75' : ''}`}
                             >
                                 <div className="relative h-40 w-full shrink-0 overflow-hidden">
                                     <img
                                         src={facility.imageUrl}
                                         alt={facility.name}
                                         loading="lazy"
-                                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        className={`h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 ${facility.is_available === false ? 'grayscale' : ''}`}
                                     />
 
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -199,7 +199,11 @@ export default function Dashboard({ auth, facilities }) {
                                             {facility.type}
                                         </span>
 
-                                        {facility.requirement === 'CONSENT_REQUIRED' ? (
+                                        {facility.is_available === false ? (
+                                            <span className="inline-flex items-center rounded-full bg-slate-800/95 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+                                                Temporarily unavailable
+                                            </span>
+                                        ) : facility.requirement === 'CONSENT_REQUIRED' ? (
                                             <span className="inline-flex items-center rounded-full bg-amber-50/95 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800 shadow-sm backdrop-blur-sm">
                                                 <ShieldAlert className="mr-1 h-3 w-3 text-amber-600" />
                                                 Consent
@@ -228,6 +232,11 @@ export default function Dashboard({ auth, facilities }) {
                                     <p className="mb-3.5 line-clamp-2 flex-grow text-xs leading-relaxed text-gray-500">
                                         {facility.description}
                                     </p>
+                                    {facility.is_available === false && facility.unavailable_reason && (
+                                        <p className="mb-3 rounded-lg bg-slate-100 px-2.5 py-2 text-[11px] text-slate-600">
+                                            <strong>Unavailable:</strong> {facility.unavailable_reason}
+                                        </p>
+                                    )}
 
                                     <div className="mt-auto flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5 text-xs text-gray-500">
                                         <div className="flex min-w-0 items-center text-gray-600">
@@ -238,7 +247,7 @@ export default function Dashboard({ auth, facilities }) {
                                         </div>
 
                                         <span className="shrink-0 font-semibold text-[#6A535C] transition-transform group-hover:translate-x-0.5">
-                                            Book →
+                                            {facility.is_available === false ? 'View details' : 'Book →'}
                                         </span>
                                     </div>
                                 </div>
