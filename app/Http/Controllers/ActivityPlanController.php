@@ -337,6 +337,7 @@ class ActivityPlanController extends Controller
                         'user_id' => Auth::id(),
                         'date' => $session['date'],
                         'booking_date' => $session['date'],
+                        'end_date' => $session['date'],
                         'start_time' => $session['start_time'],
                         'end_time' => $session['end_time'],
                         'notes' => $plan->title . (!empty($session['notes']) ? "\n" . $session['notes'] : '')
