@@ -262,6 +262,7 @@ class BookingApprovalController extends Controller
         }
 
         $booking->refresh();
+        $booking->activityPlan?->syncStatus();
 
         // Notify after the booking transaction commits.
         if ($booking->user_id) {
