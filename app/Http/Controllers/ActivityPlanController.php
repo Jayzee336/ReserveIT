@@ -10,6 +10,7 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\ActivityPlanNotification;
 use App\Notifications\BookingOperationsNotification;
+use App\Support\ActivityPlanSchedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -78,7 +79,7 @@ class ActivityPlanController extends Controller
             'weekday_times' => ['required', 'array'],
             'weekday_times.*.start_time' => ['required', 'date_format:H:i'],
             'weekday_times.*.end_time' => ['required', 'date_format:H:i'],
-            'sessions' => ['required', 'array', 'min:1', 'max:100'],
+            'sessions' => ['required', 'array', 'min:1', 'max:366'],
             'sessions.*.date' => ['required', 'date_format:Y-m-d'],
             'sessions.*.start_time' => ['required', 'date_format:H:i'],
             'sessions.*.end_time' => ['required', 'date_format:H:i'],
@@ -112,6 +113,11 @@ class ActivityPlanController extends Controller
             || ($approvalScope === 'superadmin_only' && $isSuperAdmin);
 
         $days = array_values(array_unique(array_map('intval', $validated['recurrence_days'])));
+        $generatedDates = ActivityPlanSchedule::dates(
+            $validated['start_date'],
+            $validated['end_date'],
+            $days
+        );
         $sessions = collect($validated['sessions'])->values();
 
         $dateSpan = Carbon::createFromFormat('!Y-m-d', $validated['start_date'])
@@ -133,7 +139,7 @@ class ActivityPlanController extends Controller
                 ]);
             }
 
-            if (!in_array($sessionDate->dayOfWeek, $days, true)) {
+            if (!in_array($sessionDate->toDateString(), $generatedDates, true)) {
                 throw ValidationException::withMessages([
                     "sessions.{$index}.date" => 'Every session must fall on one of the selected weekdays.',
                 ]);
@@ -280,8 +286,7 @@ class ActivityPlanController extends Controller
                 ]);
 
                 $buffer = max(0, (int) ($settings->cleanup_buffer_minutes ?? 30));
-                $maxDays = max(0, (int) ($settings->max_advance_days ?? 30));
-
+// Semester plans may extend beyond the single-booking advance window.
                 foreach ($sessions as $index => $session) {
                     $sessionDate = Carbon::createFromFormat('!Y-m-d', $session['date']);
 
