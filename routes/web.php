@@ -398,6 +398,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
 
         $selectedDate = $validated['date'] ?? today()->toDateString();
+        $selectedMonth = Carbon::parse($selectedDate);
+        $monthStart = $selectedMonth->copy()->startOfMonth()->toDateString();
+        $monthEnd = $selectedMonth->copy()->endOfMonth()->toDateString();
         $user = Auth::user();
         $isFacilityAdmin = $user->role === 'facility_admin';
         $scheduleView = $isFacilityAdmin
@@ -417,10 +420,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         }
 
         $bookingQuery = Booking::query()
-            ->where(function ($query) use ($selectedDate) {
-                // Support both the current date column and legacy booking_date data.
-                $query->whereDate('booking_date', $selectedDate)
-                    ->orWhereDate('date', $selectedDate);
+            ->where(function ($query) use ($monthStart, $monthEnd) {
+                // Return all active bookings in the selected month for the calendar.
+                $query->whereBetween('booking_date', [$monthStart, $monthEnd])
+                    ->orWhereBetween('date', [$monthStart, $monthEnd]);
             })
             ->whereNotIn('status', ['declined', 'cancelled']);
 
@@ -457,7 +460,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'scheduleView' => $scheduleView,
             'canToggleScheduleView' => $isFacilityAdmin,
             'availabilityOnly' => $availabilityOnly,
-            'serverFacilities' => $facilityQuery->get(['id', 'name', 'location', 'type']),
+            'serverFacilities' => $facilityQuery->get([
+                'id',
+                'name',
+                'location',
+                'type',
+                'capacity',
+                'description',
+                'imageUrl',
+                'requirement',
+                'requiresWeekendConsent',
+                'allowTdevsManpower',
+                'booking_lead_time_days',
+            ]),
             'serverBookings' => $bookingQuery->get($bookingColumns),
         ]);
     })->name('schedule.index');
