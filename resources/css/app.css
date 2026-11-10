@@ -12,29 +12,31 @@
 
 :root {
     color-scheme: light;
-    --ri-ink: #111827;
-    --ri-ink-soft: #374151;
-    --ri-muted: #6b7280;
-    --ri-brand: #4f46e5;
-    --ri-brand-strong: #4338ca;
-    --ri-brand-soft: #eef2ff;
-    --ri-accent: #b88d59;
-    --ri-accent-soft: #f6efe5;
-    --ri-canvas: #fdf6f0;
-    --ri-surface: #ffffff;
-    --ri-surface-subtle: #fff8f2;
-    --ri-border: #e5e7eb;
-    --ri-border-strong: #d1d5db;
-    --ri-success: #287a59;
-    --ri-warning: #9b681d;
-    --ri-danger: #b44949;
-    --ri-shadow-sm: 0 2px 8px rgb(17 24 39 / 5%);
-    --ri-shadow-md: 0 12px 32px rgb(17 24 39 / 8%);
-    --ri-shadow-lg: 0 24px 64px rgb(17 24 39 / 12%);
+    --ri-ink: #211A22;
+    --ri-ink-soft: #453B47;
+    --ri-muted: #77707A;
+    --ri-brand: #6A535C;
+    --ri-brand-strong: #543F48;
+    --ri-brand-soft: #F7F0F3;
+    --ri-accent: #B88D59;
+    --ri-accent-soft: #F6EFE5;
+    --ri-highlight: #477D79;
+    --ri-highlight-soft: #EAF3F1;
+    --ri-canvas: #F7F5F3;
+    --ri-surface: #FFFFFF;
+    --ri-surface-subtle: #FCF9F7;
+    --ri-border: #E8E1E3;
+    --ri-border-strong: #D8CDD1;
+    --ri-success: #287A59;
+    --ri-warning: #9B681D;
+    --ri-danger: #B44949;
+    --ri-shadow-sm: 0 2px 8px rgb(42 31 40 / 6%);
+    --ri-shadow-md: 0 12px 32px rgb(42 31 40 / 9%);
+    --ri-shadow-lg: 0 24px 64px rgb(42 31 40 / 14%);
     --ri-radius-sm: 0.625rem;
     --ri-radius-md: 1rem;
     --ri-radius-lg: 1.5rem;
-    --ri-focus-ring: 0 0 0 3px rgb(79 70 229 / 22%);
+    --ri-focus-ring: 0 0 0 3px rgb(106 83 92 / 22%);
 }
 
 @layer base {
@@ -53,7 +55,7 @@
     }
 
     ::selection {
-        background: rgb(79 70 229 / 18%);
+        background: rgb(106 83 92 / 18%);
         color: var(--ri-ink);
     }
 
@@ -174,7 +176,7 @@
     .ri-btn-primary:hover:not(:disabled) {
         border-color: var(--ri-brand-strong);
         background: var(--ri-brand-strong);
-        box-shadow: 0 6px 16px rgb(67 56 202 / 20%);
+        box-shadow: 0 6px 16px rgb(84 63 72 / 22%);
         transform: translateY(-1px);
     }
 
@@ -200,7 +202,7 @@
 
 /* Keep long admin tables usable without adding a visible scrollbar. */
 * {
-    scrollbar-color: #d1d5db transparent;
+    scrollbar-color: #d8cbd1 transparent;
     scrollbar-width: thin;
 }
 
@@ -212,11 +214,11 @@
 *::-webkit-scrollbar-thumb {
     border: 2px solid transparent;
     border-radius: 999px;
-    background: #d1d5db;
+    background: #d8cbd1;
     background-clip: padding-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
+    background: #9a8790;
     background-clip: padding-box;
 }
