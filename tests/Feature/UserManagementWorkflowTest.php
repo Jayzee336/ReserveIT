@@ -34,8 +34,10 @@ class UserManagementWorkflowTest extends TestCase
 
         $response = $this->actingAs($superAdmin)->post(route('admin.users.store'), [
             'name' => 'New Facility Admin',
+            'username' => 'newfacilityadmin',
             'email' => 'new-facility-admin@example.com',
             'role' => 'facility_admin',
+            'password_mode' => 'generated',
             'assigned_facility_ids' => [$facility->id],
         ]);
 
@@ -64,6 +66,7 @@ class UserManagementWorkflowTest extends TestCase
             route('admin.users.update', $facilityAdmin),
             [
                 'name' => 'Updated Facility Admin',
+                'username' => $facilityAdmin->username,
                 'email' => $facilityAdmin->email,
             ]
         );
