@@ -61,8 +61,8 @@ class FacilityBookingSettingsTest extends TestCase
             'facility_id' => $facility->id,
             'day_of_week' => 1,
             'is_closed' => false,
-            'opens_at' => '07:30:00',
-            'closes_at' => '19:00:00',
+            'opens_at' => '07:30',
+            'closes_at' => '19:00',
             'updated_by' => $admin->id,
         ]);
         $this->assertDatabaseCount('facility_operating_hour_histories', 7);
