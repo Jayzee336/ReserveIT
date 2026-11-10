@@ -302,8 +302,10 @@ export function CalendarView({
                                                     title={booking.can_view_details ? `${facility?.name || 'Facility'} · ${formatTime(booking.start_time)}–${formatTime(booking.end_time)} · ${booking.status}` : `Reserved · ${formatTime(booking.start_time)}–${formatTime(booking.end_time)}`}
                                                     className={`block truncate rounded px-1 py-0.5 text-[8px] font-semibold leading-3 sm:px-1.5 sm:text-[10px] sm:leading-4 ${approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}
                                                 >
-                                                    <span className="hidden sm:inline">{booking.can_view_details ? (facility?.name || 'Facility') : 'Reserved'} · </span>
-                                                    {formatTime(booking.start_time)}
+                                                    <span className="block truncate">
+                                                        {booking.can_view_details ? (facility?.name || 'Facility') : 'Reserved'}
+                                                        <span className="font-medium opacity-80"> · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}</span>
+                                                    </span>
                                                 </span>
                                             );
                                         })}
