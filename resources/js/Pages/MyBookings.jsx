@@ -948,7 +948,7 @@ export default function MyBookings({
                                                 </span>
                                             </div>
 
-                                            <div className="grid grid-cols-1 gap-2 rounded-lg border border-gray-100 bg-gray-50 p-3 sm:grid-cols-2">
+                                            <div className="grid grid-cols-1 gap-2 rounded-lg border border-gray-100 bg-gray-50 p-3 sm:grid-cols-2 lg:grid-cols-4">
                                                 <div className="flex min-w-0 items-start gap-2">
                                                     <Calendar className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#846A75]" />
                                                     <span className="text-sm text-gray-800">{formatDate(booking.date)}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date).slice(0, 10) ? ' – ' + formatDate(booking.end_date) : ''}</span>
