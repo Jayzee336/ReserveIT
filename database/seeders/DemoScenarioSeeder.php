@@ -167,7 +167,7 @@ class DemoScenarioSeeder extends Seeder
 
         $assignments = [
             'facility' => ['itdif', 'itrc'],
-            'facility2' => ['avr', 'view_deck'],
+            'facility2' => ['avr', 'avr2', 'view_deck'],
             'facility3' => ['iot', 'sky_gym'],
             'facility4' => ['field', 'lobby', 'ndhrm_hall', 'f3'],
         ];
