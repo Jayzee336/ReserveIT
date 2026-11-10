@@ -431,7 +431,7 @@ class FacilityAvailabilityController extends Controller
                         $facilityId
                     ));
                 });
-        } catch (\\Throwable $exception) {
+        } catch (\Throwable $exception) {
             Log::warning('Scheduled facility closure notification delivery failed.', [
                 'facility_id' => $facilityId,
                 'error' => $exception->getMessage(),
