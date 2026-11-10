@@ -162,7 +162,7 @@ export default function BookingModal({
         requireConsentGlobally || facilityConsentRequired;
 
     const today = useMemo(() => getLocalDateString(new Date()), []);
-    const bookingLeadTimeDays = Math.max(0, Number(facility?.booking_lead_time_days ?? 3));
+    const bookingLeadTimeDays = Math.max(0, Number(facility?.booking_lead_time_days ?? 0));
     const earliestBookingDate = useMemo(
         () => addDaysToLocalDate(bookingLeadTimeDays),
         [bookingLeadTimeDays]
