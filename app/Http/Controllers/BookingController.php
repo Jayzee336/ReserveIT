@@ -67,12 +67,71 @@ class BookingController extends Controller
             ]);
         }
 
+        $this->validateTimeIntervals($startTime, $endTime);
+    }
+
+    private function validateTimeIntervals(string $startTime, string $endTime): void
+    {
         foreach (['start_time' => $startTime, 'end_time' => $endTime] as $field => $time) {
             if (($this->timeToMinutes($time) % 15) !== 0) {
                 throw ValidationException::withMessages([
                     $field => 'Please select a valid 15-minute time interval.',
                 ]);
             }
+        }
+    }
+
+    /**
+     * Prefer a facility's day-specific schedule. Fall back to the existing
+     * Super Admin global hours until day-specific hours have been configured.
+     */
+    private function validateFacilityOperatingHours(
+        string $date,
+        string $startTime,
+        string $endTime,
+        Facility $facility,
+        $settings
+    ): void {
+        $this->validateTimeIntervals($startTime, $endTime);
+
+        $bookingDate = Carbon::createFromFormat('!Y-m-d', $date);
+        $schedule = $facility->operatingHours()
+            ->where('day_of_week', $bookingDate->dayOfWeek)
+            ->first();
+
+        if (!$schedule) {
+            $this->validateOperatingHours($startTime, $endTime, $settings);
+
+            return;
+        }
+
+        if ($schedule->is_closed) {
+            throw ValidationException::withMessages([
+                'date' => 'This facility is closed on the selected day.',
+            ]);
+        }
+
+        $openingTime = substr((string) $schedule->opens_at, 0, 5);
+        $closingTime = substr((string) $schedule->closes_at, 0, 5);
+        $openingMinutes = $this->timeToMinutes($openingTime);
+        $closingMinutes = $closingTime === '00:00'
+            ? 1440
+            : $this->timeToMinutes($closingTime);
+        $startMinutes = $this->timeToMinutes($startTime);
+        $endMinutes = $endTime === '00:00'
+            ? 1440
+            : $this->timeToMinutes($endTime);
+
+        if ($startMinutes < $openingMinutes || $startMinutes >= $closingMinutes) {
+            throw ValidationException::withMessages([
+                'start_time' => "The selected start time is outside {$facility->name}'s operating hours for this day.",
+            ]);
+        }
+
+        if ($endMinutes > $closingMinutes || $endMinutes <= $startMinutes) {
+            throw ValidationException::withMessages([
+                'end_time' => "The booking must end within {$facility->name}'s operating hours for this day.",
+            ]);
         }
     }
 
@@ -424,9 +483,11 @@ class BookingController extends Controller
             $settings
         );
 
-        $this->validateOperatingHours(
+        $this->validateFacilityOperatingHours(
+            $validated['date'],
             $validated['start_time'],
             $validated['end_time'],
+            $facility,
             $settings
         );
 
@@ -440,7 +501,8 @@ class BookingController extends Controller
             $facility,
             $validated,
             $needsManpower,
-            $buffer
+            $buffer,
+            $settings
         ) {
             $lockedFacility = Facility::whereKey($facility->getKey())
                 ->lockForUpdate()
@@ -451,6 +513,14 @@ class BookingController extends Controller
                     'facility' => 'This facility became unavailable before the booking could be updated.',
                 ]);
             }
+
+            $this->validateFacilityOperatingHours(
+                $validated['date'],
+                $validated['start_time'],
+                $validated['end_time'],
+                $lockedFacility,
+                $settings
+            );
 
             $lockedBooking = Booking::whereKey($booking->getKey())
                 ->lockForUpdate()
@@ -733,7 +803,8 @@ class BookingController extends Controller
                 $originalName,
                 $autoApprove,
                 $isSuperAdmin,
-                $buffer
+                $buffer,
+                $settings
             ) {
                 $lockedFacility = Facility::whereKey($facility->getKey())
                     ->lockForUpdate()
@@ -744,6 +815,14 @@ class BookingController extends Controller
                         'facility_id' => 'This facility became unavailable before the booking could be saved.',
                     ]);
                 }
+
+                $this->validateFacilityOperatingHours(
+                    $validated['date'],
+                    $validated['start_time'],
+                    $validated['end_time'],
+                    $lockedFacility,
+                    $settings
+                );
 
                 $conflict = $this->hasBookingConflict(
                     (string) $facility->getKey(),
