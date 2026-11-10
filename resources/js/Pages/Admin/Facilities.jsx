@@ -1149,14 +1149,14 @@ export default function Facilities({
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 2xl:grid-cols-3">
                         {filteredFacilities.map((facility) => (
                             <div
                                 key={facility.id}
-                                className="ri-facility-card bg-white rounded-2xl border overflow-hidden flex flex-col group relative"
+                                className="ri-facility-card group relative flex flex-col overflow-hidden rounded-2xl border border-[#E8E1E3] bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#D8CDD1] hover:shadow-lg"
                             >
                                 <div
-                                    className="relative h-48 w-full overflow-hidden bg-gray-100 cursor-pointer"
+                                    className="relative h-56 w-full overflow-hidden bg-gray-100 cursor-pointer"
                                     onClick={() => setViewingFacility(facility)}
                                 >
                                     <FacilityImage
@@ -1219,10 +1219,10 @@ export default function Facilities({
                                     )}
                                 </div>
 
-                                <div className="p-4 flex flex-col flex-grow">
+                                <div className="flex flex-grow flex-col p-6">
                                     <h3
                                         onClick={() => setViewingFacility(facility)}
-                                        className="text-base font-bold text-gray-900 mb-0.5 group-hover:text-[#6A535C] transition-colors line-clamp-1 cursor-pointer"
+                                        className="mb-1 min-h-12 cursor-pointer line-clamp-2 text-lg font-bold text-gray-900 transition-colors group-hover:text-[#6A535C]"
                                     >
                                         {facility.name}
                                     </h3>
@@ -1232,7 +1232,7 @@ export default function Facilities({
                                         {facility.location}
                                     </div>
 
-                                    <p className="text-xs text-gray-500 line-clamp-2 mb-3.5 flex-grow leading-relaxed">
+                                    <p className="mb-4 min-h-[3.75rem] line-clamp-3 flex-grow text-sm leading-relaxed text-gray-500">
                                         {facility.description}
                                     </p>
 

@@ -177,14 +177,14 @@ export default function Dashboard({ auth, facilities }) {
                     </div>
 
                     {/* Responsive facility grid */}
-                    <div className="grid w-full min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 2xl:grid-cols-3">
                         {filteredFacilities.map((facility) => (
                             <Link
                                 key={facility.id}
                                 href={`/facility/${facility.id}`}
-                                className={`ri-facility-card group flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-white ${facility.is_available === false ? 'grayscale opacity-60 hover:opacity-75' : ''}`}
+                                className={`ri-facility-card group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#E8E1E3] bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#D8CDD1] hover:shadow-lg ${facility.is_available === false ? 'grayscale opacity-60 hover:opacity-75' : ''}`}
                             >
-                                <div className="relative h-48 w-full shrink-0 overflow-hidden bg-slate-100">
+                                <div className="relative h-56 w-full shrink-0 overflow-hidden bg-slate-100">
                                     <img
                                         src={facility.imageUrl}
                                         alt={facility.name}
@@ -217,8 +217,8 @@ export default function Dashboard({ auth, facilities }) {
                                     </div>
                                 </div>
 
-                                <div className="flex flex-grow flex-col p-5">
-                                    <h3 className="mb-0.5 line-clamp-1 text-base font-bold text-gray-900 transition-colors group-hover:text-[#6A535C]">
+                                <div className="flex flex-grow flex-col p-6">
+                                    <h3 className="mb-1 line-clamp-2 min-h-12 text-lg font-bold text-gray-900 transition-colors group-hover:text-[#6A535C]">
                                         {facility.name}
                                     </h3>
 
@@ -229,7 +229,7 @@ export default function Dashboard({ auth, facilities }) {
                                         </span>
                                     </div>
 
-                                    <p className="mb-3.5 line-clamp-2 flex-grow text-xs leading-relaxed text-gray-500">
+                                    <p className="mb-4 line-clamp-3 min-h-[3.75rem] flex-grow text-sm leading-relaxed text-gray-500">
                                         {facility.description}
                                     </p>
                                     {facility.is_available === false && facility.unavailable_reason && (
