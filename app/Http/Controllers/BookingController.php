@@ -220,25 +220,30 @@ class BookingController extends Controller
      */
     private function hasBookingConflict(
         string $facilityId,
-        string $date,
+        string $startDate,
+        string $endDate,
         string $startTime,
         string $endTime,
         int $bufferMinutes,
         ?string $excludeBookingId = null
     ): bool {
+        // A booking reserves the same daily time interval on every date in
+        // its inclusive date range. Legacy records without end_date occupy
+        // their original single date.
         $query = Booking::query()
             ->where('facility_id', $facilityId)
-            ->where(function ($query) use ($date) {
-                $query->whereDate('date', $date)
-                    ->orWhereDate('booking_date', $date);
-            })
-            ->whereIn('status', ['pending', 'approved']);
+            ->whereIn('status', ['pending', 'approved'])
+            ->whereRaw('COALESCE(date, booking_date) <= ?', [$endDate])
+            ->whereRaw('COALESCE(end_date, date, booking_date) >= ?', [$startDate]);
 
         if ($excludeBookingId !== null) {
             $query->where('id', '!=', $excludeBookingId);
         }
 
         $existingBookings = $query->get([
+            'date',
+            'booking_date',
+            'end_date',
             'start_time',
             'end_time',
         ]);
@@ -268,6 +273,46 @@ class BookingController extends Controller
             ) {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    private function validateFacilityOperatingHoursForRange(
+        string $startDate,
+        string $endDate,
+        string $startTime,
+        string $endTime,
+        Facility $facility,
+        $settings
+    ): void {
+        $cursor = Carbon::createFromFormat('!Y-m-d', $startDate);
+        $lastDate = Carbon::createFromFormat('!Y-m-d', $endDate);
+
+        while ($cursor->lte($lastDate)) {
+            $this->validateFacilityOperatingHours(
+                $cursor->toDateString(),
+                $startTime,
+                $endTime,
+                $facility,
+                $settings
+            );
+
+            $cursor->addDay();
+        }
+    }
+
+    private function rangeIncludesWeekend(string $startDate, string $endDate): bool
+    {
+        $cursor = Carbon::createFromFormat('!Y-m-d', $startDate);
+        $lastDate = Carbon::createFromFormat('!Y-m-d', $endDate);
+
+        while ($cursor->lte($lastDate)) {
+            if ($cursor->isWeekend()) {
+                return true;
+            }
+
+            $cursor->addDay();
         }
 
         return false;
