@@ -193,8 +193,14 @@ class FacilityManagementTest extends TestCase
     public function test_facility_admin_managed_facilities_uses_the_shared_facility_management_screen_and_only_assigned_facilities(): void
     {
         $admin = User::factory()->create(['role' => 'facility_admin']);
-        $assigned = $this->createFacility('managed-assigned', 'Assigned Facility');
-        $unassigned = $this->createFacility('managed-unassigned', 'Unassigned Facility');
+        $assigned = Facility::create([
+            'id' => 'managed-assigned',
+            ...$this->facilityData(['name' => 'Assigned Facility']),
+        ]);
+        Facility::create([
+            'id' => 'managed-unassigned',
+            ...$this->facilityData(['name' => 'Unassigned Facility']),
+        ]);
         $assigned->facilityAdmins()->attach($admin);
 
         $this->actingAs($admin)
