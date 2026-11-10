@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Booking;
 use App\Models\Facility;
 use App\Models\FacilityUnavailabilityPeriod;
 use Carbon\Carbon;
@@ -26,45 +27,22 @@ final class FacilityScheduleAvailability
             $lastEnd->addDay();
         }
 
-        $periods = FacilityUnavailabilityPeriod::query()
+        return FacilityUnavailabilityPeriod::query()
             ->where('facility_id', $facility->getKey())
             ->whereNull('ended_at')
             ->whereNotNull('scheduled_start_at')
             ->whereNotNull('scheduled_end_at')
             ->where('scheduled_start_at', '<', $lastEnd)
             ->where('scheduled_end_at', '>', $firstStart)
-            ->get();
-
-        return $periods->filter(function (FacilityUnavailabilityPeriod $period) use (
-            $startDate,
-            $endDate,
-            $startTime,
-            $endTime
-        ) {
-            $cursor = Carbon::parse($startDate)->startOfDay();
-            $lastDate = Carbon::parse($endDate)->startOfDay();
-
-            while ($cursor->lte($lastDate)) {
-                $date = $cursor->toDateString();
-                $bookingStart = Carbon::parse($date . ' ' . $startTime);
-                $bookingEnd = Carbon::parse($date . ' ' . $endTime);
-
-                if (substr($endTime, 0, 5) === '00:00') {
-                    $bookingEnd->addDay();
-                }
-
-                if (
-                    $bookingStart->lt($period->scheduled_end_at)
-                    && $bookingEnd->gt($period->scheduled_start_at)
-                ) {
-                    return true;
-                }
-
-                $cursor->addDay();
-            }
-
-            return false;
-        })->values();
+            ->get()
+            ->filter(fn (FacilityUnavailabilityPeriod $period) => self::periodOverlapsBooking(
+                $period,
+                $startDate,
+                $endDate,
+                $startTime,
+                $endTime
+            ))
+            ->values();
     }
 
     public static function firstOverlappingClosure(
@@ -81,5 +59,57 @@ final class FacilityScheduleAvailability
             $startTime,
             $endTime
         )->first();
+    }
+
+    public static function periodOverlapsBooking(
+        FacilityUnavailabilityPeriod $period,
+        string $startDate,
+        string $endDate,
+        string $startTime,
+        string $endTime
+    ): bool {
+        $cursor = Carbon::parse($startDate)->startOfDay();
+        $lastDate = Carbon::parse($endDate)->startOfDay();
+
+        while ($cursor->lte($lastDate)) {
+            $date = $cursor->toDateString();
+            $bookingStart = Carbon::parse($date . ' ' . $startTime);
+            $bookingEnd = Carbon::parse($date . ' ' . $endTime);
+
+            if (substr($endTime, 0, 5) === '00:00') {
+                $bookingEnd->addDay();
+            }
+
+            if (
+                $bookingStart->lt($period->scheduled_end_at)
+                && $bookingEnd->gt($period->scheduled_start_at)
+            ) {
+                return true;
+            }
+
+            $cursor->addDay();
+        }
+
+        return false;
+    }
+
+    public static function bookingOverlapsPeriod(
+        FacilityUnavailabilityPeriod $period,
+        Booking $booking
+    ): bool {
+        $startDate = $booking->date ?? $booking->booking_date;
+        $endDate = $booking->end_date ?? $startDate;
+
+        if (! $startDate || ! $endDate || ! $booking->start_time || ! $booking->end_time) {
+            return false;
+        }
+
+        return self::periodOverlapsBooking(
+            $period,
+            Carbon::parse($startDate)->toDateString(),
+            Carbon::parse($endDate)->toDateString(),
+            substr((string) $booking->start_time, 0, 5),
+            substr((string) $booking->end_time, 0, 5)
+        );
     }
 }
