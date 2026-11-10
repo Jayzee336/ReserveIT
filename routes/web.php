@@ -478,6 +478,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'requiresWeekendConsent',
                 'allowTdevsManpower',
                 'booking_lead_time_days',
+                'is_available',
+                'unavailable_reason',
             ]),
             'serverBookings' => $bookingQuery->get($bookingColumns),
         ]);
