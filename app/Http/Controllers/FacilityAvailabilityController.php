@@ -7,6 +7,8 @@ use App\Models\Facility;
 use App\Models\FacilityUnavailabilityPeriod;
 use App\Models\User;
 use App\Notifications\FacilityAvailabilityNotification;
+use App\Support\FacilityScheduleAvailability;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -44,6 +46,194 @@ class FacilityAvailabilityController extends Controller
         }
 
         return $this->markAvailable($facility, $user);
+    }
+
+    public function schedule(Request $request, Facility $facility)
+    {
+        $user = $request->user();
+        $this->authorizeFacilityAccess($user, $facility);
+
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'min:3', 'max:2000'],
+            'scheduled_start_at' => ['required', 'date', 'after:now'],
+            'scheduled_end_at' => ['required', 'date', 'after:scheduled_start_at'],
+        ]);
+
+        $scheduledStart = Carbon::parse($validated['scheduled_start_at']);
+        $scheduledEnd = Carbon::parse($validated['scheduled_end_at']);
+
+        $result = DB::transaction(function () use (
+            $facility,
+            $user,
+            $validated,
+            $scheduledStart,
+            $scheduledEnd
+        ) {
+            $lockedFacility = Facility::query()
+                ->whereKey($facility->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (! $lockedFacility->is_available) {
+                throw ValidationException::withMessages([
+                    'scheduled_start_at' => 'This facility is already unavailable indefinitely. Restore it before adding a scheduled closure.',
+                ]);
+            }
+
+            $overlappingPeriod = FacilityUnavailabilityPeriod::query()
+                ->where('facility_id', $lockedFacility->getKey())
+                ->whereNull('ended_at')
+                ->whereNotNull('scheduled_start_at')
+                ->where('scheduled_start_at', '<', $scheduledEnd)
+                ->where('scheduled_end_at', '>', $scheduledStart)
+                ->exists();
+
+            if ($overlappingPeriod) {
+                throw ValidationException::withMessages([
+                    'scheduled_start_at' => 'This date/time overlaps another scheduled closure for the facility.',
+                ]);
+            }
+
+            $period = FacilityUnavailabilityPeriod::create([
+                'facility_id' => $lockedFacility->getKey(),
+                'reason' => trim($validated['reason']),
+                'started_at' => now(),
+                'started_by' => $user->id,
+                'scheduled_start_at' => $scheduledStart,
+                'scheduled_end_at' => $scheduledEnd,
+                'affected_user_ids' => [],
+            ]);
+
+            $candidateBookings = Booking::query()
+                ->where('facility_id', $lockedFacility->getKey())
+                ->whereNotNull('user_id')
+                ->whereIn('status', ['pending', 'approved'])
+                ->whereRaw('COALESCE(date, booking_date) <= ?', [$scheduledEnd->toDateString()])
+                ->whereRaw('COALESCE(end_date, date, booking_date) >= ?', [$scheduledStart->toDateString()])
+                ->get([
+                    'id',
+                    'user_id',
+                    'date',
+                    'booking_date',
+                    'end_date',
+                    'start_time',
+                    'end_time',
+                ]);
+
+            $affectedUserIds = $candidateBookings
+                ->filter(fn (Booking $booking) => FacilityScheduleAvailability::bookingOverlapsPeriod($period, $booking))
+                ->pluck('user_id')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            $period->update(['affected_user_ids' => $affectedUserIds]);
+
+            return [
+                'period' => $period,
+                'facility_name' => $lockedFacility->name,
+                'affected_user_ids' => $affectedUserIds,
+            ];
+        });
+
+        $this->notifyUsers(
+            $result['affected_user_ids'],
+            'Scheduled facility closure',
+            sprintf(
+                '%s has a scheduled closure from %s to %s. Reason: %s. Contact the facility administrator about your affected reservation.',
+                $result['facility_name'],
+                $scheduledStart->format('M d, Y g:i A'),
+                $scheduledEnd->format('M d, Y g:i A'),
+                $result['period']->reason
+            ),
+            (string) $facility->getKey()
+        );
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Scheduled closure saved. Only owners with overlapping pending or approved bookings have been notified.',
+        ]);
+    }
+
+    public function restoreScheduled(
+        Request $request,
+        Facility $facility,
+        FacilityUnavailabilityPeriod $period
+    ) {
+        $user = $request->user();
+        $this->authorizeFacilityAccess($user, $facility);
+
+        abort_unless(
+            (string) $period->facility_id === (string) $facility->getKey()
+            && $period->scheduled_start_at !== null
+            && $period->scheduled_end_at !== null,
+            404
+        );
+
+        $result = DB::transaction(function () use ($facility, $period, $user) {
+            Facility::query()
+                ->whereKey($facility->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $lockedPeriod = FacilityUnavailabilityPeriod::query()
+                ->whereKey($period->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedPeriod->ended_at !== null) {
+                return null;
+            }
+
+            $lockedPeriod->update([
+                'ended_at' => now(),
+                'restored_by' => $user->id,
+            ]);
+
+            return [
+                'facility_name' => $facility->name,
+                'affected_user_ids' => $lockedPeriod->affected_user_ids ?? [],
+            ];
+        });
+
+        if ($result === null) {
+            return back()->with('toast', [
+                'type' => 'info',
+                'message' => 'This scheduled closure has already been cancelled or restored.',
+            ]);
+        }
+
+        $this->notifyUsers(
+            $result['affected_user_ids'],
+            'Scheduled facility closure cancelled',
+            sprintf(
+                'The scheduled closure for %s has been cancelled or restored early. Check the current facility schedule before adjusting your reservation.',
+                $result['facility_name']
+            ),
+            (string) $facility->getKey()
+        );
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Scheduled closure cancelled. Affected booking owners have been notified.',
+        ]);
+    }
+
+    private function authorizeFacilityAccess(?User $user, Facility $facility): void
+    {
+        abort_unless($user !== null, 401);
+
+        if ($user->role === 'super_admin') {
+            return;
+        }
+
+        abort_unless($user->role === 'facility_admin', 403);
+        abort_unless(
+            $facility->facilityAdmins()->where('users.id', $user->getKey())->exists(),
+            403,
+            'You can only manage availability for facilities assigned to you.'
+        );
     }
 
     private function markUnavailable(Facility $facility, User $user, string $reason)
