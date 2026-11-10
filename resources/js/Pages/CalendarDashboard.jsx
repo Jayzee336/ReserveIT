@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { CalendarDays, Clock3, RefreshCw } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import { CalendarView } from './CalendarView';
 
 export default function CalendarDashboard({
@@ -66,58 +66,21 @@ export default function CalendarDashboard({
 
             <div className="min-w-0 w-full py-5 sm:py-7">
                 <div className="mx-auto w-full max-w-[1600px] min-w-0 px-3 sm:px-5 lg:px-8">
-                    {/* Page heading and date controls */}
-                    <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="min-w-0">
-                            <div className="mb-1 flex items-center gap-2">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F7F0F3]">
-                                    <CalendarDays className="h-5 w-5 text-[#6A535C]" />
-                                </div>
-
-                                <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                                    Facility Schedule
-                                </h1>
+                    {/* Page heading */}
+                    <div className="mb-5">
+                        <div className="mb-1 flex items-center gap-2">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F7F0F3]">
+                                <CalendarDays className="h-5 w-5 text-[#6A535C]" />
                             </div>
-
-                            <p className="ml-12 text-sm text-slate-500">
-                                {availabilityOnly
-                                    ? 'Compare availability across every facility to avoid booking conflicts.'
-                                    : 'Review reservations and availability for facilities assigned to you.'}
-                            </p>
+                            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                                Facility Schedule
+                            </h1>
                         </div>
-
-                        <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:min-w-[270px]">
-                            <label
-                                htmlFor="schedule-date"
-                                className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
-                            >
-                                <CalendarDays className="h-3.5 w-3.5 text-[#846A75]" />
-                                Schedule date
-                            </label>
-
-                            <input
-                                id="schedule-date"
-                                type="date"
-                                value={selectedDate}
-                                onChange={handleDateChange}
-                                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition focus:border-[#A98C97] focus:bg-white focus:ring-2 focus:ring-[#EFE4E9]"
-                            />
-
-                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                <Clock3 className="h-3.5 w-3.5 shrink-0" />
-                                <span>{formattedDate}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="mb-5 flex justify-end">
-                        <Link
-                            href={route('activity-plans.index')}
-                            className="inline-flex items-center gap-2 rounded-xl border border-[#D9C8CF] bg-white px-4 py-2.5 text-sm font-semibold text-[#543F48] shadow-sm transition hover:bg-[#F7F0F3]"
-                        >
-                            <CalendarDays className="h-4 w-4" />
-                            Recurring activity plans
-                        </Link>
+                        <p className="ml-12 text-sm text-slate-500">
+                            {availabilityOnly
+                                ? 'Compare availability across every facility to avoid booking conflicts.'
+                                : 'Review reservations and availability for facilities assigned to you.'}
+                        </p>
                     </div>
 
                     {canToggleScheduleView && (
@@ -184,33 +147,6 @@ export default function CalendarDashboard({
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/80 px-4 py-3 sm:px-5">
-                            <p className="text-xs text-slate-500">
-                                Schedule information is based on the selected
-                                date.
-                            </p>
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    if (selectedDate) {
-                                        router.get(
-                                            route('schedule.index'),
-                                            { date: selectedDate, ...(canToggleScheduleView ? { view: scheduleView } : {}) },
-                                            {
-                                                preserveState: false,
-                                                preserveScroll: true,
-                                            }
-                                        );
-                                    }
-                                }}
-                                disabled={!selectedDate}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-[#E8D8D1] hover:bg-[#F7F0F3] hover:text-[#543F48] disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <RefreshCw className="h-3.5 w-3.5" />
-                                Refresh schedule
-                            </button>
-                        </div>
                     </section>
                 </div>
             </div>

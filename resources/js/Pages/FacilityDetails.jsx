@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import {
     Users,
     MapPin,
@@ -226,6 +226,17 @@ export default function FacilityDetails({
                                             <CalendarIcon className="h-4 w-4" />
                                             {isFacilityAvailable ? 'Book this facility' : 'Temporarily unavailable'}
                                         </button>
+                                        <Link
+                                            href={route('activity-plans.index', { facility_id: facility.id })}
+                                            aria-disabled={!isFacilityAvailable}
+                                            onClick={(event) => {
+                                                if (!isFacilityAvailable) event.preventDefault();
+                                            }}
+                                            className={`mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#D9C8CF] bg-white px-4 py-2.5 text-sm font-semibold text-[#543F48] transition hover:bg-[#EFE4E9] ${!isFacilityAvailable ? 'pointer-events-none opacity-50' : ''}`}
+                                        >
+                                            <CalendarIcon className="h-4 w-4" />
+                                            Create recurring activity plan
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

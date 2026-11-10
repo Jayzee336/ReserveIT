@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react';
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
 import {
     CalendarDays,
     ChevronLeft,
     ChevronRight,
     Clock3,
     Plus,
-    RefreshCw,
 } from 'lucide-react';
 import BookingModal from '@/Components/BookingModal';
 
@@ -57,6 +56,7 @@ export function CalendarView({
     scheduleView = 'all',
 }) {
     const [create, setCreate] = useState(null);
+    const [facilityPickerOpen, setFacilityPickerOpen] = useState(false);
     const selected = parseLocalDate(selectedDate);
     const monthStart = new Date(selected.getFullYear(), selected.getMonth(), 1, 12);
     const monthEnd = new Date(selected.getFullYear(), selected.getMonth() + 1, 0, 12);
@@ -223,13 +223,14 @@ export function CalendarView({
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => selectDate(dateKey(new Date()))}
-                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]"
-                            >
-                                Today
-                            </button>
+                            <label className="sr-only" htmlFor="calendar-panel-date">Choose schedule date</label>
+                            <input
+                                id="calendar-panel-date"
+                                type="date"
+                                value={selectedDate}
+                                onChange={(event) => selectDate(event.target.value)}
+                                className="w-[145px] rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-medium text-slate-700 focus:border-[#A98C97] focus:outline-none focus:ring-2 focus:ring-[#EFE4E9]"
+                            />
                             <button
                                 type="button"
                                 onClick={() => changeMonth(1)}
@@ -330,14 +331,21 @@ export function CalendarView({
                             <h3 className="mt-1 break-words text-base font-bold text-slate-900">{formatLongDate(selectedDate)}</h3>
                             <p className="mt-1 text-xs text-slate-500">{dailyBookings.length} active {dailyBookings.length === 1 ? 'booking' : 'bookings'}</p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => router.reload({ only: ['serverFacilities', 'serverBookings'] })}
-                            title="Refresh calendar"
-                            className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]"
-                        >
-                            <RefreshCw className="h-4 w-4" />
-                        </button>
+                        <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                            <button
+                                type="button"
+                                onClick={() => setFacilityPickerOpen(true)}
+                                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#6A535C] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#543F48]"
+                            >
+                                <Plus className="h-3.5 w-3.5" /> Book a Facility
+                            </button>
+                            <Link
+                                href={route('activity-plans.index', { date: selectedDate })}
+                                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#D9C8CF] bg-white px-3 py-2 text-xs font-semibold text-[#543F48] transition hover:bg-[#F7F0F3]"
+                            >
+                                <CalendarDays className="h-3.5 w-3.5" /> Recurring Activity Plans
+                            </Link>
+                        </div>
                     </div>
 
                     <div className="max-h-[520px] space-y-3 overflow-y-auto p-3 sm:p-4">
@@ -363,7 +371,7 @@ export function CalendarView({
                             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
                                 <CalendarDays className="mx-auto h-8 w-8 text-slate-300" />
                                 <p className="mt-2 text-sm font-semibold text-slate-700">No bookings for this date</p>
-                                <p className="mt-1 text-xs text-slate-500">Choose a facility below to start a reservation.</p>
+                                <p className="mt-1 text-xs text-slate-500">Use the booking actions below to reserve a facility.</p>
                             </div>
                         ) : (
                             visibleDailyBookings.map((booking) => (
@@ -423,6 +431,35 @@ export function CalendarView({
                     </div>
                 </aside>
             </div>
+
+            {facilityPickerOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <button type="button" aria-label="Close facility selection" className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setFacilityPickerOpen(false)} />
+                    <div role="dialog" aria-modal="true" aria-labelledby="calendar-facility-picker-title" className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-wide text-[#846A75]">New reservation</p>
+                                <h2 id="calendar-facility-picker-title" className="mt-1 text-lg font-bold text-slate-900">Choose a facility</h2>
+                                <p className="mt-1 text-xs text-slate-500">Booking date: {formatLongDate(selectedDate)}</p>
+                            </div>
+                            <button type="button" aria-label="Close" onClick={() => setFacilityPickerOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">×</button>
+                        </div>
+                        <div className="max-h-[60vh] space-y-2 overflow-y-auto p-4">
+                            {serverFacilities.map((facility) => (
+                                <button key={facility.id} type="button" disabled={facility.is_available === false} onClick={() => { setCreate({ facility }); setFacilityPickerOpen(false); }} className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-[#A98C97] hover:bg-[#F7F0F3] disabled:cursor-not-allowed disabled:opacity-50">
+                                    <span className="min-w-0">
+                                        <span className="block truncate text-sm font-semibold text-slate-800">{facility.name}</span>
+                                        <span className="block truncate text-xs text-slate-500">{facility.location || 'Location not specified'}</span>
+                                        {facility.is_available === false && <span className="mt-1 block text-xs text-rose-600">{facility.unavailable_reason || 'Temporarily unavailable'}</span>}
+                                    </span>
+                                    <span className="shrink-0 text-xs font-semibold text-[#6A535C]">{facility.is_available === false ? 'Unavailable' : 'Select'}</span>
+                                </button>
+                            ))}
+                            {serverFacilities.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No facilities are available to book.</p>}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {create && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
