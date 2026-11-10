@@ -90,8 +90,7 @@ class BookingCheckInOutController extends Controller
 
             $now = Carbon::now();
             $today = $now->copy()->startOfDay();
-            $scheduledBookingDate = $lockedBooking->end_date
-                ?? $lockedBooking->date
+            $scheduledBookingDate = $lockedBooking->date
                 ?? $lockedBooking->booking_date;
 
             if (! $scheduledBookingDate) {
@@ -225,7 +224,9 @@ class BookingCheckInOutController extends Controller
 
             $checkoutTime = Carbon::now();
 
-            $scheduledBookingDate = $lockedBooking->date ?? $lockedBooking->booking_date;
+            $scheduledBookingDate = $lockedBooking->end_date
+                ?? $lockedBooking->date
+                ?? $lockedBooking->booking_date;
 
             if (! $scheduledBookingDate) {
                 throw ValidationException::withMessages([
