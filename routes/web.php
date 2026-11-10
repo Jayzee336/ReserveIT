@@ -439,11 +439,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $facilityQuery->with('operatingHours');
 
         $bookingQuery = Booking::query()
-            ->where(function ($query) use ($monthStart, $monthEnd) {
-                // Return all active bookings in the selected month for the calendar.
-                $query->whereBetween('booking_date', [$monthStart, $monthEnd])
-                    ->orWhereBetween('date', [$monthStart, $monthEnd]);
-            })
+            // Include reservations whose date range overlaps any day in the selected month.
+            ->whereRaw('COALESCE(date, booking_date) <= ?', [$monthEnd])
+            ->whereRaw('COALESCE(end_date, date, booking_date) >= ?', [$monthStart])
             ->whereNotIn('status', ['declined', 'cancelled']);
 
         if ($isFacilityAdmin && !$availabilityOnly) {
@@ -457,6 +455,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'facility_id',
             'date',
             'booking_date',
+            'end_date',
             'start_time',
             'end_time',
             'status',
