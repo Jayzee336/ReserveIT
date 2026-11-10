@@ -542,7 +542,7 @@ class BookingController extends Controller
             ]);
         }
 
-        $leadTimeDays = max(0, (int) ($facility->booking_lead_time_days ?? 3));
+        $leadTimeDays = max(0, (int) ($facility->booking_lead_time_days ?? 0));
         if ($bookingDate->lt($today->copy()->addDays($leadTimeDays))) {
             throw ValidationException::withMessages([
                 'date' => "This facility requires at least {$leadTimeDays} days advance notice.",
@@ -811,7 +811,7 @@ class BookingController extends Controller
                 && $this->rangeIncludesWeekend($validated['date'], $validated['end_date'])
             );
 
-        $leadTimeDays = max(0, (int) ($facility->booking_lead_time_days ?? 3));
+        $leadTimeDays = max(0, (int) ($facility->booking_lead_time_days ?? 0));
         if ($bookingDate->lt(Carbon::today()->addDays($leadTimeDays))) {
             throw ValidationException::withMessages([
                 'date' => "This facility requires at least {$leadTimeDays} days advance notice.",
