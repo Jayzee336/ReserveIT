@@ -83,7 +83,7 @@ class Booking extends Model
 
     public function extensionRequests()
     {
-        return $this->hasMany(BookingExtensionRequest::class, 'booking_id');
+        return $this->hasMany(BookingExtensionRequest::class, 'booking_id')->latest();
     }
 
     // A booking belongs to one user.
