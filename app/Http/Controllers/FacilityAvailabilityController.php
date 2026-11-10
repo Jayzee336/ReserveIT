@@ -326,6 +326,7 @@ class FacilityAvailabilityController extends Controller
             $period = FacilityUnavailabilityPeriod::query()
                 ->where('facility_id', $lockedFacility->getKey())
                 ->whereNull('ended_at')
+                ->whereNull('scheduled_start_at')
                 ->latest('started_at')
                 ->lockForUpdate()
                 ->first();
