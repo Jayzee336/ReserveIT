@@ -26,6 +26,7 @@ class FacilityOperatingHoursBookingTest extends TestCase
             'location' => 'Test building',
             'requiresWeekendConsent' => false,
             'allowTdevsManpower' => false,
+            'booking_lead_time_days' => 0,
             'is_available' => true,
         ]);
 

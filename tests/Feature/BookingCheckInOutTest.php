@@ -27,6 +27,7 @@ class BookingCheckInOutTest extends TestCase
             'location' => 'Building A',
             'requiresWeekendConsent' => false,
             'allowTdevsManpower' => false,
+            'booking_lead_time_days' => 0,
         ]);
     }
 
