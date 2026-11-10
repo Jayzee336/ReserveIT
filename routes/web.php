@@ -575,7 +575,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Overtime extension requests: owners request; assigned admins review.
     Route::post('/bookings/{booking}/extensions', [BookingExtensionController::class, 'store'])
-        ->middleware('role:user,super_admin,facility_admin')
+        ->middleware('role:user')
         ->name('bookings.extensions.store');
 
     Route::get('/admin/overtime-extensions', [BookingExtensionController::class, 'index'])
