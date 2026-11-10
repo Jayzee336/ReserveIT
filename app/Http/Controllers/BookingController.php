@@ -372,7 +372,7 @@ class BookingController extends Controller
         $upcomingBookings = $bookings
             ->filter(fn ($booking) =>
                 in_array($booking->status, ['pending', 'approved'], true) &&
-                Carbon::parse($booking->date)->gte($today)
+                Carbon::parse($booking->end_date ?? $booking->date ?? $booking->booking_date)->gte($today)
             )
             ->values();
 
