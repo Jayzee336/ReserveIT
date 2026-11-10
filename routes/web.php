@@ -364,14 +364,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $upcomingBooking = Booking::with('facility')
             ->where('user_id', $userId)
             ->whereIn('status', ['pending', 'approved'])
-            ->where(function ($query) {
-                $today = now()->toDateString();
-                $query->whereDate('booking_date', '>=', $today)
-                    ->orWhere(function ($legacyQuery) use ($today) {
-                        $legacyQuery->whereNull('booking_date')
-                            ->whereDate('date', '>=', $today);
-                    });
-            })
+            ->whereRaw(
+                'COALESCE(end_date, date, booking_date) >= ?',
+                [now()->toDateString()]
+            )
             ->orderByRaw('COALESCE(booking_date, date) asc')
             ->orderBy('start_time', 'asc')
             ->first();
