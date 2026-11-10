@@ -294,14 +294,14 @@ function FacilityDetailsModal({
 
                 {(isSuperAdmin || isFacilityAdmin) && (
                     <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between gap-3">
-                        <button
+                        {isSuperAdmin && <button
                             type="button"
                             onClick={() => onDelete(facility)}
                             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-sm font-semibold transition"
                         >
                             <Trash2 className="h-4 w-4" />
                             Delete Facility
-                        </button>
+                        </button>}
 
                         <div className="flex items-center gap-2">
                             <button
@@ -1046,12 +1046,13 @@ export default function Facilities({
                                 Facility Settings
                             </h1>
                             <p className="text-sm text-gray-500">
-                                Configure, assign, or delete campus facilities
-                                across all user endpoints.
+                                {isSuperAdmin
+                                    ? 'Configure, assign, or delete campus facilities across all user endpoints.'
+                                    : 'Review and manage the facilities assigned to you.'}
                             </p>
                         </div>
 
-                        {(isSuperAdmin || isFacilityAdmin) && (
+                        {isSuperAdmin && (
                             <button
                                 type="button"
                                 onClick={() => setFormModalState('create')}
@@ -1175,6 +1176,7 @@ export default function Facilities({
                                                 <Pencil className="h-3.5 w-3.5" />
                                             </button>
 
+                                            {isSuperAdmin && (
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
@@ -1188,6 +1190,7 @@ export default function Facilities({
                                             >
                                                 <Trash2 className="h-3.5 w-3.5" />
                                             </button>
+                                            )}
                                         </div>
                                     )}
                                 </div>

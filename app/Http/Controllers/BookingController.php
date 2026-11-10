@@ -858,7 +858,8 @@ class BookingController extends Controller
         $this->validateBookingSpan(
             $validated['start_time'],
             $validated['end_time'],
-            $settings
+            $settings,
+            $facility
         );
 
         $buffer = max(

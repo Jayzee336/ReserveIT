@@ -462,30 +462,66 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $bookingQuery->forUser($user);
         }
 
-        // The all-facilities mode is strictly an availability overview. Only
-        // occupancy fields are returned; customer and reservation details stay private.
-        $bookingColumns = [
+        // Every viewer receives occupancy information. Private booking fields are
+        // serialized only for the owner, an assigned facility admin, or Super Admin.
+        $bookingQuery->with(['user:id,name,email', 'facility:id,name']);
+        $bookingRows = $bookingQuery->get([
             'id',
             'facility_id',
+            'user_id',
             'date',
             'booking_date',
             'end_date',
             'start_time',
             'end_time',
             'status',
-        ];
+            'guest_name',
+            'guest_email',
+            'guest_phone',
+            'notes',
+            'attendees',
+            'needs_manpower',
+            'approved_by',
+            'approved_at',
+        ]);
 
-        if ($canViewBookingDetails) {
-            $bookingQuery->with('user:id,name,email');
-            $bookingColumns = array_merge($bookingColumns, [
-                'user_id',
-                'guest_name',
-                'guest_email',
-                'notes',
-                'approved_by',
-                'approved_at',
-            ]);
-        }
+        $safeBookings = $bookingRows->map(function (Booking $booking) use ($user, $canViewBookingDetails) {
+            $canViewDetails = $canViewBookingDetails
+                || (string) $booking->user_id === (string) $user->getKey();
+
+            $row = [
+                'id' => $booking->id,
+                'facility_id' => $booking->facility_id,
+                'facility_name' => $booking->facility?->name ?? 'Facility',
+                'date' => $booking->date,
+                'booking_date' => $booking->booking_date,
+                'end_date' => $booking->end_date,
+                'start_time' => $booking->start_time,
+                'end_time' => $booking->end_time,
+                'status' => $booking->status,
+                'can_view_details' => $canViewDetails,
+            ];
+
+            if ($canViewDetails) {
+                $row += [
+                    'user' => $booking->user ? [
+                        'id' => $booking->user->id,
+                        'name' => $booking->user->name,
+                        'email' => $booking->user->email,
+                    ] : null,
+                    'guest_name' => $booking->guest_name,
+                    'guest_email' => $booking->guest_email,
+                    'guest_phone' => $booking->guest_phone,
+                    'notes' => $booking->notes,
+                    'attendees' => $booking->attendees,
+                    'needs_manpower' => $booking->needs_manpower,
+                    'approved_by' => $booking->approved_by,
+                    'approved_at' => $booking->approved_at,
+                ];
+            }
+
+            return $row;
+        })->values();
 
         return Inertia::render('CalendarDashboard', [
             'selectedDate' => $selectedDate,
@@ -507,7 +543,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'is_available',
                 'unavailable_reason',
             ]),
-            'serverBookings' => $bookingQuery->get($bookingColumns),
+            'serverBookings' => $safeBookings,
         ]);
     })->name('schedule.index');
 

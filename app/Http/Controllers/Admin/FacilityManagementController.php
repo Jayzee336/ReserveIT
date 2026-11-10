@@ -38,8 +38,25 @@ class FacilityManagementController extends Controller
             $query->forUser($user);
         }
 
-        return Inertia::render('Facilitator/ManagedFacilities', [
+        return Inertia::render('Admin/Facilities', [
             'facilities' => $query->get(),
+            'facilityAdmins' => $user->role === 'super_admin'
+                ? User::where('role', 'facility_admin')
+                    ->where('is_active', true)
+                    ->select('id', 'name', 'email')
+                    ->orderBy('name')
+                    ->get()
+                : [],
+            'auth' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role,
+                    'managed_facility_ids' => $user->role === 'facility_admin'
+                        ? $user->managedFacilities()->pluck('facilities.id')->toArray()
+                        : [],
+                ],
+            ],
         ]);
     }
 

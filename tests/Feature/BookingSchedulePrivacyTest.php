@@ -64,6 +64,7 @@ class BookingSchedulePrivacyTest extends TestCase
                 ->component('CalendarDashboard')
                 ->has('serverBookings', 1)
                 ->where('serverBookings.0.id', $booking->id)
+                ->where('serverBookings.0.can_view_details', false)
                 ->missing('serverBookings.0.user')
                 ->missing('serverBookings.0.user_id')
                 ->missing('serverBookings.0.guest_name')
@@ -71,6 +72,25 @@ class BookingSchedulePrivacyTest extends TestCase
                 ->missing('serverBookings.0.notes')
                 ->missing('serverBookings.0.approved_by')
                 ->missing('serverBookings.0.approved_at')
+            );
+    }
+
+    public function test_booking_owner_receives_private_details_for_their_own_calendar_event(): void
+    {
+        $owner = User::factory()->create(['role' => 'user']);
+        $facility = $this->createFacility('schedule-owner-booking', 'Owner Booking Facility');
+        $booking = $this->createBooking($facility, $owner, 'owner@example.com');
+
+        $this->actingAs($owner)
+            ->get(route('schedule.index', ['date' => '2026-11-15']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('serverBookings', 1)
+                ->where('serverBookings.0.id', $booking->id)
+                ->where('serverBookings.0.can_view_details', true)
+                ->where('serverBookings.0.user.email', $owner->email)
+                ->where('serverBookings.0.guest_email', 'owner@example.com')
+                ->where('serverBookings.0.notes', 'Private booking purpose and notes')
             );
     }
 
