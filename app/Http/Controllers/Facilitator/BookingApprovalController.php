@@ -37,8 +37,14 @@ class BookingApprovalController extends Controller
         $pendingQuery = (clone $query)
             ->where('status', 'pending')
             ->where(function ($q) use ($today) {
-                $q->whereDate('booking_date', '>=', $today)
-                    ->orWhereDate('date', '>=', $today);
+                $q->whereDate('end_date', '>=', $today)
+                    ->orWhere(function ($legacy) use ($today) {
+                        $legacy->whereNull('end_date')
+                            ->where(function ($dates) use ($today) {
+                                $dates->whereDate('booking_date', '>=', $today)
+                                    ->orWhereDate('date', '>=', $today);
+                            });
+                    });
             });
 
         // Previously reviewed bookings.
@@ -49,8 +55,16 @@ class BookingApprovalController extends Controller
         $pastUnapprovedQuery = (clone $query)
             ->where('status', 'pending')
             ->where(function ($q) use ($today) {
-                $q->whereDate('booking_date', '<', $today)
-                    ->orWhereDate('date', '<', $today);
+                $q->where(function ($dated) use ($today) {
+                    $dated->whereNotNull('end_date')
+                        ->whereDate('end_date', '<', $today);
+                })->orWhere(function ($legacy) use ($today) {
+                    $legacy->whereNull('end_date')
+                        ->where(function ($dates) use ($today) {
+                            $dates->whereDate('booking_date', '<', $today)
+                                ->orWhereDate('date', '<', $today);
+                        });
+                });
             });
 
         // Apply the status filter to the appropriate dataset.
@@ -362,8 +376,8 @@ class BookingApprovalController extends Controller
 
         $today = now()->toDateString();
 
-        $isPast = ($booking->booking_date && $booking->booking_date->lt($today))
-            || ($booking->date && $booking->date->lt($today));
+        $endDate = $booking->end_date ?? $booking->booking_date ?? $booking->date;
+        $isPast = $endDate && $endDate->lt($today);
 
         if ($booking->status !== 'pending' || !$isPast) {
             return redirect()->back()->with('toast', [
@@ -391,8 +405,16 @@ class BookingApprovalController extends Controller
         $query = $this->getVisibleBookingsQuery($user)
             ->where('status', 'pending')
             ->where(function ($q) use ($today) {
-                $q->whereDate('booking_date', '<', $today)
-                    ->orWhereDate('date', '<', $today);
+                $q->where(function ($dated) use ($today) {
+                    $dated->whereNotNull('end_date')
+                        ->whereDate('end_date', '<', $today);
+                })->orWhere(function ($legacy) use ($today) {
+                    $legacy->whereNull('end_date')
+                        ->where(function ($dates) use ($today) {
+                            $dates->whereDate('booking_date', '<', $today)
+                                ->orWhereDate('date', '<', $today);
+                        });
+                });
             });
 
         $count = (clone $query)->count();
