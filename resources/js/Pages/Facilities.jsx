@@ -177,14 +177,14 @@ export default function Dashboard({ auth, facilities }) {
                     </div>
 
                     {/* Responsive facility grid */}
-                    <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                    <div className="grid w-full min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
                         {filteredFacilities.map((facility) => (
                             <Link
                                 key={facility.id}
                                 href={`/facility/${facility.id}`}
-                                className={`group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${facility.is_available === false ? 'grayscale opacity-60 hover:opacity-75' : ''}`}
+                                className={`ri-facility-card group flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-white ${facility.is_available === false ? 'grayscale opacity-60 hover:opacity-75' : ''}`}
                             >
-                                <div className="relative h-40 w-full shrink-0 overflow-hidden">
+                                <div className="relative h-48 w-full shrink-0 overflow-hidden bg-slate-100">
                                     <img
                                         src={facility.imageUrl}
                                         alt={facility.name}
@@ -217,7 +217,7 @@ export default function Dashboard({ auth, facilities }) {
                                     </div>
                                 </div>
 
-                                <div className="flex flex-grow flex-col p-4">
+                                <div className="flex flex-grow flex-col p-5">
                                     <h3 className="mb-0.5 line-clamp-1 text-base font-bold text-gray-900 transition-colors group-hover:text-[#6A535C]">
                                         {facility.name}
                                     </h3>

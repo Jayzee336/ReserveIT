@@ -1147,14 +1147,14 @@ export default function Facilities({
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
                         {filteredFacilities.map((facility) => (
                             <div
                                 key={facility.id}
-                                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 flex flex-col group relative"
+                                className="ri-facility-card bg-white rounded-2xl border overflow-hidden flex flex-col group relative"
                             >
                                 <div
-                                    className="relative h-40 w-full overflow-hidden bg-gray-100 cursor-pointer"
+                                    className="relative h-48 w-full overflow-hidden bg-gray-100 cursor-pointer"
                                     onClick={() => setViewingFacility(facility)}
                                 >
                                     <FacilityImage

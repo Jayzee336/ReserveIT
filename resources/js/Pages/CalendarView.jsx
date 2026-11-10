@@ -258,7 +258,7 @@ export function CalendarView({
                             }
 
                             return (
-                                <div key={day.key} className={`group relative min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F7F0F3]' : 'bg-white'}`}>
+                                <div key={day.key} className={`ri-calendar-cell group relative min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F7F0F3]' : 'bg-white'}`}>
                                     <button type="button" onClick={() => selectDate(day.key)} aria-pressed={day.isSelected} aria-label={`Select ${formatLongDate(day.key)}`} className="absolute inset-0 z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#846A75]" />
                                     <div className="pointer-events-none relative z-10 flex items-center justify-between gap-1">
                                         <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#6A535C] text-white' : day.isToday ? 'border border-[#846A75] text-[#6A535C]' : 'text-slate-700'}`}>{day.dayNumber}</span>
