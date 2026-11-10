@@ -518,7 +518,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Browse Facilities
     Route::get('/facilities', function () {
         return Inertia::render('Facilities', [
-            'facilities' => Facility::with('operatingHours')->get(),
+            'facilities' => Facility::with([
+                'operatingHours',
+                'unavailabilityPeriods' => fn ($query) => $query
+                    ->whereNull('ended_at')
+                    ->whereNotNull('scheduled_start_at')
+                    ->where('scheduled_end_at', '>=', now())
+                    ->orderBy('scheduled_start_at'),
+            ])->get(),
         ]);
     })->name('facilities.index');
 
