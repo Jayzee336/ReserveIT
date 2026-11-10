@@ -422,6 +422,9 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                                 </div>
                                                 <div>
                                                     <p className="text-xs font-bold text-slate-500">{item.start_time} - {item.end_time}</p>
+                                                    {item.end_date && String(item.end_date).slice(0, 10) !== String(item.date || item.booking_date).slice(0, 10) && (
+                                                        <p className="text-[10px] text-slate-500">Daily reservation through {String(item.end_date).slice(0, 10)}</p>
+                                                    )}
                                                     <h4 className="text-sm font-bold text-slate-900">{item.facility?.name || 'UIC Reserved Space'}</h4>
                                                     <p className="text-xs text-slate-600">Reserved by: {item.user?.name || item.guest_name || 'UIC Academic Member'}</p>
                                                 </div>
