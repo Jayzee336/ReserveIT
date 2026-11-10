@@ -122,6 +122,31 @@ export default function Index({ plans, facilities = [] }) {
         excludedDates.join(','),
     ]);
 
+    const scheduledClosureConflicts = sessions.flatMap((session) => {
+        const sessionStart = new Date(`${session.date}T${session.start_time}:00`);
+        const sessionEnd = new Date(`${session.date}T${session.end_time}:00`);
+        if (session.end_time === '00:00') sessionEnd.setDate(sessionEnd.getDate() + 1);
+
+        return (selectedFacility?.unavailability_periods ?? [])
+            .filter((period) => {
+                if (period.ended_at || !period.scheduled_start_at || !period.scheduled_end_at) return false;
+                const closureStart = new Date(period.scheduled_start_at);
+                const closureEnd = new Date(period.scheduled_end_at);
+                return (
+                    !Number.isNaN(closureStart.getTime())
+                    && !Number.isNaN(closureEnd.getTime())
+                    && sessionStart < closureEnd
+                    && sessionEnd > closureStart
+                );
+            })
+            .map((period) => ({
+                date: session.date,
+                reason: period.reason,
+                start: period.scheduled_start_at,
+                end: period.scheduled_end_at,
+            }));
+    });
+
     const anyWeekendSession = sessions.some((session) => {
         const day = new Date(`${session.date}T12:00:00`).getDay();
         return day === 0 || day === 6;
@@ -203,6 +228,14 @@ export default function Index({ plans, facilities = [] }) {
 
         if (sessions.length === 0) {
             form.setError('sessions', 'Select at least one weekday and date range that generates a session.');
+            return;
+        }
+
+        if (scheduledClosureConflicts.length > 0) {
+            form.setError(
+                'sessions',
+                `One or more sessions overlap a scheduled facility closure. Review ${scheduledClosureConflicts.map((item) => formatDate(item.date)).join(', ')}.`
+            );
             return;
         }
 
@@ -322,6 +355,20 @@ export default function Index({ plans, facilities = [] }) {
                             </div>
                         </div>
 
+                        {scheduledClosureConflicts.length > 0 && (
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+                                <p className="text-xs font-bold text-amber-900">
+                                    Scheduled closure overlaps {scheduledClosureConflicts.length} session time(s)
+                                </p>
+                                <div className="mt-2 space-y-1">
+                                    {scheduledClosureConflicts.map((item, index) => (
+                                        <p key={`${item.date}-${index}`} className="break-words text-xs text-amber-800">
+                                            {formatDate(item.date)} · {item.reason}
+                                        </p>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         {form.errors.sessions && <p className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">{form.errors.sessions}</p>}
 
                         {sessions.length === 0 ? (
