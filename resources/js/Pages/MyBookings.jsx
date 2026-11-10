@@ -542,18 +542,18 @@ export default function MyBookings({
 
     const extensionRequests = selectedDetailBooking?.extension_requests ?? [];
     const pendingExtensionRequest = extensionRequests.find((item) => item.status === 'pending');
-    const bookingFinalDate = String(selectedDetailBooking?.end_date || selectedDetailBooking?.date || selectedDetailBooking?.booking_date || '').slice(0, 10);
-    const canRequestExtension = Boolean(
-        selectedDetailBooking?.checked_in_at
-        && !selectedDetailBooking?.checked_out_at
-        && bookingFinalDate === todayString
-    );
     const selectedFacility = selectedDetailBooking?.facility;
     const capacity = selectedFacility?.capacity;
     const selectedBookingDate = String(
         selectedDetailBooking?.date ?? selectedDetailBooking?.booking_date ?? ''
     ).slice(0, 10);
     const todayString = getLocalDateString();
+    const bookingFinalDate = String(selectedDetailBooking?.end_date || selectedDetailBooking?.date || selectedDetailBooking?.booking_date || '').slice(0, 10);
+    const canRequestExtension = Boolean(
+        selectedDetailBooking?.checked_in_at
+        && !selectedDetailBooking?.checked_out_at
+        && bookingFinalDate === todayString
+    );
     const selectedBookingIsPast = Boolean(selectedBookingDate && selectedBookingDate < todayString);
     const selectedBookingIsFuture = Boolean(selectedBookingDate && selectedBookingDate > todayString);
     const selectedBookingStart = selectedBookingDate && selectedDetailBooking?.start_time
