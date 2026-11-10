@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -263,6 +263,12 @@ function FacilityDetailsModal({
                         >
                             {facility.is_available === false ? 'Mark available' : 'Mark unavailable'}
                         </button>
+                        <Link
+                            href={route('admin.facilities.booking-settings', facility.id)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                            Configure hours
+                        </Link>
                     </div>
 
                     {facility.facility_admins?.length > 0 && (
