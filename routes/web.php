@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ActivityPlanController;
+use App\Http\Controllers\BookingExtensionController;
 use App\Http\Controllers\FacilityAvailabilityController;
 use App\Http\Controllers\FacilityBookingSettingsController;
 use App\Http\Controllers\DeveloperContactController;
@@ -571,6 +572,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Direct BookingController approval/decline routes intentionally removed.
     // Use the policy-protected admin.* or facilitator.* routes above.
+
+    // Overtime extension requests: owners request; assigned admins review.
+    Route::post('/bookings/{booking}/extensions', [BookingExtensionController::class, 'store'])
+        ->middleware('role:user,super_admin,facility_admin')
+        ->name('bookings.extensions.store');
+
+    Route::get('/admin/overtime-extensions', [BookingExtensionController::class, 'index'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('overtime-extensions.index');
+
+    Route::patch('/admin/overtime-extensions/{extensionRequest}/approve', [BookingExtensionController::class, 'approve'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('overtime-extensions.approve');
+
+    Route::patch('/admin/overtime-extensions/{extensionRequest}/decline', [BookingExtensionController::class, 'decline'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('overtime-extensions.decline');
 
     // Overtime Check-In / Check-Out
     Route::post('/bookings/{booking}/check-in', [BookingCheckInOutController::class, 'checkIn'])
