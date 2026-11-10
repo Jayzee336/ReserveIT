@@ -420,7 +420,7 @@ export default function Dashboard({
                                             <div className="mt-4 space-y-2.5 text-sm text-slate-600">
                                                 <p className="flex items-center gap-2">
                                                     <CalendarDays className="h-4 w-4 shrink-0 text-[#6A535C]" />
-                                                    {formatDate(upcomingBooking.date)}
+                                                    {formatDate(upcomingBooking.date || upcomingBooking.booking_date)}{upcomingBooking.end_date && String(upcomingBooking.end_date).slice(0, 10) !== String(upcomingBooking.date || upcomingBooking.booking_date).slice(0, 10) ? ' – ' + formatDate(upcomingBooking.end_date) : ''}
                                                 </p>
                                                 <p className="flex items-center gap-2">
                                                     <Clock3 className="h-4 w-4 shrink-0 text-[#6A535C]" />
