@@ -54,7 +54,7 @@ class BookingDashboardAnalyticsTest extends TestCase
             'approved',
             BookingDashboardAnalytics::displayStatus(
                 $booking,
-                Carbon::parse('2026-11-13 00:00:00')
+                Carbon::parse('2026-11-12 23:59:59')
             )
         );
 
