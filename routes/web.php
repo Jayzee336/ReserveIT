@@ -447,7 +447,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $facilityQuery->forUser($user);
         }
 
-        $facilityQuery->with('operatingHours');
+        $facilityQuery->with([
+            'operatingHours',
+            'unavailabilityPeriods' => fn ($query) => $query
+                ->whereNull('ended_at')
+                ->whereNotNull('scheduled_start_at')
+                ->where('scheduled_end_at', '>=', now())
+                ->orderBy('scheduled_start_at'),
+        ]);
 
         $bookingQuery = Booking::query()
             // Include reservations whose date range overlaps any day in the selected month.
@@ -520,6 +527,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $facility = Facility::with([
             'facilityAdmins:id,name,email',
             'operatingHours',
+            'unavailabilityPeriods' => fn ($query) => $query
+                ->whereNull('ended_at')
+                ->whereNotNull('scheduled_start_at')
+                ->where('scheduled_end_at', '>=', now())
+                ->orderBy('scheduled_start_at'),
         ])->findOrFail($id);
 
         return Inertia::render('FacilityDetails', [
