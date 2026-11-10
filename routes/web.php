@@ -212,6 +212,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.facilities.availability');
 
+    Route::post('/admin/facilities/{facility}/scheduled-closures', [FacilityAvailabilityController::class, 'schedule'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('admin.facilities.scheduled-closures.store');
+
+    Route::patch('/admin/facilities/{facility}/scheduled-closures/{period}/restore', [FacilityAvailabilityController::class, 'restoreScheduled'])
+        ->middleware('role:super_admin,facility_admin')
+        ->name('admin.facilities.scheduled-closures.restore');
+
     Route::get('/admin/facilities/{facility}/booking-settings', [FacilityBookingSettingsController::class, 'edit'])
         ->middleware('role:super_admin,facility_admin')
         ->name('admin.facilities.booking-settings');
