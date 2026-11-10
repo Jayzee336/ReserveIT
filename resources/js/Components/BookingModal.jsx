@@ -396,6 +396,14 @@ export default function BookingModal({
             return;
         }
 
+        const scheduledClosureConflict = findScheduledClosureConflict(startTime, endTime);
+        if (scheduledClosureConflict) {
+            setConflictError(
+                `This time overlaps a scheduled facility closure: ${scheduledClosureConflict.reason}`
+            );
+            return;
+        }
+
         if (checkConflict()) {
             setConflictError(
                 cleanupBuffer > 0
