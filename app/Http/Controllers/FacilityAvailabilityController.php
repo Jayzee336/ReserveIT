@@ -120,13 +120,28 @@ class FacilityAvailabilityController extends Controller
                     'end_time',
                 ]);
 
-            $affectedUserIds = $candidateBookings
-                ->filter(fn (Booking $booking) => FacilityScheduleAvailability::bookingOverlapsPeriod($period, $booking))
-                ->pluck('user_id')
-                ->filter()
-                ->unique()
-                ->values()
-                ->all();
+            $affectedSessionDates = [];
+
+            foreach ($candidateBookings as $booking) {
+                $dates = FacilityScheduleAvailability::overlappingDatesForBooking($period, $booking);
+
+                if ($dates === []) {
+                    continue;
+                }
+
+                $userId = (string) $booking->user_id;
+                $affectedSessionDates[$userId] = array_values(array_unique([
+                    ...($affectedSessionDates[$userId] ?? []),
+                    ...$dates,
+                ]));
+            }
+
+            foreach ($affectedSessionDates as &$dates) {
+                sort($dates);
+            }
+            unset($dates);
+
+            $affectedUserIds = array_keys($affectedSessionDates);
 
             $period->update(['affected_user_ids' => $affectedUserIds]);
 
@@ -134,19 +149,16 @@ class FacilityAvailabilityController extends Controller
                 'period' => $period,
                 'facility_name' => $lockedFacility->name,
                 'affected_user_ids' => $affectedUserIds,
+                'affected_session_dates' => $affectedSessionDates,
             ];
         });
 
-        $this->notifyUsers(
-            $result['affected_user_ids'],
-            'Scheduled facility closure',
-            sprintf(
-                '%s has a scheduled closure from %s to %s. Reason: %s. Contact the facility administrator about your affected reservation.',
-                $result['facility_name'],
-                $scheduledStart->format('M d, Y g:i A'),
-                $scheduledEnd->format('M d, Y g:i A'),
-                $result['period']->reason
-            ),
+        $this->notifyScheduledClosureUsers(
+            $result['affected_session_dates'],
+            $result['facility_name'],
+            $scheduledStart,
+            $scheduledEnd,
+            $result['period']->reason,
             (string) $facility->getKey()
         );
 
@@ -372,6 +384,59 @@ class FacilityAvailabilityController extends Controller
             'type' => 'success',
             'message' => 'Facility marked available. Previously affected booking owners have been notified.',
         ]);
+    }
+
+    private function notifyScheduledClosureUsers(
+        array $affectedSessionDates,
+        string $facilityName,
+        Carbon $scheduledStart,
+        Carbon $scheduledEnd,
+        string $reason,
+        string $facilityId
+    ): void {
+        if ($affectedSessionDates === []) {
+            return;
+        }
+
+        try {
+            User::query()
+                ->whereIn('id', array_keys($affectedSessionDates))
+                ->where('is_active', true)
+                ->get()
+                ->each(function (User $user) use (
+                    $affectedSessionDates,
+                    $facilityName,
+                    $scheduledStart,
+                    $scheduledEnd,
+                    $reason,
+                    $facilityId
+                ) {
+                    $dates = $affectedSessionDates[(string) $user->getKey()] ?? [];
+                    $formattedDates = collect($dates)
+                        ->map(fn (string $date) => Carbon::parse($date)->format('M d, Y'))
+                        ->implode(', ');
+
+                    $message = sprintf(
+                        '%s has a scheduled closure from %s to %s. Reason: %s. Only the following reservation date(s) overlap this closure: %s. Please contact the facility administrator about rescheduling.',
+                        $facilityName,
+                        $scheduledStart->format('M d, Y g:i A'),
+                        $scheduledEnd->format('M d, Y g:i A'),
+                        $reason,
+                        $formattedDates
+                    );
+
+                    $user->notify(new FacilityAvailabilityNotification(
+                        'Scheduled facility closure',
+                        $message,
+                        $facilityId
+                    ));
+                });
+        } catch (\\Throwable $exception) {
+            Log::warning('Scheduled facility closure notification delivery failed.', [
+                'facility_id' => $facilityId,
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 
     private function notifyUsers(
