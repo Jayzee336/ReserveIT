@@ -218,4 +218,48 @@ class MultiDayBookingWorkflowTest extends TestCase
                 ->where('serverBookings.0.end_date', $end->toDateString())
             );
     }
+
+    public function test_multi_day_booking_cannot_be_approved_if_a_later_date_is_closed(): void
+    {
+        $owner = $this->createUser();
+        $admin = User::factory()->create([
+            'role' => 'facility_admin',
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $facility = $this->createFacility('multi-day-approval-hours-facility');
+        $facility->facilityAdmins()->attach($admin);
+
+        $start = today()->addDays(3);
+        $closedDate = $start->copy()->addDay();
+        $end = $start->copy()->addDays(2);
+
+        $booking = Booking::create([
+            'facility_id' => $facility->id,
+            'user_id' => $owner->id,
+            'date' => $start->toDateString(),
+            'booking_date' => $start->toDateString(),
+            'end_date' => $end->toDateString(),
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'status' => 'pending',
+            'attendees' => 15,
+            'needs_manpower' => false,
+            'notes' => 'Multi-day approval hours test.',
+        ]);
+
+        FacilityOperatingHour::create([
+            'facility_id' => $facility->id,
+            'day_of_week' => $closedDate->dayOfWeek,
+            'is_closed' => true,
+            'opens_at' => null,
+            'closes_at' => null,
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('facilitator.bookings.approve', $booking))
+            ->assertSessionHas('toast.message');
+
+        $this->assertSame('pending', $booking->fresh()->status);
+    }
 }
