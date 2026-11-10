@@ -9,6 +9,7 @@ use App\Models\FacilityOperatingHour;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\ActivityPlanNotification;
+use App\Support\FacilityScheduleAvailability;
 use App\Support\ActivityPlanSchedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -301,6 +302,20 @@ class ActivityPlanController extends Controller
                         $settings
                     );
 
+                    $scheduledClosure = FacilityScheduleAvailability::firstOverlappingClosure(
+                        $lockedFacility,
+                        $session['date'],
+                        $session['date'],
+                        $session['start_time'],
+                        $session['end_time']
+                    );
+
+                    if ($scheduledClosure) {
+                        throw ValidationException::withMessages([
+                            "sessions.{$index}.date" => 'This session overlaps a scheduled facility closure: ' . $scheduledClosure->reason,
+                        ]);
+                    }
+
                     if ($this->hasSessionConflict(
                         (string) $lockedFacility->getKey(),
                         $session['date'],
@@ -440,6 +455,18 @@ class ActivityPlanController extends Controller
                 $date = $session->date ?? $session->booking_date;
                 $this->validateSessionHours($facility, $date, $session->start_time, $session->end_time, $settings);
 
+                $scheduledClosure = FacilityScheduleAvailability::firstOverlappingClosure(
+                    $facility,
+                    $date->format('Y-m-d'),
+                    $date->format('Y-m-d'),
+                    substr((string) $session->start_time, 0, 5),
+                    substr((string) $session->end_time, 0, 5)
+                );
+
+                if ($scheduledClosure) {
+                    return 'scheduled_closure';
+                }
+
                 if ($this->hasSessionConflict(
                     (string) $facility->getKey(),
                     $date->format('Y-m-d'),
@@ -472,6 +499,7 @@ class ActivityPlanController extends Controller
             $messages = [
                 'facility_unavailable' => 'The facility is unavailable. Restore it before approving this activity plan.',
                 'conflict' => 'One or more sessions now conflict with another booking. Review the affected dates before approving the plan.',
+                'scheduled_closure' => 'One or more sessions overlap a scheduled facility closure. Adjust the affected sessions before approving the plan.',
             ];
 
             return back()->with('toast', [
