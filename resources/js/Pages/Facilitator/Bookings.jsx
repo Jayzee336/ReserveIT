@@ -999,7 +999,7 @@ export default function Bookings({
         >
             <Head title="Booking Approvals" />
 
-            <div className="space-y-8 p-6">
+            <div className="space-y-6 px-3 py-4 sm:space-y-8 sm:px-6 sm:py-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
