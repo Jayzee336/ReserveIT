@@ -88,6 +88,27 @@ class MultiDayBookingWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_facility_specific_advance_notice_is_enforced_when_creating_a_booking(): void
+    {
+        $user = $this->createUser();
+        $facility = $this->createFacility('multi-day-lead-time-facility');
+        $facility->update(['booking_lead_time_days' => 5]);
+
+        $this->actingAs($user)
+            ->from(route('facilities.index'))
+            ->post(route('bookings.store'), [
+                'facility_id' => $facility->id,
+                'date' => today()->addDays(3)->toDateString(),
+                'start_time' => '09:00',
+                'end_time' => '10:00',
+                'attendees' => 15,
+                'needs_manpower' => false,
+            ])
+            ->assertSessionHasErrors('date');
+
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
     public function test_legacy_single_day_booking_submission_defaults_end_date_to_start_date(): void
     {
         $user = $this->createUser();
