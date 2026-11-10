@@ -197,7 +197,7 @@ function PendingBookingCard({
 
                     <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
-                        {booking.date ?? booking.booking_date} · {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
+                        {booking.date ?? booking.booking_date}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date ?? booking.booking_date).slice(0, 10) ? ' – ' + booking.end_date : ''} · {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
                     </p>
 
                     {booking.notes && (
@@ -324,7 +324,7 @@ function BookingDetailModal({
                         </p>
                         <p className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
                             <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                            {booking.date ?? booking.booking_date}
+                            {booking.date ?? booking.booking_date}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date ?? booking.booking_date).slice(0, 10) ? ' – ' + booking.end_date : ''}
                         </p>
                         <p className="mt-0.5 flex items-center gap-1.5 text-sm text-gray-600">
                             <Clock className="h-3.5 w-3.5 text-gray-400" />
@@ -505,7 +505,7 @@ function PastBookingOverrideModal({
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
                         Scheduled date:{' '}
-                        {booking.date ?? booking.booking_date ?? 'Unknown'}
+                        {booking.date ?? booking.booking_date ?? 'Unknown'}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date ?? booking.booking_date).slice(0, 10) ? ' – ' + booking.end_date : ''}
                     </p>
                 </div>
 
@@ -1143,8 +1143,7 @@ export default function Bookings({
                                                             'Guest'}
                                                     </td>
                                                     <td className="px-6 py-4 text-sm text-gray-500">
-                                                        {booking.date ??
-                                                            booking.booking_date}
+                                                        {booking.date ?? booking.booking_date}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date ?? booking.booking_date).slice(0, 10) ? ' – ' + booking.end_date : ''}
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <StatusBadge
@@ -1288,8 +1287,7 @@ export default function Bookings({
                                                         'Guest'}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-gray-500">
-                                                    {booking.date ??
-                                                        booking.booking_date}
+                                                    {booking.date ?? booking.booking_date}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date ?? booking.booking_date).slice(0, 10) ? ' – ' + booking.end_date : ''}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <StatusBadge
