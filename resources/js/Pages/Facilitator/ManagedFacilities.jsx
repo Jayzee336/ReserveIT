@@ -8,6 +8,9 @@ export default function ManagedFacilities({ facilities = [] }) {
     const [editingId, setEditingId] = useState(null);
     const [form, setForm] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [availabilityFacility, setAvailabilityFacility] = useState(null);
+    const [unavailabilityReason, setUnavailabilityReason] = useState('');
+    const [availabilitySubmitting, setAvailabilitySubmitting] = useState(false);
 
     const startEdit = (facility) => {
         setEditingId(facility.id);
@@ -29,6 +32,34 @@ export default function ManagedFacilities({ facilities = [] }) {
     };
 
     const updateField = (key, value) => setForm((f) => ({ ...f, [key]: value }));
+
+    const restoreAvailability = (facility) => {
+        router.patch(route('admin.facilities.availability', facility.id), { is_available: true }, {
+            preserveScroll: true,
+            onSuccess: () => toast.success('Facility marked available.'),
+            onError: () => toast.error('Unable to restore facility availability.'),
+        });
+    };
+
+    const submitMarkUnavailable = (event) => {
+        event.preventDefault();
+        if (!availabilityFacility || !unavailabilityReason.trim() || availabilitySubmitting) return;
+
+        setAvailabilitySubmitting(true);
+        router.patch(route('admin.facilities.availability', availabilityFacility.id), {
+            is_available: false,
+            reason: unavailabilityReason.trim(),
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Facility marked unavailable. Affected booking owners have been notified.');
+                setAvailabilityFacility(null);
+                setUnavailabilityReason('');
+            },
+            onError: (errors) => toast.error(Object.values(errors)[0] || 'Unable to update facility availability.'),
+            onFinish: () => setAvailabilitySubmitting(false),
+        });
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -181,6 +212,22 @@ export default function ManagedFacilities({ facilities = [] }) {
                                         </div>
                                     </div>
 
+                                    <div className="px-4 pb-3">
+                                        {facility.is_available === false ? (
+                                            <div className="mb-2 rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-600">
+                                                <strong>Unavailable:</strong> {facility.unavailable_reason || 'No reason provided'}
+                                            </div>
+                                        ) : null}
+                                        <button
+                                            type="button"
+                                            onClick={() => facility.is_available === false
+                                                ? restoreAvailability(facility)
+                                                : (setAvailabilityFacility(facility), setUnavailabilityReason(''))}
+                                            className={`w-full rounded-lg px-3 py-2 text-xs font-semibold ${facility.is_available === false ? 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' : 'border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
+                                        >
+                                            {facility.is_available === false ? 'Mark as Available' : 'Mark as Unavailable'}
+                                        </button>
+                                    </div>
                                     <div className="p-4 pt-0 flex gap-2">
                                         <button
                                             onClick={() => startEdit(facility)}
@@ -201,6 +248,35 @@ export default function ManagedFacilities({ facilities = [] }) {
                     </div>
                 )}
             </div>
+
+            {availabilityFacility && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <button type="button" aria-label="Close unavailability dialog" className="absolute inset-0" onClick={() => setAvailabilityFacility(null)} />
+                    <form onSubmit={submitMarkUnavailable} className="relative w-full max-w-md space-y-4 rounded-2xl bg-white p-5 shadow-2xl">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-900">Mark facility unavailable</h3>
+                            <p className="mt-1 text-sm text-slate-500">{availabilityFacility.name} will not accept new bookings until you mark it available again.</p>
+                        </div>
+                        <label className="block text-sm font-semibold text-slate-700">
+                            Reason
+                            <textarea
+                                required
+                                rows={3}
+                                maxLength={2000}
+                                value={unavailabilityReason}
+                                onChange={(event) => setUnavailabilityReason(event.target.value)}
+                                placeholder="Example: Maintenance or facility issue"
+                                className="mt-1 block w-full rounded-xl border border-slate-200 p-3 text-sm font-normal focus:border-[#A98C97] focus:ring-2 focus:ring-[#EFE4E9]"
+                            />
+                        </label>
+                        <p className="text-xs text-slate-500">Affected users with pending or approved bookings will be notified. Existing bookings will not be cancelled automatically.</p>
+                        <div className="flex gap-2">
+                            <button type="button" disabled={availabilitySubmitting} onClick={() => setAvailabilityFacility(null)} className="flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-700 disabled:opacity-50">Cancel</button>
+                            <button type="submit" disabled={availabilitySubmitting || !unavailabilityReason.trim()} className="flex-1 rounded-xl bg-[#6A535C] px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{availabilitySubmitting ? 'Saving…' : 'Confirm unavailable'}</button>
+                        </div>
+                    </form>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }
