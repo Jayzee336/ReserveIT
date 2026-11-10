@@ -249,15 +249,18 @@ class BookingController extends Controller
             'end_time',
         ]);
 
-        $requestedStart = Carbon::createFromFormat('!H:i', $startTime);
-        $requestedEnd = Carbon::createFromFormat('!H:i', $endTime);
+        // Compare wall-clock times on the same reference date. Mixing a
+        // time-only Carbon value with Carbon::parse('09:00') can compare
+        // different calendar dates and silently miss an actual overlap.
+        $requestedStart = Carbon::createFromFormat('!H:i', substr($startTime, 0, 5));
+        $requestedEnd = Carbon::createFromFormat('!H:i', substr($endTime, 0, 5));
         if ($endTime === '00:00') {
             $requestedEnd->addDay();
         }
 
         foreach ($existingBookings as $existing) {
-            $existingStart = Carbon::parse($existing->start_time);
-            $existingEnd = Carbon::parse($existing->end_time);
+            $existingStart = Carbon::createFromFormat('!H:i', substr((string) $existing->start_time, 0, 5));
+            $existingEnd = Carbon::createFromFormat('!H:i', substr((string) $existing->end_time, 0, 5));
             if (substr((string) $existing->end_time, 0, 5) === '00:00') {
                 $existingEnd->addDay();
             }
