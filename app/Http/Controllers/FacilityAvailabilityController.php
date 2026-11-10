@@ -70,7 +70,8 @@ class FacilityAvailabilityController extends Controller
                 ->where(function ($query) use ($today, $currentTime) {
                     $query->where(function ($futureDates) use ($today) {
                         $futureDates->whereDate('booking_date', '>', $today)
-                            ->orWhereDate('date', '>', $today);
+                            ->orWhereDate('date', '>', $today)
+                            ->orWhereDate('end_date', '>=', $today);
                     })->orWhere(function ($todayBookings) use ($today, $currentTime) {
                         $todayBookings->where(function ($dateFields) use ($today) {
                             $dateFields->whereDate('booking_date', $today)
