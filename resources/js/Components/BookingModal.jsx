@@ -75,17 +75,31 @@ export default function BookingModal({
     const { auth } = page.props;
     const user = auth?.user;
     const isAuthenticated = !!user;
-    const OPENING_TIME = String(page.props.systemSettings?.opening_time ?? '08:00').slice(0, 5);
-    const CLOSING_TIME = String(page.props.systemSettings?.closing_time ?? '00:00').slice(0, 5);
+    const [date, setDate] = useState(selectedDate || '');
+    const selectedWeekday = date
+        ? new Date(`${date}T12:00:00`).getDay()
+        : new Date().getDay();
+    const selectedFacilityHours = (facility?.operating_hours ?? []).find(
+        (item) => Number(item.day_of_week) === selectedWeekday
+    );
+    const isFacilityClosed = Boolean(selectedFacilityHours?.is_closed);
+    const OPENING_TIME = String(
+        selectedFacilityHours?.opens_at ?? page.props.systemSettings?.opening_time ?? '08:00'
+    ).slice(0, 5);
+    const CLOSING_TIME = String(
+        selectedFacilityHours?.closes_at ?? page.props.systemSettings?.closing_time ?? '00:00'
+    ).slice(0, 5);
     const closingMinutes = CLOSING_TIME === '00:00' ? 1440 : toMins(CLOSING_TIME);
     const TIME_SLOTS = useMemo(() => {
+        if (isFacilityClosed) return [];
+
         const slots = [];
         for (let minutes = toMins(OPENING_TIME); minutes < closingMinutes; minutes += SLOT_INTERVAL_MINUTES) {
             slots.push(`${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`);
         }
         slots.push(CLOSING_TIME);
         return slots;
-    }, [OPENING_TIME, CLOSING_TIME, closingMinutes]);
+    }, [OPENING_TIME, CLOSING_TIME, closingMinutes, isFacilityClosed]);
 
     // Read the cleanup buffer shared by HandleInertiaRequests.php.
     const configuredBuffer = Number(
@@ -107,7 +121,6 @@ export default function BookingModal({
         globalConsentSetting === '1';
 
     // Form state
-    const [date, setDate] = useState(selectedDate || '');
     const [startTime, setStartTime] = useState(selectedStartTime || '');
     const [endTime, setEndTime] = useState('');
     const [notes, setNotes] = useState('');
@@ -252,6 +265,11 @@ export default function BookingModal({
 
         if (!date) {
             setConflictError('Please select a booking date.');
+            return;
+        }
+
+        if (isFacilityClosed) {
+            setConflictError('This facility is closed on the selected day.');
             return;
         }
 
@@ -591,6 +609,15 @@ export default function BookingModal({
                     />
                 </div>
 
+                {isFacilityClosed && (
+                    <div className="flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5">
+                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-slate-600" />
+                        <p className="text-xs text-slate-700">
+                            This facility is closed on {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][selectedWeekday]}. Choose another date to request a booking.
+                        </p>
+                    </div>
+                )}
+
                 {isDateTooSoon && (
                     <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5">
                         <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
@@ -692,8 +719,9 @@ export default function BookingModal({
                 </div>
 
                 <p className="text-xs text-gray-400">
-                    Time slots are available every 15 minutes, from {formatTime(OPENING_TIME)}
-                    until {CLOSING_TIME === '00:00' ? '12:00 AM (midnight)' : formatTime(CLOSING_TIME)}. The closing time is an end-time option, not a new start slot.
+                    {isFacilityClosed
+                        ? 'No booking times are available for this facility on the selected day.'
+                        : `Time slots are available every 15 minutes, from ${formatTime(OPENING_TIME)} until ${CLOSING_TIME === '00:00' ? '12:00 AM (midnight)' : formatTime(CLOSING_TIME)}. The closing time is an end-time option, not a new start slot.`}
                 </p>
 
                 {/* Attendees */}
