@@ -24,7 +24,7 @@ final class BookingDashboardAnalytics
             return true;
         }
 
-        $bookingDate = $booking->booking_date ?? $booking->date;
+        $bookingDate = $booking->end_date ?? $booking->booking_date ?? $booking->date;
         if (! $bookingDate || ! $booking->end_time) {
             return false;
         }
@@ -88,6 +88,7 @@ final class BookingDashboardAnalytics
     {
         return $bookings->map(function (Booking $booking) use ($asOf): array {
             $date = $booking->booking_date ?? $booking->date;
+            $endDate = $booking->end_date ?? $date;
 
             return [
                 'id' => $booking->getKey(),
@@ -95,6 +96,7 @@ final class BookingDashboardAnalytics
                 'client' => $booking->user?->name ?? $booking->guest_name ?? 'Guest',
                 'email' => $booking->user?->email ?? $booking->guest_email,
                 'date' => $date instanceof Carbon ? $date->format('Y-m-d') : ($date ? Carbon::parse($date)->format('Y-m-d') : null),
+                'end_date' => $endDate instanceof Carbon ? $endDate->format('Y-m-d') : ($endDate ? Carbon::parse($endDate)->format('Y-m-d') : null),
                 'start_time' => $booking->start_time,
                 'end_time' => $booking->end_time,
                 'status' => $booking->status,
