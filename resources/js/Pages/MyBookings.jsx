@@ -87,6 +87,15 @@ const getLocalDateString = () => {
     return `${year}-${month}-${day}`;
 };
 
+const addDaysToLocalDate = (days) => {
+    const date = new Date(`${getLocalDateString()}T12:00:00`);
+    date.setDate(date.getDate() + days);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 const isValidTime = (time) => {
     if (!/^\d{2}:\d{2}$/.test(String(time || ''))) return false;
 
@@ -548,6 +557,8 @@ export default function MyBookings({
         selectedDetailBooking?.date ?? selectedDetailBooking?.booking_date ?? ''
     ).slice(0, 10);
     const todayString = getLocalDateString();
+    const bookingLeadTimeDays = Math.max(0, Number(selectedFacility?.booking_lead_time_days ?? 0));
+    const earliestEditableDate = addDaysToLocalDate(bookingLeadTimeDays);
     const bookingFinalDate = String(selectedDetailBooking?.end_date || selectedDetailBooking?.date || selectedDetailBooking?.booking_date || '').slice(0, 10);
     const canRequestExtension = Boolean(
         selectedDetailBooking?.checked_in_at
@@ -1070,7 +1081,7 @@ export default function MyBookings({
                                             <label className="mb-1 block text-xs font-semibold text-gray-600">Start Date</label>
                                             {isEditing ? (
                                                 <>
-                                                    <input type="date" value={data.date} min={getLocalDateString()} onChange={(e) => {
+                                                    <input type="date" value={data.date} min={earliestEditableDate} onChange={(e) => {
                                                         const nextDate = e.target.value;
                                                         setData({
                                                             ...data,
@@ -1078,6 +1089,7 @@ export default function MyBookings({
                                                             end_date: data.end_date < nextDate ? nextDate : data.end_date,
                                                         });
                                                     }} required className="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-[#846A75] focus:ring-[#846A75]" />
+                                                    {bookingLeadTimeDays > 0 && <p className="mt-1 text-[11px] text-amber-700">This facility requires {bookingLeadTimeDays} calendar days advance notice. Earliest date: {formatDate(earliestEditableDate)}.</p>}
                                                     <FieldError message={errors.date} />
                                                 </>
                                             ) : <p className="text-sm font-medium text-gray-900">{formatDate(selectedDetailBooking.date)}{selectedDetailBooking.end_date && String(selectedDetailBooking.end_date).slice(0, 10) !== String(selectedDetailBooking.date).slice(0, 10) ? ' – ' + formatDate(selectedDetailBooking.end_date) : ''}</p>}
