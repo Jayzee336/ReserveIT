@@ -474,10 +474,8 @@ class BookingExtensionController extends Controller
             ->where('facility_id', $facilityId)
             ->where('id', '!=', $excludeBookingId)
             ->whereIn('status', ['pending', 'approved'])
-            ->where(function ($query) use ($date) {
-                $query->whereDate('date', $date)
-                    ->orWhereDate('booking_date', $date);
-            })
+            ->whereRaw('COALESCE(date, booking_date) <= ?', [$date])
+            ->whereRaw('COALESCE(end_date, date, booking_date) >= ?', [$date])
             ->get(['start_time', 'end_time']);
 
         foreach ($existingBookings as $existing) {
