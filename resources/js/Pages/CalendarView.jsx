@@ -277,7 +277,6 @@ export function CalendarView({
                                     </div>
                                 </div>
                             );
-                            );
                         })}
                     </div>
 
@@ -347,7 +346,6 @@ export function CalendarView({
                                     </div><span className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold uppercase ${statusStyles[booking.status] || 'border-slate-200 bg-slate-50 text-slate-600'}`}>{booking.status}</span></div>
                                     {booking.can_view_details ? <div className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-600"><p>{booking.user?.name || booking.guest_name || 'Reservation'}</p>{booking.notes && <p className="mt-1 line-clamp-2 text-slate-500">{booking.notes}</p>}</div> : <p className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-500">Details not disclosed for privacy. Select to view reservation time and status.</p>}
                                 </button>
-                            ))
                             ))
                         )}
 
