@@ -18,6 +18,14 @@ class FacilityUnavailabilityPeriod extends Model
         'scheduled_end_at',
     ];
 
+    protected $hidden = [
+        'affected_user_ids',
+    ];
+
+    protected $appends = [
+        'affected_user_count',
+    ];
+
     protected $casts = [
         'started_at' => 'datetime',
         'ended_at' => 'datetime',
@@ -29,6 +37,11 @@ class FacilityUnavailabilityPeriod extends Model
     public function facility()
     {
         return $this->belongsTo(Facility::class);
+    }
+
+    public function getAffectedUserCountAttribute(): int
+    {
+        return count($this->affected_user_ids ?? []);
     }
 
     public function isScheduled(): bool
