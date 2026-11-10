@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { CalendarDays, Clock3, RefreshCw } from 'lucide-react';
+import { CalendarDays, Clock3 } from 'lucide-react';
 import { CalendarView } from './CalendarView';
 
 export default function CalendarDashboard({
@@ -11,8 +11,10 @@ export default function CalendarDashboard({
     canToggleScheduleView = false,
     availabilityOnly = false,
 }) {
-    const handleDateChange = (event) => {
-        const date = event.target.value;
+    const handleDateChange = (valueOrEvent) => {
+        const date = typeof valueOrEvent === 'string'
+            ? valueOrEvent
+            : valueOrEvent?.target?.value;
 
         if (!date) return;
 
@@ -55,12 +57,12 @@ export default function CalendarDashboard({
                 <div className="flex items-center gap-2">
                     <CalendarDays className="h-5 w-5 text-[#6A535C]" />
                     <h2 className="text-lg font-semibold text-gray-800">
-                        Schedule Grid
+                        Facility Calendar
                     </h2>
                 </div>
             }
         >
-            <Head title="Schedule Grid | ReserveIT" />
+            <Head title="Facility Calendar | ReserveIT" />
 
             <div className="min-w-0 w-full py-5 sm:py-7">
                 <div className="mx-auto w-full max-w-[1600px] min-w-0 px-3 sm:px-5 lg:px-8">
@@ -160,15 +162,15 @@ export default function CalendarDashboard({
                         </div>
 
                         <div className="min-w-0 p-3 sm:p-5">
-                            <div className="min-w-0 overflow-x-auto rounded-xl border border-slate-100 bg-white">
-                                <div className="min-w-0">
+                            <div className="min-w-0">
                                     <CalendarView
                                         serverFacilities={serverFacilities}
                                         serverBookings={serverBookings}
                                         selectedDate={selectedDate}
                                         availabilityOnly={availabilityOnly}
+                                        onDateChange={handleDateChange}
+                                        scheduleView={scheduleView}
                                     />
-                                </div>
                             </div>
                         </div>
 
