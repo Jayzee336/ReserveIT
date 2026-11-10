@@ -66,6 +66,18 @@ const STATUS_OPTIONS = [
     { key: 'cancelled', label: 'Cancelled' },
 ];
 
+const suggestExtendedEndTime = (currentEnd) => {
+    const normalized = String(currentEnd || '').slice(0, 5);
+    const currentMinutes = normalized === '00:00' ? 1440 : toMinutes(normalized);
+    const extendedMinutes = currentMinutes + 30;
+
+    if (currentMinutes <= 0 || extendedMinutes > 1440) return '';
+
+    const hour = Math.floor(extendedMinutes / 60) % 24;
+    const minute = extendedMinutes % 60;
+    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+};
+
 const getLocalDateString = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -416,6 +428,10 @@ export default function MyBookings({
     const [isCancelling, setIsCancelling] = useState(false);
     const [cancellationReason, setCancellationReason] = useState('');
     const [isCheckInOutProcessing, setIsCheckInOutProcessing] = useState(false);
+    const [showExtensionForm, setShowExtensionForm] = useState(false);
+    const [extensionEndTime, setExtensionEndTime] = useState('');
+    const [extensionReason, setExtensionReason] = useState('');
+    const [isExtensionSubmitting, setIsExtensionSubmitting] = useState(false);
 
     useEffect(() => {
         if (openBooking?.id) {
@@ -568,6 +584,9 @@ export default function MyBookings({
         setDetailModalId(booking.id);
         setIsEditing(false);
         setShowSaveConfirm(false);
+        setShowExtensionForm(false);
+        setExtensionEndTime(suggestExtendedEndTime(booking.end_time));
+        setExtensionReason('');
 
         setData({
             date: booking.date ? String(booking.date).slice(0, 10) : '',
@@ -586,6 +605,8 @@ export default function MyBookings({
         setDetailModalId(null);
         setIsEditing(false);
         setShowSaveConfirm(false);
+        setShowExtensionForm(false);
+        setExtensionReason('');
         reset();
     };
 
@@ -730,6 +751,39 @@ export default function MyBookings({
                     'Failed to cancel booking.'
                 ),
                 onFinish: () => setIsCancelling(false),
+            }
+        );
+    };
+
+    const handleExtensionRequest = (event) => {
+        event.preventDefault();
+
+        if (!selectedDetailBooking?.id || isExtensionSubmitting) return;
+        if (!extensionEndTime || extensionReason.trim().length < 5) {
+            toast.error('Choose a later end time and provide a reason of at least 5 characters.');
+            return;
+        }
+
+        setIsExtensionSubmitting(true);
+        router.post(
+            route('bookings.extensions.store', selectedDetailBooking.id),
+            {
+                requested_end_time: extensionEndTime,
+                reason: extensionReason.trim(),
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setShowExtensionForm(false);
+                    setExtensionReason('');
+                    toast.success('Extension request submitted for administrator review.');
+                },
+                onError: (validationErrors) => toast.error(
+                    validationErrors.requested_end_time ||
+                    validationErrors.reason ||
+                    'Unable to submit the extension request.'
+                ),
+                onFinish: () => setIsExtensionSubmitting(false),
             }
         );
     };
