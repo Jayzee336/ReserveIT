@@ -41,6 +41,11 @@ const formatTime = (value) => {
 
 const statusLabel = (value) => String(value || 'pending').replaceAll('_', ' ');
 
+const localToday = () => {
+    const date = new Date();
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 export default function Show({ activityPlan }) {
     const { auth } = usePage().props;
     const user = auth?.user;
@@ -265,12 +270,12 @@ export default function Show({ activityPlan }) {
                                         )}
                                     </div>
 
-                                    {isPlanOwner && user?.role === 'user' && sessionStatus === 'pending' && (
+                                    {isPlanOwner && sessionStatus === 'pending' && (
                                         <div className="sm:col-span-2">
                                             {editingSessionId === session.id ? (
                                                 <form onSubmit={saveSessionEdit} className="grid grid-cols-1 gap-3 rounded-xl border border-[#D9C8CF] bg-[#FBF8F9] p-3 sm:grid-cols-2 lg:grid-cols-3">
                                                     <label className="text-[10px] font-semibold text-slate-500">Session date
-                                                        <input type="date" required min={new Date().toISOString().slice(0, 10)} value={editData.date} onChange={(event) => setEditData((current) => ({ ...current, date: event.target.value }))} className="mt-1 w-full rounded-lg border-slate-200 text-xs" />
+                                                        <input type="date" required min={localToday()} value={editData.date} onChange={(event) => setEditData((current) => ({ ...current, date: event.target.value }))} className="mt-1 w-full rounded-lg border-slate-200 text-xs" />
                                                     </label>
                                                     <label className="text-[10px] font-semibold text-slate-500">Start time
                                                         <input type="time" required step="900" value={editData.start_time} onChange={(event) => setEditData((current) => ({ ...current, start_time: event.target.value }))} className="mt-1 w-full rounded-lg border-slate-200 text-xs" />
@@ -279,10 +284,10 @@ export default function Show({ activityPlan }) {
                                                         <input type="time" required step="900" value={editData.end_time} onChange={(event) => setEditData((current) => ({ ...current, end_time: event.target.value }))} className="mt-1 w-full rounded-lg border-slate-200 text-xs" />
                                                     </label>
                                                     <label className="text-[10px] font-semibold text-slate-500">Attendees
-                                                        <input type="number" required min="1" value={editData.attendees} onChange={(event) => setEditData((current) => ({ ...current, attendees: Number(event.target.value) }))} className="mt-1 w-full rounded-lg border-slate-200 text-xs" />
+                                                        <input type="number" required min="1" max={activityPlan.facility?.capacity || undefined} value={editData.attendees} onChange={(event) => setEditData((current) => ({ ...current, attendees: Number(event.target.value) }))} className="mt-1 w-full rounded-lg border-slate-200 text-xs" />
                                                     </label>
                                                     <label className="flex items-center gap-2 self-end rounded-lg bg-white p-2.5 text-xs font-medium text-slate-700">
-                                                        <input type="checkbox" checked={editData.needs_manpower} onChange={(event) => setEditData((current) => ({ ...current, needs_manpower: event.target.checked }))} className="rounded border-slate-300 text-[#6A535C]" />
+                                                        <input type="checkbox" checked={editData.needs_manpower} disabled={!activityPlan.facility?.allowTdevsManpower} onChange={(event) => setEditData((current) => ({ ...current, needs_manpower: event.target.checked }))} className="rounded border-slate-300 text-[#6A535C]" />
                                                         Request TDEVS manpower
                                                     </label>
                                                     <label className="text-[10px] font-semibold text-slate-500 sm:col-span-2 lg:col-span-3">Session notes
