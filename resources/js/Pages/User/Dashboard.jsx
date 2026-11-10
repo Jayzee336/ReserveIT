@@ -379,7 +379,7 @@ export default function Dashboard({
                                 <div key={booking.id} className="flex items-center justify-between gap-3 border-b border-[var(--ri-border)] pb-3 last:border-0">
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-semibold text-slate-800">{booking.facility?.name ?? 'Facility'}</p>
-                                        <p className="text-xs text-slate-500">{formatDate(booking.booking_date ?? booking.date)} · {formatTime(booking.start_time)}</p>
+                                        <p className="text-xs text-slate-500">{formatDate(booking.booking_date ?? booking.date)}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.booking_date ?? booking.date).slice(0, 10) ? ' – ' + formatDate(booking.end_date) : ''} · {formatTime(booking.start_time)}</p>
                                     </div>
                                     <StatusBadge status={booking.display_status || booking.status} />
                                 </div>
