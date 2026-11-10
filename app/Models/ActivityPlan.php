@@ -49,6 +49,29 @@ class ActivityPlan extends Model
 
     public function bookings()
     {
-        return $this->hasMany(Booking::class);
+        return $this->hasMany(Booking::class)->orderBy('date')->orderBy('start_time');
+    }
+
+    public function syncStatus(): string
+    {
+        $statuses = $this->bookings()
+            ->whereNotIn('status', ['cancelled'])
+            ->pluck('status');
+
+        if ($statuses->isEmpty()) {
+            $status = 'cancelled';
+        } elseif ($statuses->every(fn ($value) => $value === 'approved')) {
+            $status = 'approved';
+        } elseif ($statuses->every(fn ($value) => $value === 'declined')) {
+            $status = 'declined';
+        } elseif ($statuses->every(fn ($value) => $value === 'pending')) {
+            $status = 'pending';
+        } else {
+            $status = 'partially_approved';
+        }
+
+        $this->update(['status' => $status]);
+
+        return $status;
     }
 }
