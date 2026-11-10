@@ -89,8 +89,14 @@ export function CalendarView({
                     return;
                 }
 
+                const lastOccupiedInstant = new Date(end.getTime() - 1);
                 const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 12);
-                const lastDate = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 12);
+                const lastDate = new Date(
+                    lastOccupiedInstant.getFullYear(),
+                    lastOccupiedInstant.getMonth(),
+                    lastOccupiedInstant.getDate(),
+                    12
+                );
                 let scanned = 0;
 
                 while (cursor <= lastDate && scanned <= 370) {
