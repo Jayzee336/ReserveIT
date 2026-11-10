@@ -258,64 +258,56 @@ export function CalendarView({
                             }
 
                             return (
-                                <button
+                                <div
                                     key={day.key}
-                                    type="button"
-                                    onClick={() => selectDate(day.key)}
-                                    aria-pressed={day.isSelected}
-                                    aria-label={`${formatLongDate(day.key)}, ${day.bookings.length} active bookings`}
-                                    className={`group min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 text-left transition hover:bg-[#F7F0F3]/70 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#846A75] sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F7F0F3]' : 'bg-white'}`}
+                                    className={`group min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 text-left sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F7F0F3]' : 'bg-white'}`}
                                 >
-                                    <span className="flex items-center justify-between gap-1">
-                                        <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#6A535C] text-white' : day.isToday ? 'border border-[#846A75] text-[#6A535C]' : 'text-slate-700'}`}>
+                                    <div className="flex items-center justify-between gap-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => selectDate(day.key)}
+                                            aria-pressed={day.isSelected}
+                                            aria-label={`Select ${formatLongDate(day.key)}`}
+                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold transition hover:ring-2 hover:ring-[#846A75] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75] sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#6A535C] text-white' : day.isToday ? 'border border-[#846A75] text-[#6A535C]' : 'text-slate-700'}`}
+                                        >
                                             {day.dayNumber}
-                                        </span>
+                                        </button>
                                         {(day.bookings.length > 0 || day.closures.length > 0) && (
                                             <span className="flex items-center gap-1">
-                                                {day.bookings.length > 0 && (
-                                                    <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-600 sm:text-[10px]">
-                                                        {day.bookings.length}
-                                                    </span>
-                                                )}
-                                                {day.closures.length > 0 && (
-                                                    <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[8px] font-bold text-amber-800 sm:text-[9px]">
-                                                        C
-                                                    </span>
-                                                )}
-                                            </span>
-                                        )}
-                                    </span>
-
-                                    <div className="mt-1 space-y-1">
-                                        {day.closures.length > 0 && (
-                                            <span className="block truncate rounded bg-amber-100 px-1 py-0.5 text-[8px] font-semibold leading-3 text-amber-800 sm:px-1.5 sm:text-[10px] sm:leading-4">
-                                                Closure
-                                            </span>
-                                        )}
-                                        {day.bookings.slice(0, 2).map((booking) => {
-                                            const facility = facilityById.get(String(booking.facility_id));
-                                            const approved = booking.status === 'approved';
-
-                                            return (
-                                                <span
-                                                    key={booking.id}
-                                                    title={booking.can_view_details ? `${facility?.name || 'Facility'} · ${formatTime(booking.start_time)}–${formatTime(booking.end_time)} · ${booking.status}` : `Reserved · ${formatTime(booking.start_time)}–${formatTime(booking.end_time)}`}
-                                                    className={`block truncate rounded px-1 py-0.5 text-[8px] font-semibold leading-3 sm:px-1.5 sm:text-[10px] sm:leading-4 ${approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}
-                                                >
-                                                    <span className="block truncate">
-                                                        {booking.can_view_details ? (facility?.name || 'Facility') : 'Reserved'}
-                                                        <span className="font-medium opacity-80"> · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}</span>
-                                                    </span>
-                                                </span>
-                                            );
-                                        })}
-                                        {day.bookings.length > 2 && (
-                                            <span className="block truncate px-1 text-[8px] font-semibold text-slate-500 sm:text-[10px]">
-                                                +{day.bookings.length - 2} more
+                                                {day.bookings.length > 0 && <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-600 sm:text-[10px]">{day.bookings.length}</span>}
+                                                {day.closures.length > 0 && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[8px] font-bold text-amber-800 sm:text-[9px]">C</span>}
                                             </span>
                                         )}
                                     </div>
-                                </button>
+                                    <div className="mt-1 space-y-1">
+                                        {day.closures.length > 0 && <span className="block truncate rounded bg-amber-100 px-1 py-0.5 text-[8px] font-semibold leading-3 text-amber-800 sm:px-1.5 sm:text-[10px] sm:leading-4">Closure</span>}
+                                        {day.bookings.slice(0, 2).map((booking) => {
+                                            const facility = facilityById.get(String(booking.facility_id));
+                                            const approved = booking.status === 'approved';
+                                            const label = booking.can_view_details ? (facility?.name || 'Facility') : 'Reserved';
+                                            const timeLabel = `${formatTime(booking.start_time)}–${formatTime(booking.end_time)}`;
+                                            const chipClass = `block w-full truncate rounded px-1 py-0.5 text-left text-[8px] font-semibold leading-3 sm:px-1.5 sm:text-[10px] sm:leading-4 ${approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`;
+
+                                            if (!booking.can_view_details) {
+                                                return <span key={booking.id} title={`Reserved · ${timeLabel}`} className={chipClass}><span className="block truncate">{label}<span className="font-medium opacity-80"> · {timeLabel}</span></span></span>;
+                                            }
+
+                                            return (
+                                                <button
+                                                    key={booking.id}
+                                                    type="button"
+                                                    title={`${label} · ${timeLabel} · ${booking.status}`}
+                                                    aria-label={`View ${label} booking, ${timeLabel}, ${booking.status}`}
+                                                    onClick={() => setViewingBooking({ ...booking, facility })}
+                                                    className={`${chipClass} transition hover:ring-2 hover:ring-[#846A75] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]`}
+                                                >
+                                                    <span className="block truncate">{label}<span className="font-medium opacity-80"> · {timeLabel}</span></span>
+                                                </button>
+                                            );
+                                        })}
+                                        {day.bookings.length > 2 && <span className="block truncate px-1 text-[8px] font-semibold text-slate-500 sm:text-[10px]">+{day.bookings.length - 2} more</span>}
+                                    </div>
+                                </div>
                             );
                         })}
                     </div>
