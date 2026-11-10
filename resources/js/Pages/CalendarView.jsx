@@ -1,442 +1,310 @@
-import { useEffect, useRef, useState } from 'react';
-import { usePage } from '@inertiajs/react';
-import { X as XIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { router } from '@inertiajs/react';
+import {
+    CalendarDays,
+    ChevronLeft,
+    ChevronRight,
+    Clock3,
+    Plus,
+    RefreshCw,
+} from 'lucide-react';
 import BookingModal from '@/Components/BookingModal';
 
+const parseLocalDate = (value) => {
+    const [year, month, day] = String(value || '').slice(0, 10).split('-').map(Number);
+    if (!year || !month || !day) return new Date();
+    return new Date(year, month - 1, day, 12, 0, 0, 0);
+};
+
+const dateKey = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
 
 const formatTime = (value) => {
     if (!value) return '—';
     const [hourText, minuteText] = String(value).slice(0, 5).split(':');
     const hour = Number(hourText);
     const minute = Number(minuteText);
-    if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) return String(value);
-    return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
-};
-const statusLabel = (status) => status === 'pending'
-    ? 'Pending approval · temporarily held'
-    : status === 'approved'
-      ? 'Approved · confirmed'
-      : String(status || 'Unknown');
-const toMinutes = (time) => { const [hour, minute] = String(time).split(':').map(Number); return hour * 60 + (minute || 0); };
-const toEndMinutes = (time) => String(time).slice(0, 5) === '00:00' ? 1440 : toMinutes(time);
-const statusClass = (status) => status === 'approved' ? 'from-emerald-500 to-emerald-600' : 'from-amber-400 to-amber-500';
 
-export function CalendarView({ serverFacilities = [], serverBookings = [], selectedDate, availabilityOnly = false }) {
-    const { systemSettings = {} } = usePage().props;
-    const openingTime = String(systemSettings.opening_time ?? '08:00').slice(0, 5);
-    const closingTime = String(systemSettings.closing_time ?? '00:00').slice(0, 5);
-    const configuredCleanupBuffer = Number(systemSettings.cleanup_buffer_minutes ?? 30);
-    const cleanupBufferMinutes = Number.isFinite(configuredCleanupBuffer)
-        ? Math.max(0, configuredCleanupBuffer)
-        : 30;
-    const openingMinutes = toMinutes(openingTime);
-    const closingMinutes = closingTime === '00:00' ? 1440 : toMinutes(closingTime);
-    const SLOT_INTERVAL_MINUTES = 15;
-    const timeSlots = [];
-
-    for (
-        let minutes = openingMinutes;
-        minutes < closingMinutes;
-        minutes += SLOT_INTERVAL_MINUTES
-    ) {
-        timeSlots.push({
-            key: String(minutes),
-            start: minutes,
-            end: Math.min(minutes + SLOT_INTERVAL_MINUTES, closingMinutes),
-        });
+    if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) {
+        return String(value);
     }
 
-    // Group the quarter-hour columns beneath readable hourly headings.
-    const hourGroups = [];
-    timeSlots.forEach((slot) => {
-        const hourStart = Math.floor(slot.start / 60) * 60;
-        const lastGroup = hourGroups[hourGroups.length - 1];
+    return `${hour % 12 || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
+};
 
-        if (lastGroup && lastGroup.hourStart === hourStart) {
-            lastGroup.colSpan += 1;
-        } else {
-            hourGroups.push({ hourStart, colSpan: 1 });
-        }
+const formatLongDate = (value) => parseLocalDate(value).toLocaleDateString('en-PH', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+});
+
+const statusStyles = {
+    approved: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    pending: 'border-amber-200 bg-amber-50 text-amber-800',
+};
+
+export function CalendarView({
+    serverFacilities = [],
+    serverBookings = [],
+    selectedDate,
+    availabilityOnly = false,
+    onDateChange,
+    scheduleView = 'all',
+}) {
+    const [create, setCreate] = useState(null);
+    const selected = parseLocalDate(selectedDate);
+    const monthStart = new Date(selected.getFullYear(), selected.getMonth(), 1, 12);
+    const monthEnd = new Date(selected.getFullYear(), selected.getMonth() + 1, 0, 12);
+    const monthLabel = monthStart.toLocaleDateString('en-PH', {
+        month: 'long',
+        year: 'numeric',
     });
 
-    const formatMinutes = (minutes) => {
-        const normalized = ((minutes % 1440) + 1440) % 1440;
-        const hour = Math.floor(normalized / 60);
-        const minute = normalized % 60;
-        return formatTime(
-            `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
-        );
+    const facilityById = useMemo(
+        () => new Map(serverFacilities.map((facility) => [String(facility.id), facility])),
+        [serverFacilities]
+    );
+
+    const bookingsByDate = useMemo(() => {
+        const grouped = new Map();
+
+        serverBookings.forEach((booking) => {
+            const bookingDate = String(booking.date || booking.booking_date || '').slice(0, 10);
+            if (!bookingDate || !['pending', 'approved'].includes(String(booking.status || '').toLowerCase())) {
+                return;
+            }
+
+            if (!grouped.has(bookingDate)) grouped.set(bookingDate, []);
+            grouped.get(bookingDate).push(booking);
+        });
+
+        grouped.forEach((items) => items.sort((a, b) => String(a.start_time).localeCompare(String(b.start_time))));
+        return grouped;
+    }, [serverBookings]);
+
+    const calendarDays = useMemo(() => {
+        const firstWeekday = monthStart.getDay();
+        const totalDays = monthEnd.getDate();
+        const cellCount = Math.ceil((firstWeekday + totalDays) / 7) * 7;
+
+        return Array.from({ length: cellCount }, (_, index) => {
+            const dayNumber = index - firstWeekday + 1;
+
+            if (dayNumber < 1 || dayNumber > totalDays) return null;
+
+            const date = new Date(selected.getFullYear(), selected.getMonth(), dayNumber, 12);
+            const key = dateKey(date);
+
+            return {
+                key,
+                dayNumber,
+                bookings: bookingsByDate.get(key) || [],
+                isToday: key === dateKey(new Date()),
+                isSelected: key === selectedDate,
+            };
+        });
+    }, [bookingsByDate, monthEnd, monthStart, selected, selectedDate]);
+
+    const dailyBookings = bookingsByDate.get(selectedDate) || [];
+
+    const changeMonth = (offset) => {
+        const nextMonth = new Date(selected.getFullYear(), selected.getMonth() + offset, 1, 12);
+        onDateChange?.(dateKey(nextMonth));
     };
 
-    // The closing boundary is an end-time marker, not a selectable slot.
-    const closingBoundaryLabel = formatMinutes(closingMinutes);
-    const [details, setDetails] = useState(null);
-    const [create, setCreate] = useState(null);
-    const detailsDialogRef = useRef(null);
-    const createDialogRef = useRef(null);
+    const selectDate = (value) => onDateChange?.(value);
 
-    useEffect(() => {
-        const activeDialog = details
-            ? detailsDialogRef.current
-            : create
-              ? createDialogRef.current
-              : null;
-
-        if (!activeDialog) return undefined;
-
-        const previousFocus = document.activeElement;
-        const firstFocusable = activeDialog.querySelector(
-            'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-
-        firstFocusable?.focus();
-
-        const handleKeyDown = (event) => {
-            if (event.key === 'Escape') {
-                setDetails(null);
-                setCreate(null);
-                return;
-            }
-
-            if (event.key !== 'Tab') return;
-
-            const focusable = Array.from(
-                activeDialog.querySelectorAll(
-                    'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-                )
-            );
-
-            if (focusable.length === 0) {
-                event.preventDefault();
-                activeDialog.focus();
-                return;
-            }
-
-            const first = focusable[0];
-            const last = focusable[focusable.length - 1];
-
-            if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-            } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
-            }
-        };
-
-        document.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-
-            if (previousFocus instanceof HTMLElement) {
-                previousFocus.focus();
-            }
-        };
-    }, [details, create]);
+    const visibleDailyBookings = dailyBookings.map((booking) => ({
+        ...booking,
+        facility: facilityById.get(String(booking.facility_id)),
+    }));
 
     return (
         <>
-            <div className="mb-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-600">
-                <span><strong className="text-amber-700">Pending:</strong> temporarily held slot</span>
-                <span><strong className="text-emerald-700">Booked:</strong> confirmed reservation</span>
-                {availabilityOnly && <span className="font-medium text-[#543F48]">You can check availability and request bookings for any facility here. Existing reservation details remain private.</span>}
-                <span className="text-slate-500">Each column is 15 minutes; reservation bars span their full booked duration.</span>
-                <span className="text-slate-500">Schedule shown from {formatTime(openingTime)} to {closingTime === '00:00' ? '12:00 AM (midnight)' : formatTime(closingTime)}</span>
-            </div>
-            <div className="w-full overflow-x-auto overflow-y-hidden rounded-2xl border border-[var(--ri-border)]">
-                <table className="min-w-[2820px] w-full table-fixed border-collapse">
-                    <colgroup>
-                        <col style={{ width: '190px' }} />
-                        {timeSlots.map((slot) => (
-                            <col key={slot.key} style={{ width: '40px' }} />
+            <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.85fr)]">
+                <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-3 py-3 sm:px-5">
+                        <div className="flex min-w-0 items-center gap-2">
+                            <CalendarDays className="h-5 w-5 shrink-0 text-[#6A535C]" />
+                            <h2 className="truncate text-base font-bold text-slate-800">{monthLabel}</h2>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                            <button
+                                type="button"
+                                onClick={() => changeMonth(-1)}
+                                aria-label="Previous month"
+                                className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => selectDate(dateKey(new Date()))}
+                                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]"
+                            >
+                                Today
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => changeMonth(1)}
+                                aria-label="Next month"
+                                className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
+                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                            <div key={day} className="px-1 py-2 text-center text-[10px] font-bold uppercase tracking-wide text-slate-500 sm:py-3 sm:text-xs">
+                                {day}
+                            </div>
                         ))}
-                        <col style={{ width: '64px' }} />
-                    </colgroup>
-                    <thead className="bg-[var(--ri-surface-subtle)]">
-                        <tr>
-                            <th
-                                rowSpan={2}
-                                className="sticky left-0 z-30 w-[190px] min-w-[190px] border-b border-r bg-[#fbf5ef] px-2 py-2 text-left text-xs font-semibold text-slate-700"
-                            >
-                                Facility
-                            </th>
-                            {hourGroups.map((group) => (
-                                <th
-                                    key={group.hourStart}
-                                    colSpan={group.colSpan}
-                                    className="border-b border-r border-slate-200 bg-slate-100 px-1 py-2 text-center text-[10px] font-bold text-slate-700"
-                                >
-                                    {formatMinutes(group.hourStart).replace(':00', '')}
-                                </th>
-                            ))}
-                            <th
-                                rowSpan={2}
-                                title={`Closing boundary: ${closingBoundaryLabel} — end time only`}
-                                className="w-[64px] min-w-[64px] border-b border-l-2 border-l-[#E8D8D1] bg-[#F7F0F3]/70 px-1 py-2 text-center text-[9px] font-bold leading-tight text-[#543F48]"
-                            >
-                                <span className="block">End</span>
-                                <span className="mt-1 block text-[8px] font-medium">{closingBoundaryLabel}</span>
-                            </th>
-                        </tr>
-                        <tr>
-                            {timeSlots.map((slot) => (
-                                <th
-                                    key={slot.key}
-                                    title={formatMinutes(slot.start)}
-                                    className="h-7 w-[40px] min-w-[40px] border-b border-r border-slate-200 bg-white px-0 py-1 text-center text-[8px] font-semibold tabular-nums text-slate-500"
-                                >
-                                    {String(slot.start % 60).padStart(2, '0')}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {serverFacilities.map((facility) => {
-                            const bookings = serverBookings
-                                .filter((booking) => (
-                                    String(booking.facility_id) === String(facility.id) &&
-                                    ['pending', 'approved'].includes(String(booking.status ?? '').toLowerCase())
-                                ))
-                                .map((booking) => ({
-                                    booking,
-                                    start: Math.max(openingMinutes, toMinutes(booking.start_time)),
-                                    end: Math.min(closingMinutes, toEndMinutes(booking.end_time)),
-                                }))
-                                .filter((range) => range.end > range.start)
-                                .sort((a, b) => a.start - b.start);
+                    </div>
 
-                            const activeBookingsAt = (slot) => bookings.filter((range) => (
-                                range.start < slot.end && range.end > slot.start
-                            ));
-
-                            // The server blocks a new start until the previous booking's
-                            // cleanup buffer expires. Mirror that rule in the visible grid.
-                            const cleanupBookingsAt = (slot) => cleanupBufferMinutes > 0
-                                ? bookings.filter((range) => (
-                                    range.end <= slot.start &&
-                                    slot.start < range.end + cleanupBufferMinutes
-                                ))
-                                : [];
-
-                            const rangeSignature = (ranges) => ranges
-                                .map((range) => String(range.booking.id))
-                                .sort()
-                                .join('|');
-
-                            const cells = [];
-                            let slotIndex = 0;
-
-                            while (slotIndex < timeSlots.length) {
-                                const slot = timeSlots[slotIndex];
-                                const activeBookings = activeBookingsAt(slot);
-
-                                if (activeBookings.length > 0) {
-                                    const signature = rangeSignature(activeBookings);
-                                    let span = 1;
-
-                                    while (slotIndex + span < timeSlots.length) {
-                                        const nextActive = activeBookingsAt(timeSlots[slotIndex + span]);
-                                        if (rangeSignature(nextActive) !== signature) break;
-                                        span += 1;
-                                    }
-
-                                    const spanEnd = timeSlots[slotIndex + span - 1].end;
-
-                                    cells.push(
-                                        <td
-                                            key={`booking-${slot.key}`}
-                                            colSpan={span}
-                                            className="border-b border-r border-slate-200 p-0.5 align-middle"
-                                        >
-                                            <div className="flex min-h-[52px] flex-col justify-center gap-1">
-                                                {activeBookings.map((range) => {
-                                                    const booking = range.booking;
-                                                    const visibleStart = Math.max(range.start, slot.start);
-                                                    const visibleEnd = Math.min(range.end, spanEnd);
-                                                    const visibleIntervals = Math.max(
-                                                        1,
-                                                        Math.ceil((visibleEnd - visibleStart) / SLOT_INTERVAL_MINUTES)
-                                                    );
-                                                    const isApproved = booking.status === 'approved';
-                                                    const shortLabel = isApproved ? 'APP' : 'PEND';
-                                                    const fullLabel = isApproved ? 'CONFIRMED' : 'PENDING';
-
-                                                    return (
-                                                        <button
-                                                            key={booking.id}
-                                                            type="button"
-                                                            aria-label={`${fullLabel} booking for ${facility.name}, ${formatTime(booking.start_time)} to ${formatTime(booking.end_time)}`}
-                                                            title={`${fullLabel} · ${formatTime(booking.start_time)} – ${formatTime(booking.end_time)}`}
-                                                            onClick={() => setDetails({ facility, bookings: [booking] })}
-                                                            className={`flex min-h-[46px] w-full flex-col justify-center overflow-hidden rounded-lg bg-gradient-to-r ${statusClass(booking.status)} px-2 py-1 text-left text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]`}
-                                                        >
-                                                            <span className="block truncate text-[9px] font-extrabold uppercase leading-3 tracking-wide">
-                                                                {visibleIntervals === 1 ? shortLabel : fullLabel}
-                                                            </span>
-                                                            {visibleIntervals >= 3 && (
-                                                                <span className="mt-0.5 block truncate text-[9px] font-semibold leading-3 tabular-nums">
-                                                                    {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
-                                                                </span>
-                                                            )}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </td>
-                                    );
-
-                                    slotIndex += span;
-                                    continue;
-                                }
-
-                                const cleanupBookings = cleanupBookingsAt(slot);
-
-                                if (cleanupBookings.length > 0) {
-                                    const signature = rangeSignature(cleanupBookings);
-                                    let span = 1;
-
-                                    while (slotIndex + span < timeSlots.length) {
-                                        const nextCleanup = cleanupBookingsAt(timeSlots[slotIndex + span]);
-                                        if (rangeSignature(nextCleanup) !== signature) break;
-                                        span += 1;
-                                    }
-
-                                    const blockedUntil = Math.max(
-                                        ...cleanupBookings.map((range) => range.end + cleanupBufferMinutes)
-                                    );
-
-                                    cells.push(
-                                        <td
-                                            key={`buffer-${slot.key}`}
-                                            colSpan={span}
-                                            className="border-b border-r border-slate-200 p-0.5 align-middle"
-                                        >
-                                            <div
-                                                title={`Cleanup buffer after reservation until ${formatMinutes(blockedUntil)}`}
-                                                aria-label={`Cleanup buffer until ${formatMinutes(blockedUntil)}`}
-                                                className="flex min-h-[46px] w-full flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-100 px-1 py-1 text-center text-slate-600"
-                                            >
-                                                <span className="truncate text-[8px] font-bold uppercase tracking-wide">
-                                                    {span >= 3 ? 'Cleanup buffer' : 'Buffer'}
-                                                </span>
-                                                {span >= 2 && (
-                                                    <span className="truncate text-[8px] tabular-nums">
-                                                        Until {formatMinutes(blockedUntil)}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                    );
-
-                                    slotIndex += span;
-                                    continue;
-                                }
-
-                                const startTime = `${String(Math.floor(slot.start / 60) % 24).padStart(2, '0')}:${String(slot.start % 60).padStart(2, '0')}`;
-
-                                cells.push(
-                                    <td
-                                        key={`available-${slot.key}`}
-                                        className="border-b border-r border-slate-100 p-0.5"
-                                    >
-                                        <button
-                                            type="button"
-                                            aria-label={`Create a booking for ${facility.name} at ${formatMinutes(slot.start)}`}
-                                            title={`Book ${facility.name} at ${formatMinutes(slot.start)}`}
-                                            onClick={() => setCreate({ facility, startTime })}
-                                            className="flex min-h-[46px] w-full items-center justify-center rounded-md border border-dashed border-[var(--ri-border-strong)] text-[11px] font-medium text-slate-400 transition hover:border-[var(--ri-brand)] hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]"
-                                        >
-                                            +
-                                        </button>
-                                    </td>
-                                );
-
-                                slotIndex += 1;
+                    <div className="grid grid-cols-7">
+                        {calendarDays.map((day, index) => {
+                            if (!day) {
+                                return <div key={`empty-${index}`} aria-hidden="true" className="min-h-[70px] border-b border-r border-slate-100 bg-slate-50/60 sm:min-h-[112px]" />;
                             }
 
                             return (
-                                <tr key={facility.id}>
-                                    <th className="sticky left-0 z-20 border-b border-r border-slate-200 bg-white px-2 py-2 text-left align-top whitespace-normal">
-                                        <p className="text-xs font-semibold leading-tight text-slate-800">{facility.name}</p>
-                                        <p className="mt-1 text-[10px] font-normal leading-tight text-slate-500">{facility.location}</p>
-                                    </th>
-                                    {cells}
-                                    <td
-                                        aria-label={`Closing boundary at ${closingBoundaryLabel}`}
-                                        className="border-b border-l-2 border-l-[#EFE4E9] bg-[#F7F0F3]/30 p-0.5"
-                                    />
-                                </tr>
+                                <button
+                                    key={day.key}
+                                    type="button"
+                                    onClick={() => selectDate(day.key)}
+                                    aria-pressed={day.isSelected}
+                                    aria-label={`${formatLongDate(day.key)}, ${day.bookings.length} active bookings`}
+                                    className={`group min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 text-left transition hover:bg-[#F7F0F3]/70 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#846A75] sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F7F0F3]' : 'bg-white'}`}
+                                >
+                                    <span className="flex items-center justify-between gap-1">
+                                        <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#6A535C] text-white' : day.isToday ? 'border border-[#846A75] text-[#6A535C]' : 'text-slate-700'}`}>
+                                            {day.dayNumber}
+                                        </span>
+                                        {day.bookings.length > 0 && (
+                                            <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-600 sm:text-[10px]">
+                                                {day.bookings.length}
+                                            </span>
+                                        )}
+                                    </span>
+
+                                    <div className="mt-1 space-y-1">
+                                        {day.bookings.slice(0, 2).map((booking) => {
+                                            const facility = facilityById.get(String(booking.facility_id));
+                                            const approved = booking.status === 'approved';
+
+                                            return (
+                                                <span
+                                                    key={booking.id}
+                                                    title={`${facility?.name || 'Facility'} · ${formatTime(booking.start_time)}–${formatTime(booking.end_time)} · ${booking.status}`}
+                                                    className={`block truncate rounded px-1 py-0.5 text-[8px] font-semibold leading-3 sm:px-1.5 sm:text-[10px] sm:leading-4 ${approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}
+                                                >
+                                                    <span className="hidden sm:inline">{facility?.name || 'Facility'} · </span>
+                                                    {formatTime(booking.start_time)}
+                                                </span>
+                                            );
+                                        })}
+                                        {day.bookings.length > 2 && (
+                                            <span className="block truncate px-1 text-[8px] font-semibold text-slate-500 sm:text-[10px]">
+                                                +{day.bookings.length - 2} more
+                                            </span>
+                                        )}
+                                    </div>
+                                </button>
                             );
                         })}
-                    </tbody>
-                </table>
-            </div>
+                    </div>
 
-            {details && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm">
-                    <div
-                        ref={detailsDialogRef}
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="booking-details-title"
-                        tabIndex={-1}
-                        className="w-full max-w-xl rounded-3xl border border-[var(--ri-border)] bg-white p-6 shadow-[var(--ri-shadow-lg)]"
-                    >
-                        <div className="flex justify-between">
-                            <div>
-                                <p className="ri-page-eyebrow">Reservation information</p>
-                                <h3 id="booking-details-title" className="mt-1 text-xl font-bold tracking-tight text-slate-900">{details.facility.name}</h3>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setDetails(null)}
-                                aria-label="Close booking details"
-                                className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-500 transition hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ri-brand)]"
-                            >
-                                Close
-                            </button>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 border-t border-slate-100 bg-slate-50/70 px-3 py-3 text-[11px] text-slate-600 sm:px-5">
+                        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Approved</span>
+                        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" /> Pending</span>
+                        <span className="text-slate-500">Select a date to inspect its schedule.</span>
+                    </div>
+                </section>
+
+                <aside className="min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-4 py-4">
+                        <div className="min-w-0">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-[#846A75]">Daily schedule</p>
+                            <h3 className="mt-1 break-words text-base font-bold text-slate-900">{formatLongDate(selectedDate)}</h3>
+                            <p className="mt-1 text-xs text-slate-500">{dailyBookings.length} active {dailyBookings.length === 1 ? 'booking' : 'bookings'}</p>
                         </div>
-                        <div className="mt-5 space-y-3">
-                            {details.bookings.map((booking) => (
-                                <article key={booking.id} className="rounded-xl border border-[var(--ri-border)] p-4">
-                                    {availabilityOnly ? (
-                                        <>
-                                            <p className="font-bold text-slate-900">
-                                                {booking.status === 'pending' ? 'Temporarily held' : 'Unavailable · confirmed booking'}
-                                            </p>
-                                            <p className="mt-1 text-sm text-slate-600">
+                        <button
+                            type="button"
+                            onClick={() => router.reload({ only: ['serverFacilities', 'serverBookings'] })}
+                            title="Refresh calendar"
+                            className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75]"
+                        >
+                            <RefreshCw className="h-4 w-4" />
+                        </button>
+                    </div>
+
+                    <div className="max-h-[520px] space-y-3 overflow-y-auto p-3 sm:p-4">
+                        {visibleDailyBookings.length === 0 ? (
+                            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+                                <CalendarDays className="mx-auto h-8 w-8 text-slate-300" />
+                                <p className="mt-2 text-sm font-semibold text-slate-700">No bookings for this date</p>
+                                <p className="mt-1 text-xs text-slate-500">Choose a facility below to start a reservation.</p>
+                            </div>
+                        ) : (
+                            visibleDailyBookings.map((booking) => (
+                                <article key={booking.id} className="rounded-xl border border-slate-200 p-3">
+                                    <div className="flex flex-wrap items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <h4 className="break-words text-sm font-bold text-slate-800">{booking.facility?.name || 'Facility'}</h4>
+                                            <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
+                                                <Clock3 className="h-3.5 w-3.5 shrink-0" />
                                                 {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
                                             </p>
-                                            <p className="mt-2 text-xs text-slate-500">
-                                                Reservation details are hidden in All Facilities view. Switch to My Assigned Facilities to manage reservations for facilities assigned to you.
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <>
-                                    <p className="font-bold">{booking.user?.name ?? booking.guest_name ?? 'Guest'}</p>
-                                    <p className="text-sm text-slate-600">{statusLabel(booking.status)} · {formatTime(booking.start_time)}–{formatTime(booking.end_time)}</p>
-                                    {booking.approved_by && (
-                                        <p className="mt-1 text-xs text-emerald-700">
-                                            Approved by {booking.approved_by}{booking.approved_at ? ` · ${new Date(booking.approved_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}` : ''}
-                                        </p>
-                                    )}
-                                    {booking.status === 'pending' && (
-                                        <p className="mt-1 text-xs text-amber-700">This time slot is temporarily held and is not yet a confirmed reservation.</p>
-                                    )}
-                                    <p className="mt-1 text-sm">Contact: {booking.user?.email ?? booking.guest_email ?? 'Not supplied'}</p>
-                                    <p className="mt-1 text-sm">Purpose: {booking.notes || 'Not supplied'}</p>
-                                        </>
+                                        </div>
+                                        <span className={`shrink-0 rounded-full border px-2 py-1 text-[10px] font-bold uppercase ${statusStyles[booking.status] || 'border-slate-200 bg-slate-50 text-slate-600'}`}>
+                                            {booking.status}
+                                        </span>
+                                    </div>
+                                    {!availabilityOnly && (
+                                        <div className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-600">
+                                            <p>{booking.user?.name || booking.guest_name || 'Reservation'}</p>
+                                            {booking.notes && <p className="mt-1 line-clamp-2 text-slate-500">{booking.notes}</p>}
+                                        </div>
                                     )}
                                 </article>
-                            ))}
+                            ))
+                        )}
+
+                        <div className="pt-1">
+                            <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Book a facility</h4>
+                            <div className="space-y-2">
+                                {serverFacilities.map((facility) => (
+                                    <div key={facility.id} className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50/60 p-2.5">
+                                        <div className="min-w-0">
+                                            <p className="truncate text-xs font-semibold text-slate-800">{facility.name}</p>
+                                            <p className="truncate text-[10px] text-slate-500">{facility.location}</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCreate({ facility })}
+                                            className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#6A535C] px-2.5 py-2 text-[11px] font-semibold text-white transition hover:bg-[#543F48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#846A75] focus-visible:ring-offset-2"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" />
+                                            Book
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                </aside>
+            </div>
 
             {create && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
                     <button
                         type="button"
                         aria-label="Close booking form"
@@ -444,24 +312,27 @@ export function CalendarView({ serverFacilities = [], serverBookings = [], selec
                         onClick={() => setCreate(null)}
                     />
                     <div
-                        ref={createDialogRef}
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby="booking-create-title"
-                        tabIndex={-1}
-                        className="relative flex max-h-[92vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-[var(--ri-border)] bg-white shadow-[var(--ri-shadow-lg)]"
+                        className="relative flex max-h-[94vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-[var(--ri-border)] bg-white shadow-[var(--ri-shadow-lg)]"
                     >
-                        <div className="flex items-center justify-between border-b border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] px-6 py-4">
-                            <div>
+                        <div className="flex items-center justify-between border-b border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] px-4 py-3 sm:px-6 sm:py-4">
+                            <div className="min-w-0">
                                 <p className="ri-page-eyebrow">New reservation</p>
-                                <h2 id="booking-create-title" className="mt-1 font-bold text-slate-900">Book {create.facility.name}</h2>
+                                <h2 id="booking-create-title" className="mt-1 truncate font-bold text-slate-900">Book {create.facility.name}</h2>
                             </div>
                             <button type="button" aria-label="Close booking form" onClick={() => setCreate(null)} className="rounded-lg p-2 text-slate-400 transition hover:bg-[var(--ri-brand-soft)] hover:text-[var(--ri-brand-strong)]">
-                                <XIcon className="h-5 w-5" />
+                                <span aria-hidden="true">×</span>
                             </button>
                         </div>
-                        <div className="overflow-y-auto flex-1">
-                            <BookingModal facility={create.facility} selectedDate={selectedDate} selectedStartTime={create.startTime} existingBookings={serverBookings.filter(b => b.facility_id === create.facility.id)} onClose={() => setCreate(null)} />
+                        <div className="min-h-0 flex-1 overflow-y-auto">
+                            <BookingModal
+                                facility={create.facility}
+                                selectedDate={selectedDate}
+                                existingBookings={serverBookings.filter((booking) => String(booking.facility_id) === String(create.facility.id))}
+                                onClose={() => setCreate(null)}
+                            />
                         </div>
                     </div>
                 </div>
