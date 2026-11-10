@@ -45,14 +45,17 @@ Route::get('/', function () {
 
     // Only approved bookings are displayed publicly.
     $dbSchedules = Booking::with(['facility:id,name'])
-        ->whereDate('booking_date', today()->toDateString())
+        ->whereRaw('COALESCE(date, booking_date) <= ?', [today()->toDateString()])
+        ->whereRaw('COALESCE(end_date, date, booking_date) >= ?', [today()->toDateString()])
         ->where('status', 'approved')
         ->orderBy('start_time', 'asc')
         ->take(8)
         ->get([
             'id',
             'facility_id',
+            'date',
             'booking_date',
+            'end_date',
             'start_time',
             'end_time',
             'status',
