@@ -18,6 +18,7 @@ class Booking extends Model
     // Fields that are allowed to be mass-assigned.
     protected $fillable = [
         'facility_id',
+        'activity_plan_id',
         'user_id',
         'guest_name',
         'guest_email',
@@ -73,6 +74,11 @@ class Booking extends Model
     public function facility()
     {
         return $this->belongsTo(Facility::class);
+    }
+
+    public function activityPlan()
+    {
+        return $this->belongsTo(ActivityPlan::class);
     }
 
     // A booking belongs to one user.
