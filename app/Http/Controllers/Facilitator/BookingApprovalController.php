@@ -228,8 +228,6 @@ class BookingApprovalController extends Controller
                 'approved_at' => now(),
             ]);
 
-            $lockedBooking->activityPlan?->syncStatus();
-
             return 'approved';
         });
 
