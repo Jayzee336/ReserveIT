@@ -76,20 +76,38 @@ export default function BookingModal({
     const user = auth?.user;
     const isAuthenticated = !!user;
     const [date, setDate] = useState(selectedDate || '');
-    const selectedWeekday = date
-        ? new Date(`${date}T12:00:00`).getDay()
-        : new Date().getDay();
-    const selectedFacilityHours = (facility?.operating_hours ?? []).find(
-        (item) => Number(item.day_of_week) === selectedWeekday
+    const [endDate, setEndDate] = useState(selectedDate || '');
+    const selectedWeekday = date ? new Date(date + 'T12:00:00').getDay() : new Date().getDay();
+    const dateRangeWeekdays = useMemo(() => {
+        if (!date || !endDate || endDate < date) return [];
+        const days = new Set();
+        const cursor = new Date(date + 'T12:00:00');
+        const lastDate = new Date(endDate + 'T12:00:00');
+        let scanned = 0;
+        while (cursor <= lastDate && scanned <= 31) {
+            days.add(cursor.getDay());
+            cursor.setDate(cursor.getDate() + 1);
+            scanned += 1;
+        }
+        return [...days];
+    }, [date, endDate]);
+    const selectedFacilityHours = facility?.operating_hours ?? [];
+    const globalOpening = String(page.props.systemSettings?.opening_time ?? '08:00').slice(0, 5);
+    const globalClosing = String(page.props.systemSettings?.closing_time ?? '00:00').slice(0, 5);
+    const rangeSchedules = dateRangeWeekdays.map((weekday) =>
+        selectedFacilityHours.find((item) => Number(item.day_of_week) === weekday)
     );
-    const isFacilityClosed = Boolean(selectedFacilityHours?.is_closed);
-    const OPENING_TIME = String(
-        selectedFacilityHours?.opens_at ?? page.props.systemSettings?.opening_time ?? '08:00'
-    ).slice(0, 5);
-    const CLOSING_TIME = String(
-        selectedFacilityHours?.closes_at ?? page.props.systemSettings?.closing_time ?? '00:00'
-    ).slice(0, 5);
-    const closingMinutes = CLOSING_TIME === '00:00' ? 1440 : toMins(CLOSING_TIME);
+    const isFacilityClosed = rangeSchedules.some((schedule) => schedule?.is_closed);
+    const openingMinutes = Math.max(toMins(globalOpening), ...rangeSchedules.map((schedule) =>
+        schedule && !schedule.is_closed ? toMins(String(schedule.opens_at ?? globalOpening).slice(0, 5)) : 0
+    ));
+    const closingMinutes = Math.min(globalClosing === '00:00' ? 1440 : toMins(globalClosing), ...rangeSchedules.map((schedule) => {
+        if (!schedule || schedule.is_closed) return 1440;
+        const closing = String(schedule.closes_at ?? globalClosing).slice(0, 5);
+        return closing === '00:00' ? 1440 : toMins(closing);
+    }));
+    const OPENING_TIME = String(Math.floor(openingMinutes / 60)).padStart(2, '0') + ':' + String(openingMinutes % 60).padStart(2, '0');
+    const CLOSING_TIME = closingMinutes === 1440 ? '00:00' : String(Math.floor(closingMinutes / 60)).padStart(2, '0') + ':' + String(closingMinutes % 60).padStart(2, '0');
     const TIME_SLOTS = useMemo(() => {
         if (isFacilityClosed) return [];
 
@@ -140,7 +158,7 @@ export default function BookingModal({
     const [conflictError, setConflictError] = useState('');
 
     // Consent and lead-time rules
-    const isWeekendBooking = isWeekendDate(date);
+    const isWeekendBooking = dateRangeWeekdays.some((weekday) => weekday === 0 || weekday === 6);
     const isAlwaysConsent = facility?.requirement === 'CONSENT_REQUIRED';
 
     const facilityConsentRequired =
@@ -187,18 +205,20 @@ export default function BookingModal({
     const blockedBookingRanges = useMemo(() => existingBookings
         .filter((booking) => {
             const bookingStatus = String(booking.status ?? '').toLowerCase();
-            const bookingDate = String(booking.date || booking.booking_date || '').slice(0, 10);
+            const bookingStartDate = String(booking.date || booking.booking_date || '').slice(0, 10);
+            const bookingEndDate = String(booking.end_date || bookingStartDate).slice(0, 10);
 
             return (
                 String(booking.facility_id) === String(facility?.id) &&
-                bookingDate === date &&
+                bookingStartDate <= endDate &&
+                bookingEndDate >= date &&
                 ['pending', 'approved'].includes(bookingStatus)
             );
         })
         .map((booking) => ({
             start: toMins(booking.start_time) - cleanupBuffer,
             end: toEndMins(String(booking.end_time).slice(0, 5)) + cleanupBuffer,
-        })), [existingBookings, facility?.id, date, cleanupBuffer]);
+        })), [existingBookings, facility?.id, date, endDate, cleanupBuffer]);
 
     const isTimeRangeUnavailable = (requestedStart, requestedEnd) =>
         blockedBookingRanges.some((range) =>
@@ -221,7 +241,7 @@ export default function BookingModal({
     };
 
     const checkConflict = () => {
-        if (!startTime || !endTime || !date || !facility?.id) {
+        if (!startTime || !endTime || !date || !endDate || endDate < date || !facility?.id) {
             return false;
         }
 
@@ -263,13 +283,13 @@ export default function BookingModal({
             return;
         }
 
-        if (!date) {
-            setConflictError('Please select a booking date.');
+        if (!date || !endDate || endDate < date) {
+            setConflictError('Please select a valid start and end date.');
             return;
         }
 
         if (isFacilityClosed) {
-            setConflictError('This facility is closed on the selected day.');
+            setConflictError('This facility is closed on at least one date in the selected reservation range.');
             return;
         }
 
@@ -304,9 +324,10 @@ export default function BookingModal({
         }
 
         if (
-            blackoutDates?.some(
-                (blackout) => String(blackout.date).slice(0, 10) === date
-            )
+            blackoutDates?.some((blackout) => {
+                const blackoutDate = String(blackout.date).slice(0, 10);
+                return blackoutDate >= date && blackoutDate <= endDate;
+            })
         ) {
             setConflictError('This date is blocked for maintenance.');
             return;
@@ -361,6 +382,7 @@ export default function BookingModal({
             {
                 facility_id: facility.id,
                 date,
+                end_date: endDate,
                 start_time: startTime,
                 end_time: endTime,
                 notes: finalNotes,
@@ -574,46 +596,53 @@ export default function BookingModal({
                         <CalendarIcon className="h-4 w-4 text-gray-400" />
                     </div>
 
-                    <input
-                        type="date"
-                        required
-                        value={date}
-                        min={minDate}
-                        disabled={!!selectedDate}
-                        onChange={(e) => {
-                            const value = e.target.value;
-
-                            if (
-                                blackoutDates?.some(
-                                    (blackout) =>
-                                        String(blackout.date).slice(0, 10) === value
-                                )
-                            ) {
-                                setDate('');
-                                setConflictError(
-                                    'This date is blocked for maintenance.'
-                                );
-                                return;
-                            }
-
-                            setDate(value);
-                            setStartTime('');
-                            setEndTime('');
-                            setConflictError('');
-                        }}
-                        className={`block w-full rounded-xl border p-2.5 pl-10 text-sm focus:ring-2 focus:ring-[#A98C97] ${
-                            isDateTooSoon
-                                ? 'border-red-300 bg-red-50'
-                                : 'border-gray-200'
-                        } ${selectedDate ? 'cursor-not-allowed bg-gray-100' : ''}`}
-                    />
+                    <label className="block">
+                        <span className="mb-1.5 block text-xs font-semibold text-gray-600">Start date</span>
+                        <input
+                            type="date"
+                            required
+                            value={date}
+                            min={minDate}
+                            disabled={!!selectedDate}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (blackoutDates?.some((blackout) => String(blackout.date).slice(0, 10) === value)) {
+                                    setDate('');
+                                    setConflictError('This date is blocked for maintenance.');
+                                    return;
+                                }
+                                setDate(value);
+                                if (!endDate || endDate < value) setEndDate(value);
+                                setStartTime('');
+                                setEndTime('');
+                                setConflictError('');
+                            }}
+                            className={'block w-full rounded-xl border p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97] ' + (isDateTooSoon ? 'border-red-300 bg-red-50' : 'border-gray-200') + (selectedDate ? ' cursor-not-allowed bg-gray-100' : '')}
+                        />
+                    </label>
+                    <label className="block">
+                        <span className="mb-1.5 block text-xs font-semibold text-gray-600">End date</span>
+                        <input
+                            type="date"
+                            required
+                            value={endDate}
+                            min={date || minDate}
+                            onChange={(e) => {
+                                setEndDate(e.target.value);
+                                setStartTime('');
+                                setEndTime('');
+                                setConflictError('');
+                            }}
+                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
+                        />
+                    </label>
                 </div>
 
                 {isFacilityClosed && (
                     <div className="flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-2.5">
                         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-slate-600" />
                         <p className="text-xs text-slate-700">
-                            This facility is closed on {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][selectedWeekday]}. Choose another date to request a booking.
+                            This facility is closed on at least one day in the selected range. Choose a different date range.
                         </p>
                     </div>
                 )}
