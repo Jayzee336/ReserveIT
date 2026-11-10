@@ -16,6 +16,7 @@ class Facility extends Model
         'allowTdevsManpower' => 'boolean',
         'capacity' => 'integer',
         'booking_lead_time_days' => 'integer',
+        'max_booking_hours' => 'integer',
         'is_available' => 'boolean',
     ];
 

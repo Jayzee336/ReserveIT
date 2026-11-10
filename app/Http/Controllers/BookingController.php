@@ -23,8 +23,11 @@ class BookingController extends Controller
     /**
      * Get the configured maximum booking duration in hours.
      */
-    private function getMaxBookingSpanHours($settings): float
+    private function getMaxBookingSpanHours($settings, ?Facility $facility = null): float
     {
+        if ($facility?->max_booking_hours !== null) {
+            return max(1, (float) $facility->max_booking_hours);
+        }
         $possibleColumns = [
             'max_booking_span_hours',
             'max_booking_hours',
@@ -149,7 +152,8 @@ class BookingController extends Controller
     private function validateBookingSpan(
         string $startTime,
         string $endTime,
-        $settings
+        $settings,
+        ?Facility $facility = null
     ): void {
         $start = Carbon::createFromFormat('!H:i', $startTime);
         $end = Carbon::createFromFormat('!H:i', $endTime);
@@ -171,7 +175,7 @@ class BookingController extends Controller
         }
 
         $durationMinutes = $start->diffInMinutes($end);
-        $maxHours = $this->getMaxBookingSpanHours($settings);
+        $maxHours = $this->getMaxBookingSpanHours($settings, $facility);
         $maxMinutes = $maxHours * 60;
 
         if ($durationMinutes > $maxMinutes) {
@@ -556,7 +560,8 @@ class BookingController extends Controller
         $this->validateBookingSpan(
             $validated['start_time'],
             $validated['end_time'],
-            $settings
+            $settings,
+            $facility
         );
 
         $this->validateFacilityOperatingHoursForRange(
