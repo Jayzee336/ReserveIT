@@ -492,9 +492,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $row = [
                 'id' => $booking->id,
                 'facility_id' => $booking->facility_id,
-                'date' => $booking->date,
-                'booking_date' => $booking->booking_date,
-                'end_date' => $booking->end_date,
+                'date' => $booking->date?->format('Y-m-d'),
+                'booking_date' => $booking->booking_date?->format('Y-m-d'),
+                'end_date' => $booking->end_date?->format('Y-m-d'),
                 'start_time' => $booking->start_time,
                 'end_time' => $booking->end_time,
                 'status' => $booking->status,
