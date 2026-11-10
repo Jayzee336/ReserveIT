@@ -131,6 +131,7 @@ function FacilityDetailsModal({
     isFacilityAdmin,
     onEdit,
     onDelete,
+    onToggleAvailability,
     onClose,
 }) {
     if (!facility) return null;
@@ -243,6 +244,25 @@ function FacilityDetailsModal({
                                 {facility.allowTdevsManpower ? 'Yes' : 'No'}
                             </strong>
                         </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="min-w-0">
+                            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Booking availability</p>
+                            <p className="mt-1 text-sm font-semibold text-slate-800">
+                                {facility.is_available === false ? 'Temporarily unavailable' : 'Available for booking'}
+                            </p>
+                            {facility.is_available === false && facility.unavailable_reason && (
+                                <p className="mt-1 break-words text-xs text-slate-600">{facility.unavailable_reason}</p>
+                            )}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => onToggleAvailability(facility, facility.is_available === false)}
+                            className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold transition ${facility.is_available === false ? 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' : 'border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
+                        >
+                            {facility.is_available === false ? 'Mark available' : 'Mark unavailable'}
+                        </button>
                     </div>
 
                     {facility.facility_admins?.length > 0 && (
@@ -866,6 +886,9 @@ export default function Facilities({
     const [viewingFacility, setViewingFacility] = useState(null);
     const [facilityToDelete, setFacilityToDelete] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+    const [availabilityDialog, setAvailabilityDialog] = useState(null);
+    const [unavailabilityReason, setUnavailabilityReason] = useState('');
+    const [availabilitySubmitting, setAvailabilitySubmitting] = useState(false);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('All');
@@ -937,6 +960,46 @@ export default function Facilities({
 
             return 0;
         });
+
+    const handleToggleAvailability = (facility, nextIsAvailable) => {
+        if (!nextIsAvailable) {
+            setAvailabilityDialog(facility);
+            setUnavailabilityReason('');
+            return;
+        }
+
+        router.patch(
+            route('admin.facilities.availability', facility.id),
+            { is_available: true },
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success('Facility marked available.'),
+                onError: () => toast.error('Unable to restore facility availability.'),
+            }
+        );
+    };
+
+    const submitMarkUnavailable = (event) => {
+        event.preventDefault();
+        if (!availabilityDialog || !unavailabilityReason.trim() || availabilitySubmitting) return;
+
+        setAvailabilitySubmitting(true);
+        router.patch(
+            route('admin.facilities.availability', availabilityDialog.id),
+            { is_available: false, reason: unavailabilityReason.trim() },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Facility marked unavailable. Affected booking owners have been notified.');
+                    setAvailabilityDialog(null);
+                    setViewingFacility(null);
+                    setUnavailabilityReason('');
+                },
+                onError: (errors) => toast.error(Object.values(errors)[0] || 'Unable to update facility availability.'),
+                onFinish: () => setAvailabilitySubmitting(false),
+            }
+        );
+    };
 
     const handleConfirmDelete = () => {
         if (!facilityToDelete || deletingId !== null) return;
@@ -1292,6 +1355,7 @@ export default function Facilities({
                     isFacilityAdmin={isFacilityAdmin}
                     onEdit={(facility) => setFormModalState(facility)}
                     onDelete={(facility) => setFacilityToDelete(facility)}
+                    onToggleAvailability={handleToggleAvailability}
                     onClose={() => setViewingFacility(null)}
                 />
             )}
@@ -1304,6 +1368,35 @@ export default function Facilities({
                     isSuperAdmin={isSuperAdmin}
                     onClose={() => setFormModalState(null)}
                 />
+            )}
+
+            {availabilityDialog && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/50 p-4">
+                    <button type="button" aria-label="Close unavailability dialog" className="absolute inset-0" onClick={() => setAvailabilityDialog(null)} />
+                    <form onSubmit={submitMarkUnavailable} className="relative w-full max-w-md space-y-4 rounded-2xl bg-white p-5 shadow-2xl">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-900">Mark facility unavailable</h3>
+                            <p className="mt-1 text-sm text-slate-500">{availabilityDialog.name} will stop accepting new bookings until an authorized administrator restores it.</p>
+                        </div>
+                        <label className="block text-sm font-semibold text-slate-700">
+                            Reason for unavailability
+                            <textarea
+                                required
+                                rows={3}
+                                maxLength={2000}
+                                value={unavailabilityReason}
+                                onChange={(event) => setUnavailabilityReason(event.target.value)}
+                                placeholder="Example: Electrical maintenance"
+                                className="mt-1 block w-full rounded-xl border border-slate-200 p-3 text-sm font-normal focus:border-[#A98C97] focus:ring-2 focus:ring-[#EFE4E9]"
+                            />
+                        </label>
+                        <p className="text-xs text-slate-500">Users with affected pending or approved bookings will be notified. Existing bookings will not be cancelled automatically.</p>
+                        <div className="flex gap-2">
+                            <button type="button" disabled={availabilitySubmitting} onClick={() => setAvailabilityDialog(null)} className="flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-700 disabled:opacity-50">Cancel</button>
+                            <button type="submit" disabled={availabilitySubmitting || !unavailabilityReason.trim()} className="flex-1 rounded-xl bg-[#6A535C] px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{availabilitySubmitting ? 'Saving…' : 'Confirm unavailable'}</button>
+                        </div>
+                    </form>
+                </div>
             )}
 
             {facilityToDelete && (
