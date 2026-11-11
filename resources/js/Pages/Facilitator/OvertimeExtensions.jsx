@@ -82,7 +82,7 @@ export default function OvertimeExtensions({ extensionRequests }) {
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         {openedFromApprovals && (
-                            <Link href={route(approvalsRoute)} className="inline-flex items-center gap-1 text-xs font-semibold text-[#A44773] hover:underline">
+                            <Link href={route(approvalsRoute)} className="inline-flex items-center gap-1 text-xs font-semibold text-[#96516F] hover:underline">
                                 <ArrowLeft className="h-3.5 w-3.5" /> Back to booking approvals
                             </Link>
                         )}
@@ -127,8 +127,8 @@ export default function OvertimeExtensions({ extensionRequests }) {
                                         <p className="mt-1 text-sm font-bold text-slate-800">{formatTime(booking.start_time)} – {formatTime(item.original_end_time)}</p>
                                     </div>
                                     <div className="rounded-lg bg-[#F8EDF2] p-3">
-                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-[#C65B8A]">Requested new end time</p>
-                                        <p className="mt-1 text-sm font-bold text-[#A44773]">{formatTime(item.requested_end_time)} <span className="text-xs font-semibold">(+{item.requested_minutes} min)</span></p>
+                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-[#B96B8D]">Requested new end time</p>
+                                        <p className="mt-1 text-sm font-bold text-[#96516F]">{formatTime(item.requested_end_time)} <span className="text-xs font-semibold">(+{item.requested_minutes} min)</span></p>
                                     </div>
                                     <div className="rounded-lg bg-slate-50 p-3">
                                         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Request submitted</p>
