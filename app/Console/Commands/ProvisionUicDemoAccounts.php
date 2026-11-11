@@ -44,19 +44,57 @@ class ProvisionUicDemoAccounts extends Command
         $conflicts = [];
         $existing = [];
 
+        $describeMatch = static function (?User $user): string {
+            if (! $user) {
+                return 'not found';
+            }
+
+            $deleted = method_exists($user, 'trashed') && $user->trashed();
+            $active = (bool) ($user->is_active ?? false);
+
+            return sprintf(
+                'id=%s username=%s email=%s active=%s deleted=%s',
+                $user->getKey(),
+                (string) ($user->username ?? '(none)'),
+                (string) ($user->email ?? '(none)'),
+                $active ? 'yes' : 'no',
+                $deleted ? 'yes' : 'no'
+            );
+        };
+
         foreach ($accounts as $account) {
             $byEmail = User::withTrashed()->where('email', $account['email'])->first();
             $byUsername = User::withTrashed()->where('username', $account['username'])->first();
 
-            if ($byEmail || $byUsername) {
-                $existing[] = $account['email'];
-                if (! $byEmail || ! $byUsername || $byEmail->isNot($byUsername) || $byEmail->trashed()) {
-                    $conflicts[] = $account['email'] . ' (email/username conflict or soft-deleted row)';
-                }
+            if (! $byEmail && ! $byUsername) {
+                $created[] = $account;
                 continue;
             }
 
-            $created[] = $account;
+            if ($byEmail && $byUsername && $byEmail->is($byUsername) && ! $byEmail->trashed()) {
+                $existing[] = $account['email'];
+                continue;
+            }
+
+            $reasons = [];
+            if ($byEmail && ! $byUsername) {
+                $reasons[] = 'email exists but intended username does not match any row';
+            } elseif (! $byEmail && $byUsername) {
+                $reasons[] = 'username is already used by a different email';
+            } elseif ($byEmail && $byUsername && $byEmail->isNot($byUsername)) {
+                $reasons[] = 'email and username belong to different user rows';
+            }
+
+            if (($byEmail && $byEmail->trashed()) || ($byUsername && $byUsername->trashed())) {
+                $reasons[] = 'at least one matching row is soft-deleted';
+            }
+
+            $conflicts[] = [
+                'email' => $account['email'],
+                'reason' => implode('; ', $reasons),
+                'email_match' => $describeMatch($byEmail),
+                'username_match' => $describeMatch($byUsername),
+            ];
         }
 
         foreach ($created as $account) {
@@ -73,8 +111,13 @@ class ProvisionUicDemoAccounts extends Command
 
         $this->info('Accounts to create: ' . count($created));
         foreach ($created as $account) $this->line('  CREATE ' . $account['email'] . ' (' . $account['role'] . ')');
-        foreach ($existing as $email) $this->line('  KEEP EXISTING ' . $email . ' (no changes)');
-        foreach ($conflicts as $conflict) $this->warn('  REVIEW CONFLICT ' . $conflict);
+        foreach ($existing as $email) $this->line('  KEEP EXISTING ' . $email . ' (exact active email/username match; no changes)');
+        foreach ($conflicts as $conflict) {
+            $this->warn('  REVIEW CONFLICT ' . $conflict['email']);
+            $this->line('    Reason: ' . $conflict['reason']);
+            $this->line('    Email lookup: ' . $conflict['email_match']);
+            $this->line('    Username lookup: ' . $conflict['username_match']);
+        }
 
         if ($this->option('dry-run')) {
             $this->comment('Dry run only. No database changes were made.');
