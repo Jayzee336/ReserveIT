@@ -204,7 +204,7 @@ function PendingBookingCard({
                         </span>
                     </p>
 
-                    <p className="mt-1 text-[11px] font-semibold text-[#263348]">
+                    <p className="mt-1 text-[11px] font-semibold text-[#493344]">
                         {getRequesterTypeLabel(booking)}
                     </p>
 
@@ -283,7 +283,7 @@ function BookingDetailModal({
             >
                 <div className="mb-6 flex items-start justify-between gap-3">
                     <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#263348]">
+                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#493344]">
                             Booking Details
                         </p>
                         <h3 className="mt-1 text-xl font-semibold text-gray-900">
@@ -472,7 +472,7 @@ function BookingDetailModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F3F63]"
+                        className="rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773]"
                     >
                         Close
                     </button>
@@ -1042,13 +1042,13 @@ export default function Bookings({
                             value={searchQuery}
                             onChange={handleSearchChange}
                             placeholder="Search by facility, user or guest name…"
-                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none focus:border-[#B96D91] focus:ring-2 focus:ring-[#EEDFE6]"
+                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none focus:border-[#647D91] focus:ring-2 focus:ring-[#E8E1E7]"
                         />
                     </div>
 
                     <Link
                         href={route('overtime-extensions.index', { from: 'approvals', approval_role: isSuperAdmin ? 'super_admin' : 'facility_admin' })}
-                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D9C8CF] bg-white px-4 py-2.5 text-sm font-semibold text-[#A94B75] shadow-sm transition hover:bg-[#F8EAF0]"
+                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D9C8CF] bg-white px-4 py-2.5 text-sm font-semibold text-[#A94B75] shadow-sm transition hover:bg-[#F8EDF2]"
                     >
                         <Clock className="h-4 w-4" />
                         Extension requests
@@ -1057,7 +1057,7 @@ export default function Bookings({
                     <select
                         value={statusFilter}
                         onChange={handleStatusChange}
-                        className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-[#B96D91] focus:ring-2 focus:ring-[#EEDFE6] xl:w-56"
+                        className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-[#647D91] focus:ring-2 focus:ring-[#E8E1E7] xl:w-56"
                     >
                         <option value="">All statuses</option>
                         <option value="pending">Pending</option>
