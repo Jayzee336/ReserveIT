@@ -37,8 +37,8 @@ function formatTime(value) {
 }
 
 function Stat({ label, value, onClick }) {
-    const content = <><span className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-slate-500">{label}</span>{onClick && <span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>}</span><p className="mt-2 text-3xl font-bold tracking-tight text-[#6A535C]">{value ?? 0}</p></>;
-    const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#BDAAB2] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2";
+    const content = <><span className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-slate-500">{label}</span>{onClick && <span className="text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>}</span><p className="mt-2 text-3xl font-bold tracking-tight text-[#263348]">{value ?? 0}</p></>;
+    const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#DFC5D1] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2";
     return onClick ? <button type="button" onClick={onClick} className={`group w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
 }
 
@@ -78,7 +78,7 @@ function BookingDetailModal({ booking, onClose }) {
             >
                 <div className="mb-6 flex items-start justify-between gap-3">
                     <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">
+                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#263348]">
                             Booking Details
                         </p>
                         <h3 className="mt-1 text-xl font-semibold text-gray-900">
@@ -185,7 +185,7 @@ function BookingDetailModal({ booking, onClose }) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                        className="rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F3F63]"
                     >
                         Close
                     </button>
@@ -251,9 +251,9 @@ function AnalyticsDetailModal({ detailKey, details, facilities = [], pendingBook
                             <tbody className="divide-y divide-stone-100">{records.map((item, index) => <tr key={item.email || item.name + index} className="text-slate-700"><td className="px-4 py-3 font-semibold text-slate-900">{item.name}</td><td className="px-4 py-3">{item.email || '—'}</td><td className="px-4 py-3">{item.bookings}</td><td className="px-4 py-3">{item.lastBooking || '—'}</td></tr>)}</tbody>
                         </table></div>
                     ) : definition.type === 'facilities' ? (
-                        <div className="space-y-2">{records.map((item) => <div key={item.id ?? item.name} className="rounded-xl border border-stone-200 bg-[#FFFAF7] px-4 py-3"><p className="font-semibold text-slate-900">{item.name ?? 'Facility'}</p><p className="mt-1 text-xs text-slate-500">{item.location ?? item.address ?? 'Facility listing'}</p></div>)}</div>
+                        <div className="space-y-2">{records.map((item) => <div key={item.id ?? item.name} className="rounded-xl border border-stone-200 bg-[#FFFCFD] px-4 py-3"><p className="font-semibold text-slate-900">{item.name ?? 'Facility'}</p><p className="mt-1 text-xs text-slate-500">{item.location ?? item.address ?? 'Facility listing'}</p></div>)}</div>
                     ) : definition.type === 'concerns' ? (
-                        <div className="space-y-2">{records.map((item) => <div key={item.id} className="rounded-xl border border-stone-200 bg-[#FFFAF7] px-4 py-3"><p className="text-sm text-slate-800">{item.message ?? item.subject ?? 'Concern'}</p><p className="mt-1 text-xs text-slate-500">{item.user?.name ?? item.user?.email ?? 'Submitted by user'} · {item.status ?? 'Pending'}</p></div>)}</div>
+                        <div className="space-y-2">{records.map((item) => <div key={item.id} className="rounded-xl border border-stone-200 bg-[#FFFCFD] px-4 py-3"><p className="text-sm text-slate-800">{item.message ?? item.subject ?? 'Concern'}</p><p className="mt-1 text-xs text-slate-500">{item.user?.name ?? item.user?.email ?? 'Submitted by user'} · {item.status ?? 'Pending'}</p></div>)}</div>
                     ) : (
                         <div className="overflow-x-auto rounded-xl border border-stone-200"><table className="min-w-full divide-y divide-stone-200 text-left text-sm">
                             <thead className="bg-stone-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-4 py-3">Facility / Client</th><th className="px-4 py-3">Date &amp; time</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Approval delay</th><th className="px-4 py-3">Overtime</th><th className="px-4 py-3">Fee / payment</th></tr></thead>
@@ -511,12 +511,12 @@ export default function AdminDashboard({
             <Head title="Admin Dashboard" />
 
             <div className="ri-page-shell space-y-7">
-                <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#6A535C] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
-                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#846A75]/50 blur-3xl" />
+                <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#C65B8A] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
+                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#C65B8A]/50 blur-3xl" />
                     <div className="pointer-events-none absolute -bottom-32 right-1/3 -z-10 h-64 w-64 rounded-full bg-[#B88D59]/20 blur-3xl" />
                     <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl">
-                            <span className="ri-page-eyebrow !text-[#FDF6F0]">
+                            <span className="ri-page-eyebrow !text-[#FFFCFD]">
                                 <Sparkles className="h-3.5 w-3.5" />
                                 System administration
                             </span>
@@ -528,7 +528,7 @@ export default function AdminDashboard({
                         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
                             <Link
                                 href={route('facilities.index')}
-                                className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#6A535C] hover:!border-white hover:!bg-[#FFF8F2]"
+                                className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#263348] hover:!border-white hover:!bg-[#FFFCFD]"
                             >
                                 Book a Facility
                                 <ArrowRight className="h-4 w-4" />
@@ -570,7 +570,7 @@ export default function AdminDashboard({
 
                         <Link
                             href={route('facilitator.bookings.index')}
-                            className="shrink-0 text-sm font-semibold text-[#6A535C] hover:underline"
+                            className="shrink-0 text-sm font-semibold text-[#263348] hover:underline"
                         >
                             Open approvals
                         </Link>
@@ -582,7 +582,7 @@ export default function AdminDashboard({
                             <input
                                 type="text"
                                 placeholder="Search by facility, user or guest name..."
-                                className="w-full rounded-lg border border-stone-200 bg-white py-2 pl-9 pr-4 text-sm text-stone-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20"
+                                className="w-full rounded-lg border border-stone-200 bg-white py-2 pl-9 pr-4 text-sm text-stone-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -595,7 +595,7 @@ export default function AdminDashboard({
                             </div>
 
                             <select
-                                className="w-full rounded-lg border border-stone-200 bg-white py-1.5 pl-3 pr-8 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#846A75] sm:w-auto"
+                                className="w-full rounded-lg border border-stone-200 bg-white py-1.5 pl-3 pr-8 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#C65B8A] sm:w-auto"
                                 value={sortOrder}
                                 onChange={(e) => setSortOrder(e.target.value)}
                             >
@@ -604,7 +604,7 @@ export default function AdminDashboard({
                             </select>
 
                             <select
-                                className="w-full rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#846A75] sm:w-auto"
+                                className="w-full rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#C65B8A] sm:w-auto"
                                 value={timeFilter}
                                 onChange={(e) => setTimeFilter(e.target.value)}
                             >
@@ -620,10 +620,10 @@ export default function AdminDashboard({
                             filteredAndSortedBookings.map((booking) => (
                                 <div
                                     key={booking.id}
-                                    className="flex flex-col gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] p-3 sm:flex-row sm:items-center sm:justify-between"
+                                    className="flex flex-col gap-3 rounded-xl border border-[#EEDFE6] bg-[var(--ri-surface-subtle)] p-3 sm:flex-row sm:items-center sm:justify-between"
                                 >
                                     <div>
-                                        <p className="font-semibold text-[#6A535C]">
+                                        <p className="font-semibold text-[#263348]">
                                             {booking.facility?.name}
                                         </p>
                                         <p className="text-xs text-slate-500">
@@ -682,7 +682,7 @@ export default function AdminDashboard({
                         </h2>
                         <Link
                             href={route('admin.concerns.index')}
-                            className="text-sm font-semibold text-[#6A535C] transition-colors duration-150 hover:text-[#543F48] hover:underline hover:underline-offset-4"
+                            className="text-sm font-semibold text-[#263348] transition-colors duration-150 hover:text-[#A94B75] hover:underline hover:underline-offset-4"
                         >
                             View all
                         </Link>
@@ -711,28 +711,28 @@ export default function AdminDashboard({
                     <form onSubmit={applyAnalyticsFilters} className="mb-4 grid gap-3 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-3 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_0.8fr_auto_auto] lg:items-end">
                         <label className="block text-xs font-semibold text-slate-600">
                             Facility scope
-                            <select value={analyticsFacility} onChange={(event) => setAnalyticsFacility(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20">
+                            <select value={analyticsFacility} onChange={(event) => setAnalyticsFacility(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20">
                                 <option value="">All facilities</option>
                                 {analyticsFacilities.map((facility) => <option key={facility.id} value={facility.id}>{facility.name}</option>)}
                             </select>
                         </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             From
-                            <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20" />
+                            <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20" />
                         </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             To
-                            <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20" />
+                            <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20" />
                         </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             Trend interval
-                            <select value={analyticsGroupBy} onChange={(event) => setAnalyticsGroupBy(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#846A75] focus:outline-none focus:ring-2 focus:ring-[#846A75]/20">
+                            <select value={analyticsGroupBy} onChange={(event) => setAnalyticsGroupBy(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20">
                                 <option value="day">Daily</option>
                                 <option value="week">Weekly</option>
                                 <option value="month">Monthly</option>
                             </select>
                         </label>
-                        <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]">
+                        <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F3F63]">
                             <SlidersHorizontal className="h-4 w-4" /> Apply
                         </button>
                         <button type="button" onClick={resetAnalyticsFilters} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-stone-100">
@@ -750,9 +750,9 @@ export default function AdminDashboard({
                             ['overtime', 'Overtime minutes', `${operationalAnalytics.overtimeMinutes ?? 0} min`, `${operationalAnalytics.overtimeBookings ?? 0} bookings with recorded overtime`],
                             ['overtime', 'Overtime fees', `₱${Number(operationalAnalytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Recorded overtime charges in the period'],
                         ].map(([key, label, value, hint], index) => (
-                            <button key={`${key}-${index}`} type="button" onClick={() => setAnalyticsDetailKey(key)} className="group rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#846A75] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2">
-                                <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600"><span>{label}</span><span className="text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span></span>
-                                <span className="mt-2 block text-xl font-bold text-[#6A535C]">{value}</span><span className="mt-1 block text-[11px] leading-4 text-slate-500">{hint}</span>
+                            <button key={`${key}-${index}`} type="button" onClick={() => setAnalyticsDetailKey(key)} className="group rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#C65B8A] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2">
+                                <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600"><span>{label}</span><span className="text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span></span>
+                                <span className="mt-2 block text-xl font-bold text-[#263348]">{value}</span><span className="mt-1 block text-[11px] leading-4 text-slate-500">{hint}</span>
                             </button>
                         ))}
                     </div>
@@ -766,7 +766,7 @@ export default function AdminDashboard({
                             </div>
                             <div className="rounded-lg bg-[var(--ri-surface-subtle)] px-3 py-2 text-right">
                                 <p className="text-xs text-slate-500">Compared with previous {Math.max(1, Math.round((new Date(analyticsFilters.to).getTime() - new Date(analyticsFilters.from).getTime()) / 86400000) + 1)}-day period</p>
-                                <p className="text-sm font-bold text-[#6A535C]">{periodComparison.change == null ? 'No previous-period data' : `${periodComparison.change > 0 ? '+' : ''}${periodComparison.change}%`}</p>
+                                <p className="text-sm font-bold text-[#263348]">{periodComparison.change == null ? 'No previous-period data' : `${periodComparison.change > 0 ? '+' : ''}${periodComparison.change}%`}</p>
                                 <p className="text-[10px] text-slate-500">{periodComparison.currentBookings ?? 0} current · {periodComparison.previousBookings ?? 0} previous</p>
                             </div>
                         </div>
@@ -785,9 +785,9 @@ export default function AdminDashboard({
                                                 onClick={() => setSelectedTrendLabel(item.label)}
                                                 title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`}
                                                 aria-label={`View facilities booked in ${item.label}`}
-                                                className={`flex w-full flex-1 items-end rounded-t-lg bg-[#F4ECEF] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#846A75] focus:ring-2 focus:ring-[#846A75] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#6A535C]' : ''}`}
+                                                className={`flex w-full flex-1 items-end rounded-t-lg bg-[#F8EAF0] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#C65B8A] focus:ring-2 focus:ring-[#C65B8A] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#263348]' : ''}`}
                                             >
-                                                <span className="block w-full rounded-t-lg bg-[#846A75]" style={{ height: `${(item.bookings / maximum) * 100}%`, minHeight: item.bookings ? '8px' : '2px' }}/>
+                                                <span className="block w-full rounded-t-lg bg-[#C65B8A]" style={{ height: `${(item.bookings / maximum) * 100}%`, minHeight: item.bookings ? '8px' : '2px' }}/>
                                             </button>
                                             <span title={item.label} className="w-full truncate text-center text-[10px] text-slate-500">{item.label}</span>
                                         </div>
@@ -796,13 +796,13 @@ export default function AdminDashboard({
                             </div>
                         </div>
                         {selectedTrend && (
-                            <div className="mt-4 rounded-xl border border-[#E7DDE1] bg-[#FFFAF7] p-4">
+                            <div className="mt-4 rounded-xl border border-[#EEDFE6] bg-[#FFFCFD] p-4">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
-                                    <div><p className="text-sm font-bold text-[#6A535C]">{selectedTrend.label} facility activity</p><p className="text-xs text-slate-500">{selectedTrend.bookings} bookings across {(selectedTrend.facilities ?? []).length} facilities</p></div>
-                                    <button type="button" onClick={() => setSelectedTrendLabel(null)} className="text-xs font-semibold text-[#6A535C] hover:underline">Clear</button>
+                                    <div><p className="text-sm font-bold text-[#263348]">{selectedTrend.label} facility activity</p><p className="text-xs text-slate-500">{selectedTrend.bookings} bookings across {(selectedTrend.facilities ?? []).length} facilities</p></div>
+                                    <button type="button" onClick={() => setSelectedTrendLabel(null)} className="text-xs font-semibold text-[#263348] hover:underline">Clear</button>
                                 </div>
                                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                                    {(selectedTrend.facilities ?? []).map((facility) => <div key={facility.name} className="flex justify-between gap-3 rounded-lg bg-white px-3 py-2 text-xs"><span className="text-slate-700">{facility.name}</span><span className="font-bold text-[#6A535C]">{facility.bookings}</span></div>)}
+                                    {(selectedTrend.facilities ?? []).map((facility) => <div key={facility.name} className="flex justify-between gap-3 rounded-lg bg-white px-3 py-2 text-xs"><span className="text-slate-700">{facility.name}</span><span className="font-bold text-[#263348]">{facility.bookings}</span></div>)}
                                     {(selectedTrend.facilities ?? []).length === 0 && <p className="text-xs text-slate-500">No facility activity in this period.</p>}
                                 </div>
                             </div>
@@ -810,13 +810,13 @@ export default function AdminDashboard({
                     </section>
 
 <div className="min-w-0 rounded-xl border border-[var(--ri-border)] p-4">
-                        <div className="mb-3 flex min-w-0 flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#6A535C]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
+                        <div className="mb-3 flex min-w-0 flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#263348]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
                         <div className="min-w-0 space-y-3">{displayedStatusBreakdown.map((item) => {
                             const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
-                            return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]">
+                            return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FFFCFD] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]">
                                 <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage.toFixed(1)}%</span></span></div>
                                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
-                                <span className="mt-1 block text-right text-[10px] font-semibold text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                <span className="mt-1 block text-right text-[10px] font-semibold text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                             </button>;
                         })}</div>
                     </div>
@@ -857,13 +857,13 @@ export default function AdminDashboard({
                                                 items: facilityBookings,
                                             });
                                         }}
-                                        className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#E7DDE1] bg-[var(--ri-surface-subtle)] px-3 py-2 text-left text-sm transition hover:border-[#BDAAB2] hover:bg-[#FFFAF7] focus:outline-none focus:ring-2 focus:ring-[#846A75]"
+                                        className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#EEDFE6] bg-[var(--ri-surface-subtle)] px-3 py-2 text-left text-sm transition hover:border-[#DFC5D1] hover:bg-[#FFFCFD] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]"
                                     >
                                         <span className="min-w-0 text-left">
                                             <span className="block truncate text-slate-700">{facility.name}</span>
-                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#846A75] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                         </span>
-                                        <span className="shrink-0 font-semibold text-[#6A535C]">
+                                        <span className="shrink-0 font-semibold text-[#263348]">
                                             {facility.bookings} bookings
                                         </span>
                                     </button>
