@@ -55,6 +55,7 @@ const STATUS_PRIORITY = {
     completed: 3,
     declined: 4,
     cancelled: 5,
+    expired: 6,
 };
 
 const STATUS_OPTIONS = [
@@ -301,6 +302,8 @@ const getStatusBadgeClass = (status) => {
             return 'bg-red-50 text-red-700 border-red-200';
         case 'cancelled':
             return 'bg-gray-100 text-gray-600 border-gray-200';
+        case 'expired':
+            return 'bg-slate-100 text-slate-700 border-slate-200';
         default:
             return 'bg-gray-100 text-gray-600 border-gray-200';
     }
@@ -320,6 +323,8 @@ const StatusIcon = ({ status }) => {
             return <XCircle className={`${iconClass} text-red-600`} />;
         case 'cancelled':
             return <AlertTriangle className={`${iconClass} text-gray-500`} />;
+        case 'expired':
+            return <Clock3 className={`${iconClass} text-slate-500`} />;
         default:
             return null;
     }
