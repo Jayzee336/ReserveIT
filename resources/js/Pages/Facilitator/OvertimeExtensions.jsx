@@ -35,8 +35,11 @@ const formatTime = (value) => {
 };
 
 export default function OvertimeExtensions({ extensionRequests }) {
-    const openedFromApprovals = typeof window !== 'undefined'
-        && new URLSearchParams(window.location.search).get('from') === 'approvals';
+    const extensionQuery = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const openedFromApprovals = extensionQuery?.get('from') === 'approvals';
+    const approvalsRoute = extensionQuery?.get('approval_role') === 'super_admin'
+        ? 'admin.bookings.index'
+        : 'facilitator.bookings.index';
     const [processingId, setProcessingId] = useState(null);
     const [declineId, setDeclineId] = useState(null);
     const [declineReason, setDeclineReason] = useState('');
@@ -79,7 +82,7 @@ export default function OvertimeExtensions({ extensionRequests }) {
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         {openedFromApprovals && (
-                            <Link href={route('facilitator.bookings.index')} className="inline-flex items-center gap-1 text-xs font-semibold text-[#745D67] hover:underline">
+                            <Link href={route(approvalsRoute)} className="inline-flex items-center gap-1 text-xs font-semibold text-[#745D67] hover:underline">
                                 <ArrowLeft className="h-3.5 w-3.5" /> Back to booking approvals
                             </Link>
                         )}
