@@ -257,10 +257,10 @@ class BookingCheckInOutController extends Controller
                 ? (int) $scheduledEnd->copy()->addMinutes($graceMinutes)->diffInMinutes($checkoutTime)
                 : 0;
 
-            $feePerHour = max(
-                0,
-                (float) ($settings->overtime_fee_per_hour ?? 0)
-            );
+            $facility = $lockedBooking->facility()->first();
+            $feePerHour = $facility && $facility->overtime_fee_enabled
+                ? max(0, (float) ($facility->overtime_fee_per_hour ?? 0))
+                : 0;
 
             $overtimeFee = round(
                 ($overtimeMinutes / 60) * $feePerHour,
@@ -451,12 +451,15 @@ class BookingCheckInOutController extends Controller
 
         $activeBookings = Booking::query()
             ->forUser($user)
-            ->with(['facility:id,name', 'user:id,name,email'])
+            ->with(['facility:id,name,overtime_fee_enabled,overtime_fee_per_hour', 'user:id,name,email'])
             ->where('status', 'approved')
             ->whereNotNull('checked_in_at')
             ->whereNull('checked_out_at')
             ->get()
-            ->map(function (Booking $booking) use ($now, $feePerHour) {
+            ->map(function (Booking $booking) use ($now) {
+                $feePerHour = $booking->facility?->overtime_fee_enabled
+                    ? max(0, (float) ($booking->facility->overtime_fee_per_hour ?? 0))
+                    : 0;
                 $scheduledEndDate = $booking->end_date ?? $booking->date ?? $booking->booking_date;
                 $scheduledEnd = Carbon::parse(
                     Carbon::parse($scheduledEndDate)->format('Y-m-d')
