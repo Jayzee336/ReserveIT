@@ -4,13 +4,22 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Building2, Eye, EyeOff } from 'lucide-react';
 
 export default function Login({ status, canResetPassword }) {
     const [showPassword, setShowPassword] = useState(false);
 
     const { flash = {} } = usePage().props;
+
+    // Refresh a stale login screen restored from the browser back-forward cache.
+    useEffect(() => {
+        const handlePageShow = (event) => {
+            if (event.persisted) window.location.reload();
+        };
+        window.addEventListener('pageshow', handlePageShow);
+        return () => window.removeEventListener('pageshow', handlePageShow);
+    }, []);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
