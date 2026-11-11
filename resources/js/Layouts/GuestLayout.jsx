@@ -3,7 +3,7 @@ import { Building2, Bookmark, CheckCircle2, KeyRound, Sparkles } from 'lucide-re
 
 export default function GuestLayout({ children }) {
     return (
-        <div className="relative min-h-screen bg-[#FAF8F9] text-slate-900 flex items-center justify-center p-4 sm:p-8 selection:bg-[#C65B8A] selection:text-white overflow-hidden">
+        <div className="relative min-h-screen bg-[#F7F8FA] text-slate-900 flex items-center justify-center p-4 sm:p-8 selection:bg-[#C65B8A] selection:text-white overflow-hidden">
             
             {/* Background Desk Elements (Ambient Glow & Soft Patterns) */}
             <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#C65B8A]/15 blur-3xl" />
@@ -13,12 +13,12 @@ export default function GuestLayout({ children }) {
             <div className="relative z-10 w-full max-w-5xl rounded-[2.5rem] bg-[#493344] p-3 sm:p-4 shadow-2xl shadow-[#493344]/30 ring-1 ring-[#C65B8A]">
                 
                 {/* Book Cover Edge Border */}
-                <div className="relative overflow-hidden rounded-[2rem] bg-[#FFFBF6] grid md:grid-cols-2 min-h-[580px] shadow-inner">
+                <div className="relative overflow-hidden rounded-[2rem] bg-[#FCFAFB] grid md:grid-cols-2 min-h-[580px] shadow-inner">
                     
                     {/* Hanging Ribbon Bookmark Effect */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 hidden md:block">
                         <div className="w-5 h-24 bg-[#C65B8A] shadow-md rounded-b-md relative">
-                            <div className="absolute bottom-0 left-0 right-0 h-3 bg-[#A94B75] clip-path-ribbon" />
+                            <div className="absolute bottom-0 left-0 right-0 h-3 bg-[#A44773] clip-path-ribbon" />
                         </div>
                     </div>
 
@@ -86,7 +86,7 @@ export default function GuestLayout({ children }) {
                     </div>
 
                     {/* RIGHT PAGE: The Form Sign-in Ledger */}
-                    <div className="relative p-8 sm:p-12 bg-[#FFFBF6] flex flex-col justify-center">
+                    <div className="relative p-8 sm:p-12 bg-[#FCFAFB] flex flex-col justify-center">
                         
                         {/* Page Line Pattern Background (Subtle) */}
                         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:100%_2rem]" />
