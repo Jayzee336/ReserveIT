@@ -193,7 +193,7 @@ The current hosted ReserveIT deployment uses the following services:
 | Web hosting | **Render** (Docker Web Service) | Builds and runs the Laravel application and serves HTTP traffic |
 | Container image | **Docker** | Packages the PHP application, Composer dependencies, NGINX/PHP-FPM runtime, and built frontend assets |
 | Production database | **Neon PostgreSQL** | Stores users, facilities, bookings, settings, notifications, and other relational application records |
-| Private file storage | **Tigris object storage** (S3-compatible) | Stores uploaded booking consent letters privately |
+| Private file storage | **Tigris object storage** (S3-compatible) | Stores consent letters, Activity Plans, and signed Sir Rene documents privately |
 | Frontend build | **Node.js and Vite** during Docker image build | Compiles React/CSS assets into the production build |
 
 ### How deployment works
@@ -206,14 +206,14 @@ The repository's `Dockerfile` uses a multi-stage build:
 4. The final image includes the Laravel application, Composer dependencies, and compiled frontend assets.
 5. Render routes HTTP traffic to the container's configured port (**10000**). The container health-check path is `/up`.
 
-The Docker startup configuration enables safe Laravel startup automation and forward database migrations. Production database migrations should still be reviewed before deployment.
+The Docker startup configuration runs Laravel's pending forward migrations during container startup with `--force`; automatic database seeding is explicitly disabled. The separate AVR 2 facility seeder is idempotent and only creates the `avr2` facility record when it is missing. The optional demo-scenario seeder is disabled unless `RESERVEIT_DEMO_SEED_ENABLED=true` is explicitly set. Review every pending migration and take a Neon backup before deploying; do not enable the demo seeder for the normal production rollout.
 
 ### Important deployment notes
 
 - The current hosted app is separate from a developer's local database and local files.
 - Render environment variables contain deployment-specific configuration and secrets; they are not stored in this repository.
 - The production database is PostgreSQL on Neon, not the local SQLite database used by the simple Windows setup below.
-- Booking consent letters use the private Tigris disk and are served through an authorized application download flow.
+- Booking consent letters, required Activity Plan attachments, and signed Sir Rene documents use the private Tigris disk and are served through authorized application download routes. Access is limited to the booking requester, Super Admin, and assigned Facility Admin.
 - Facility images use Laravel's `public` local filesystem disk (`storage/app/public/facilities`). This is separate from both Neon and Tigris. On Render's default ephemeral filesystem, runtime-uploaded facility images can be lost when the service restarts or redeploys unless persistent storage is configured.
 - Laravel scheduler definitions are included in the project. A scheduler process or scheduled job must be configured in the hosting environment for scheduled commands to execute continuously.
 
@@ -438,14 +438,15 @@ This database belongs only to that local clone. It is not synchronized with Neon
 
 ### Tigris — private consent-letter storage
 
-Tigris is used for **booking consent letters only** in the current implementation. Booking consent letters are uploaded to the configured **Tigris S3-compatible object-storage disk**, under the `consent-letters/` prefix.
+Tigris is used for private booking documents in the current implementation: consent letters, Activity Plan attachments, and signed Sir Rene documents. These files are uploaded to the configured **Tigris S3-compatible object-storage disk** under separate application-managed prefixes.
 
 - Files are stored with generated names rather than relying on the original filename as the object key.
 - The original filename is retained as booking metadata for display.
 - The Tigris disk is configured with **private visibility**.
 - Downloads go through an authenticated application endpoint that checks the requester's permissions.
 - Super Admins can access consent documents across the system; Facility Admins are limited to their assigned facilities; unauthorized users are denied.
-- The application accepts PDF, DOC, and DOCX consent files up to 5 MB.
+- Consent letters accept PDF, DOC, and DOCX files up to 5 MB. Activity Plan attachments accept PDF, DOC, and DOCX files up to 10 MB. Signed Sir Rene documents accept PDF, DOC, DOCX, JPG, JPEG, and PNG files up to 5 MB.
+- Downloads are routed through authorization checks; object keys are not exposed as public URLs.
 
 The bucket credentials must be configured in the hosting environment. Do not make the consent bucket public or expose its secret keys.
 
