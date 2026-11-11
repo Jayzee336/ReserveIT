@@ -20,7 +20,7 @@ export default function SetPassword() {
             <Head title="Set ReserveIT Password" />
 
             <div className="mx-auto max-w-3xl p-6">
-                <div className="rounded-3xl border border-[#EEDFE6] bg-white p-8 shadow-lg">
+                <div className="rounded-3xl border border-[#E8E1E7] bg-white p-8 shadow-lg">
                     <p className="text-sm uppercase tracking-[0.2em] text-[#C65B8A]">
                         Account Security
                     </p>
@@ -101,7 +101,7 @@ export default function SetPassword() {
 
                             <Link
                                 href={route('profile.edit')}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#EEDFE6] bg-white px-5 py-3 font-semibold text-[#C65B8A] transition hover:bg-[#FFFCFD]"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#E8E1E7] bg-white px-5 py-3 font-semibold text-[#C65B8A] transition hover:bg-[#FCFAFB]"
                             >
                                 <span aria-hidden="true">&larr;</span>
                                 Back to Profile Settings
