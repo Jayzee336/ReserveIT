@@ -123,14 +123,14 @@ export default function ManagedFacilities({ facilities = [] }) {
                                         <input
                                             type="text" required value={form.name}
                                             onChange={(e) => updateField('name', e.target.value)}
-                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#B96D91]"
+                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
                                         />
 
                                         <div className="grid grid-cols-2 gap-2">
                                             <select
                                                 value={form.type}
                                                 onChange={(e) => updateField('type', e.target.value)}
-                                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-[#B96D91]"
+                                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-[#647D91]"
                                             >
                                                 <option value="Venue">Venue</option>
                                                 <option value="Laboratory">Laboratory</option>
@@ -139,26 +139,26 @@ export default function ManagedFacilities({ facilities = [] }) {
                                                 type="number" min={1} placeholder="Capacity"
                                                 value={form.capacity}
                                                 onChange={(e) => updateField('capacity', e.target.value)}
-                                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#B96D91]"
+                                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
                                             />
                                         </div>
 
                                         <input
                                             type="text" required value={form.location}
                                             onChange={(e) => updateField('location', e.target.value)}
-                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#B96D91]"
+                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
                                         />
 
                                         <textarea
                                             required rows={3} value={form.description}
                                             onChange={(e) => updateField('description', e.target.value)}
-                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#B96D91] resize-none"
+                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#647D91] resize-none"
                                         />
 
                                         <select
                                             value={form.requirement}
                                             onChange={(e) => updateField('requirement', e.target.value)}
-                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-[#B96D91]"
+                                            className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white focus:ring-2 focus:ring-[#647D91]"
                                         >
                                             <option value="STANDARD">Standard (no consent unless weekend)</option>
                                             <option value="CONSENT_REQUIRED">Always requires consent</option>
@@ -168,7 +168,7 @@ export default function ManagedFacilities({ facilities = [] }) {
                                             <input
                                                 type="checkbox" checked={form.requiresWeekendConsent}
                                                 onChange={(e) => updateField('requiresWeekendConsent', e.target.checked)}
-                                                className="h-4 w-4 rounded border-gray-300 text-[#263348] focus:ring-[#B96D91]"
+                                                className="h-4 w-4 rounded border-gray-300 text-[#493344] focus:ring-[#647D91]"
                                             />
                                             Requires consent for weekends
                                         </label>
@@ -177,14 +177,14 @@ export default function ManagedFacilities({ facilities = [] }) {
                                             <input
                                                 type="checkbox" checked={form.allowTdevsManpower}
                                                 onChange={(e) => updateField('allowTdevsManpower', e.target.checked)}
-                                                className="h-4 w-4 rounded border-gray-300 text-[#263348] focus:ring-[#B96D91]"
+                                                className="h-4 w-4 rounded border-gray-300 text-[#493344] focus:ring-[#647D91]"
                                             />
                                             Allow TDEVS manpower requests
                                         </label>
 
                                         <button
                                             type="submit" disabled={isSubmitting}
-                                            className="w-full inline-flex justify-center items-center gap-1.5 py-2.5 bg-[#C65B8A] hover:bg-[#A94B75] text-white rounded-xl text-sm font-semibold disabled:bg-[#DFC5D1]"
+                                            className="w-full inline-flex justify-center items-center gap-1.5 py-2.5 bg-[#C65B8A] hover:bg-[#A94B75] text-white rounded-xl text-sm font-semibold disabled:bg-[#D9C8D4]"
                                         >
                                             <Save className="h-4 w-4" /> {isSubmitting ? 'Saving…' : 'Save Changes'}
                                         </button>
@@ -199,7 +199,7 @@ export default function ManagedFacilities({ facilities = [] }) {
                                         <div className="p-4">
                                             <div className="flex items-start justify-between gap-2">
                                                 <h3 className="font-semibold text-gray-900">{facility.name}</h3>
-                                                <span className="text-[10px] font-bold text-[#263348] bg-[#F8EAF0] px-2 py-0.5 rounded-full uppercase flex-shrink-0">
+                                                <span className="text-[10px] font-bold text-[#493344] bg-[#F8EDF2] px-2 py-0.5 rounded-full uppercase flex-shrink-0">
                                                     {facility.type}
                                                 </span>
                                             </div>
@@ -237,7 +237,7 @@ export default function ManagedFacilities({ facilities = [] }) {
                                         </button>
                                         <Link
                                             href={`/facility/${facility.id}`}
-                                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#F8EAF0] hover:bg-[#EEDFE6] text-[#A94B75] text-xs font-semibold rounded-lg"
+                                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#F8EDF2] hover:bg-[#E8E1E7] text-[#A94B75] text-xs font-semibold rounded-lg"
                                         >
                                             <Calendar className="h-3.5 w-3.5" /> View
                                         </Link>
@@ -273,7 +273,7 @@ export default function ManagedFacilities({ facilities = [] }) {
                                 value={unavailabilityReason}
                                 onChange={(event) => setUnavailabilityReason(event.target.value)}
                                 placeholder="Example: Maintenance or facility issue"
-                                className="mt-1 block w-full rounded-xl border border-slate-200 p-3 text-sm font-normal focus:border-[#B96D91] focus:ring-2 focus:ring-[#EEDFE6]"
+                                className="mt-1 block w-full rounded-xl border border-slate-200 p-3 text-sm font-normal focus:border-[#647D91] focus:ring-2 focus:ring-[#E8E1E7]"
                             />
                         </label>
                         <p className="text-xs text-slate-500">Affected users with pending or approved bookings will be notified. Existing bookings will not be cancelled automatically.</p>
