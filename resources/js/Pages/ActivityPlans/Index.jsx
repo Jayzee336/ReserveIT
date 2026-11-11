@@ -285,7 +285,7 @@ export default function Index({ plans, facilities = [] }) {
         <AuthenticatedLayout
             header={
                 <div className="flex items-center gap-2">
-                    <ClipboardList className="h-5 w-5 text-[#6A535C]" />
+                    <ClipboardList className="h-5 w-5 text-[#263348]" />
                     <h2 className="text-lg font-semibold text-gray-800">Activity Plans</h2>
                 </div>
             }
@@ -317,7 +317,7 @@ export default function Index({ plans, facilities = [] }) {
                             <h2 className="text-base font-bold text-slate-900">Create an activity plan</h2>
                             <p className="mt-1 text-xs text-slate-500">Choose recurring weekdays, then customize or remove individual sessions.</p>
                         </div>
-                        <span className="rounded-full bg-[#F7F0F3] px-3 py-1.5 text-xs font-semibold text-[#543F48]">
+                        <span className="rounded-full bg-[#F8EAF0] px-3 py-1.5 text-xs font-semibold text-[#A94B75]">
                             {sessions.length} generated session{sessions.length === 1 ? '' : 's'}
                         </span>
                     </div>
@@ -325,7 +325,7 @@ export default function Index({ plans, facilities = [] }) {
                     <div className="grid gap-4 md:grid-cols-2">
                         <div>
                             <label className="mb-1.5 block text-xs font-semibold text-slate-600">Facility</label>
-                            <select value={form.data.facility_id} onChange={(e) => form.setData('facility_id', e.target.value)} required className="w-full rounded-xl border-slate-200 text-sm focus:border-[#A98C97] focus:ring-[#A98C97]">
+                            <select value={form.data.facility_id} onChange={(e) => form.setData('facility_id', e.target.value)} required className="w-full rounded-xl border-slate-200 text-sm focus:border-[#B96D91] focus:ring-[#B96D91]">
                                 <option value="">Choose a facility</option>
                                 {facilities.map((facility) => <option key={facility.id} value={facility.id}>{facility.name}</option>)}
                             </select>
@@ -333,17 +333,17 @@ export default function Index({ plans, facilities = [] }) {
                         </div>
                         <div>
                             <label className="mb-1.5 block text-xs font-semibold text-slate-600">Activity title</label>
-                            <input value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} required maxLength={255} placeholder="e.g. Weekly student organization meeting" className="w-full rounded-xl border-slate-200 text-sm focus:border-[#A98C97] focus:ring-[#A98C97]" />
+                            <input value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} required maxLength={255} placeholder="e.g. Weekly student organization meeting" className="w-full rounded-xl border-slate-200 text-sm focus:border-[#B96D91] focus:ring-[#B96D91]" />
                             {form.errors.title && <p className="mt-1 text-xs text-rose-600">{form.errors.title}</p>}
                         </div>
                         <div>
                             <label className="mb-1.5 block text-xs font-semibold text-slate-600">Start date</label>
-                            <input type="date" min={today} value={form.data.start_date} onChange={(e) => { form.setData('start_date', e.target.value); setExcludedDates([]); }} required className="w-full rounded-xl border-slate-200 text-sm focus:border-[#A98C97] focus:ring-[#A98C97]" />
+                            <input type="date" min={today} value={form.data.start_date} onChange={(e) => { form.setData('start_date', e.target.value); setExcludedDates([]); }} required className="w-full rounded-xl border-slate-200 text-sm focus:border-[#B96D91] focus:ring-[#B96D91]" />
                             {form.errors.start_date && <p className="mt-1 text-xs text-rose-600">{form.errors.start_date}</p>}
                         </div>
                         <div>
                             <label className="mb-1.5 block text-xs font-semibold text-slate-600">End date</label>
-                            <input type="date" min={form.data.start_date || today} value={form.data.end_date} onChange={(e) => { form.setData('end_date', e.target.value); setExcludedDates([]); }} required className="w-full rounded-xl border-slate-200 text-sm focus:border-[#A98C97] focus:ring-[#A98C97]" />
+                            <input type="date" min={form.data.start_date || today} value={form.data.end_date} onChange={(e) => { form.setData('end_date', e.target.value); setExcludedDates([]); }} required className="w-full rounded-xl border-slate-200 text-sm focus:border-[#B96D91] focus:ring-[#B96D91]" />
                             {form.errors.end_date && <p className="mt-1 text-xs text-rose-600">{form.errors.end_date}</p>}
                         </div>
                     </div>
@@ -352,8 +352,8 @@ export default function Index({ plans, facilities = [] }) {
                         <h3 className="text-sm font-bold text-slate-800">Repeat on</h3>
                         <div className="mt-3 flex flex-wrap gap-2">
                             {weekdayOptions.map((day) => (
-                                <label key={day.value} className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${form.data.recurrence_days.includes(day.value) ? 'border-[#A98C97] bg-[#F7F0F3] text-[#543F48]' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>
-                                    <input type="checkbox" checked={form.data.recurrence_days.includes(day.value)} onChange={() => toggleWeekday(day.value)} className="rounded border-slate-300 text-[#6A535C] focus:ring-[#A98C97]" />
+                                <label key={day.value} className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${form.data.recurrence_days.includes(day.value) ? 'border-[#B96D91] bg-[#F8EAF0] text-[#A94B75]' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>
+                                    <input type="checkbox" checked={form.data.recurrence_days.includes(day.value)} onChange={() => toggleWeekday(day.value)} className="rounded border-slate-300 text-[#263348] focus:ring-[#B96D91]" />
                                     {day.label}
                                 </label>
                             ))}
@@ -418,7 +418,7 @@ export default function Index({ plans, facilities = [] }) {
                                     <div key={session.date} className="rounded-xl border border-slate-200 p-3 sm:p-4">
                                         <div className="mb-3 flex items-center justify-between gap-3">
                                             <div className="flex min-w-0 items-center gap-2">
-                                                <CalendarDays className="h-4 w-4 shrink-0 text-[#846A75]" />
+                                                <CalendarDays className="h-4 w-4 shrink-0 text-[#C65B8A]" />
                                                 <p className="truncate text-sm font-bold text-slate-800">{formatDate(session.date)} · {weekdayOptions.find((day) => day.value === new Date(`${session.date}T12:00:00`).getDay())?.label}</p>
                                             </div>
                                             <button type="button" onClick={() => removeSession(session.date)} className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50"><Trash2 className="h-3.5 w-3.5" /> Remove</button>
@@ -427,7 +427,7 @@ export default function Index({ plans, facilities = [] }) {
                                             <label className="text-[10px] font-semibold text-slate-500">Start time<input type="time" step="900" value={session.start_time} onChange={(e) => updateSession(session.date, 'start_time', e.target.value)} className="mt-1 w-full rounded-lg border-slate-200 text-xs" /></label>
                                             <label className="text-[10px] font-semibold text-slate-500">End time<input type="time" step="900" value={session.end_time} onChange={(e) => updateSession(session.date, 'end_time', e.target.value)} className="mt-1 w-full rounded-lg border-slate-200 text-xs" /></label>
                                             <label className="text-[10px] font-semibold text-slate-500">Attendees<input type="number" min="1" max={selectedFacility?.capacity || undefined} value={session.attendees} onChange={(e) => updateSession(session.date, 'attendees', Number(e.target.value))} className="mt-1 w-full rounded-lg border-slate-200 text-xs" /></label>
-                                            <label className="flex cursor-pointer items-center gap-2 self-end rounded-lg border border-transparent bg-slate-50 p-2.5 text-xs font-medium text-slate-700 transition-all duration-150 hover:border-[#D8C5CC] hover:bg-[#F7F0F3] hover:text-[#543F48]"><input type="checkbox" checked={Boolean(session.needs_manpower)} disabled={!selectedFacility?.allowTdevsManpower} onChange={(e) => updateSession(session.date, 'needs_manpower', e.target.checked)} className="rounded border-slate-300 text-[#6A535C] focus:ring-[#A98C97]" /> Request TDEVS manpower</label>
+                                            <label className="flex cursor-pointer items-center gap-2 self-end rounded-lg border border-transparent bg-slate-50 p-2.5 text-xs font-medium text-slate-700 transition-all duration-150 hover:border-[#D8C5CC] hover:bg-[#F8EAF0] hover:text-[#A94B75]"><input type="checkbox" checked={Boolean(session.needs_manpower)} disabled={!selectedFacility?.allowTdevsManpower} onChange={(e) => updateSession(session.date, 'needs_manpower', e.target.checked)} className="rounded border-slate-300 text-[#263348] focus:ring-[#B96D91]" /> Request TDEVS manpower</label>
                                         </div>
                                         <label className="mt-3 block text-[10px] font-semibold text-slate-500">Session notes (optional)<input type="text" value={session.notes || ''} onChange={(e) => updateSession(session.date, 'notes', e.target.value)} maxLength={10000} placeholder="Additional details for this session" className="mt-1 w-full rounded-lg border-slate-200 text-xs" /></label>
                                     </div>
@@ -438,10 +438,10 @@ export default function Index({ plans, facilities = [] }) {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                        <div className="rounded-xl border border-dashed border-slate-300 p-4 transition-colors duration-150 hover:border-[#A98C97] hover:bg-[#FCF9FA]">
+                        <div className="rounded-xl border border-dashed border-slate-300 p-4 transition-colors duration-150 hover:border-[#B96D91] hover:bg-[#FCF9FA]">
                             <div className="flex items-center gap-2 text-sm font-bold text-slate-800"><Upload className="h-4 w-4" /> Activity plan document <span className="text-rose-600">*</span></div>
                             <p className="mt-1 text-xs text-slate-500">PDF, DOC, or DOCX · up to 10 MB · stored privately</p>
-                            <input type="file" accept=".pdf,.doc,.docx" required onChange={(e) => form.setData('activity_plan_file', e.target.files?.[0] || null)} className="mt-3 block w-full cursor-pointer rounded-lg border border-transparent p-1 text-xs text-slate-600 transition-colors duration-150 hover:border-[#D8C5CC] hover:bg-[#F7F0F3] file:mr-3 file:rounded-lg file:border-0 file:bg-[#F7F0F3] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[#543F48]" />
+                            <input type="file" accept=".pdf,.doc,.docx" required onChange={(e) => form.setData('activity_plan_file', e.target.files?.[0] || null)} className="mt-3 block w-full cursor-pointer rounded-lg border border-transparent p-1 text-xs text-slate-600 transition-colors duration-150 hover:border-[#D8C5CC] hover:bg-[#F8EAF0] file:mr-3 file:rounded-lg file:border-0 file:bg-[#F8EAF0] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[#A94B75]" />
                             {form.errors.activity_plan_file && <p className="mt-1 text-xs text-rose-600">{form.errors.activity_plan_file}</p>}
                         </div>
                         <div className="rounded-xl border border-dashed border-slate-300 p-4">
@@ -454,7 +454,7 @@ export default function Index({ plans, facilities = [] }) {
 
                     <div>
                         <label className="mb-1.5 block text-xs font-semibold text-slate-600">Activity description (optional)</label>
-                        <textarea value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} rows={3} maxLength={10000} className="w-full rounded-xl border-slate-200 text-sm focus:border-[#A98C97] focus:ring-[#A98C97]" placeholder="Purpose, intended participants, and other activity details" />
+                        <textarea value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} rows={3} maxLength={10000} className="w-full rounded-xl border-slate-200 text-sm focus:border-[#B96D91] focus:ring-[#B96D91]" placeholder="Purpose, intended participants, and other activity details" />
                         {form.errors.description && <p className="mt-1 text-xs text-rose-600">{form.errors.description}</p>}
                     </div>
 
@@ -462,7 +462,7 @@ export default function Index({ plans, facilities = [] }) {
                         <p className="max-w-2xl text-xs leading-5 text-slate-500">
                             Each session is submitted as an individual booking. The facility administrator can review the complete plan or decide on individual sessions. The uploaded activity plan and consent letter are stored privately.
                         </p>
-                        <button type="submit" disabled={form.processing || sessions.length === 0 || sessions.length > 366 || facilities.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-[#6A535C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-50">
+                        <button type="submit" disabled={form.processing || sessions.length === 0 || sessions.length > 366 || facilities.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#A94B75] disabled:cursor-not-allowed disabled:opacity-50">
                             <Plus className="h-4 w-4" /> {form.processing ? 'Submitting…' : 'Submit activity plan'}
                         </button>
                     </div>
