@@ -148,7 +148,7 @@ export default function FacilityBookingSettings({
                                 Configure the times when this facility accepts bookings. Closed days cannot be reserved. These hours apply to all new bookings and activity sessions for this facility.
                             </p>
                         </div>
-                        <span className="rounded-full bg-[#F8EDF2] px-3 py-1 text-xs font-semibold text-[#A94B75]">
+                        <span className="rounded-full bg-[#F8EDF2] px-3 py-1 text-xs font-semibold text-[#A44773]">
                             {auth?.user?.role === 'super_admin' ? 'Super Admin controls' : 'Assigned facility'}
                         </span>
                     </div>
@@ -188,7 +188,7 @@ export default function FacilityBookingSettings({
                                         type="checkbox"
                                         checked={item.is_closed}
                                         onChange={(event) => updateDay(item.day_of_week, 'is_closed', event.target.checked)}
-                                        className="h-4 w-4 rounded border-slate-300 text-[#493344] focus:ring-[#647D91]"
+                                        className="h-4 w-4 rounded border-slate-300 text-[#493344] focus:ring-[#C65B8A]"
                                     />
                                     Closed
                                 </label>
@@ -209,7 +209,7 @@ export default function FacilityBookingSettings({
                                         type="checkbox"
                                         checked={overtimeFeeEnabled}
                                         onChange={(event) => setOvertimeFeeEnabled(event.target.checked)}
-                                        className="h-4 w-4 rounded border-slate-300 text-[#493344] focus:ring-[#647D91]"
+                                        className="h-4 w-4 rounded border-slate-300 text-[#493344] focus:ring-[#C65B8A]"
                                     />
                                     Enable overtime fee
                                 </label>
@@ -241,7 +241,7 @@ export default function FacilityBookingSettings({
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A94B75] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <Save className="h-4 w-4" />
                                 {isSaving ? 'Saving…' : 'Save operating hours'}
@@ -315,7 +315,7 @@ export default function FacilityBookingSettings({
                             <button
                                 type="submit"
                                 disabled={isSchedulingClosure || !closureForm.reason.trim()}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A94B75] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <CalendarClock className="h-4 w-4" />
                                 {isSchedulingClosure ? 'Saving closure…' : 'Save scheduled closure'}
