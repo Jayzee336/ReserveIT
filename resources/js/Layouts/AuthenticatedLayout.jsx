@@ -70,7 +70,7 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
                 collapsed ? 'justify-center px-0 py-3' : 'px-4 py-3'
             } ${
                 active
-                    ? 'bg-[#D17A9F] text-white shadow-inner'
+                    ? 'bg-[#C65B8A] text-white shadow-inner'
                     : 'text-white/90 hover:bg-[#604457] hover:text-white'
             }`}
         >
@@ -709,10 +709,10 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 </div>
 
                 {/* Sidebar footer actions */}
-                <div className="border-t border-[#A94B75] bg-[#362536] p-4">
+                <div className="border-t border-[#604457] bg-[#362536] p-4">
                     {/* User profile badge */}
                     <div
-                        className={`mb-3 flex items-center rounded-xl border border-[#A94B75]/40 bg-[#604457]/55 p-2.5 ${
+                        className={`mb-3 flex items-center rounded-xl border border-[#604457]/60 bg-[#604457]/55 p-2.5 ${
                             collapsed ? 'justify-center' : 'gap-3'
                         }`}
                         title={collapsed ? user?.name ?? 'User' : undefined}
