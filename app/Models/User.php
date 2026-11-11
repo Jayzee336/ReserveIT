@@ -43,9 +43,15 @@ class User extends Authenticatable
 
     public function getAccountTypeLabelAttribute(): string
     {
-        return $this->account_type === 'uic_member'
-            ? 'UIC Student / Teacher'
-            : 'Outsider';
+        if ($this->account_type !== 'uic_member') {
+            return 'Outsider';
+        }
+
+        return match ($this->uic_member_type) {
+            'student' => 'UIC Student',
+            'teacher' => 'UIC Teacher',
+            default => 'UIC Member — classification needed',
+        };
     }
 
     /**
@@ -59,6 +65,7 @@ class User extends Authenticatable
         'name',
         'username',
         'email',
+        'uic_member_type',
         'password',
         'role',
         'must_change_password',
