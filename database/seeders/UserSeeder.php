@@ -1,10 +1,10 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\\Seeders;
 
-use App\Models\Facility;
-use App\Models\User;
-use Illuminate\Database\Seeder;
+use App\\Models\\Facility;
+use App\\Models\\User;
+use Illuminate\\Database\\Seeder;
 
 /**
  * Local/demo accounts only.
@@ -17,8 +17,8 @@ class UserSeeder extends Seeder
     /**
      * Create or refresh the named local demonstration accounts.
      *
-     * The first account of each former demo role reuses its old demo identity
-     * when possible, preserving its ID and related local booking history.
+     * Existing rows are matched by current email, legacy email, then username
+     * so their IDs and related booking history remain intact.
      */
     public function run(): void
     {
@@ -85,19 +85,31 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($demoAccounts as $account) {
-            // Reuse the existing demo row where possible so local booking
-            // history and foreign-key relationships remain attached.
-            $user = User::query()
+            // Match in priority order. Username fallback handles older rows
+            // whose email was changed outside the previous seeder.
+            $user = User::withTrashed()
                 ->where('email', $account['email'])
                 ->first();
 
             if (! $user && ! empty($account['legacy_email'])) {
-                $user = User::query()
+                $user = User::withTrashed()
                     ->where('email', $account['legacy_email'])
                     ->first();
             }
 
+            if (! $user) {
+                $user = User::withTrashed()
+                    ->where('username', $account['username'])
+                    ->first();
+            }
+
             $user ??= new User();
+
+            // Restore the same account row if it was soft-deleted; do not
+            // create a second row that could conflict with unique usernames.
+            if ($user->trashed()) {
+                $user->restore();
+            }
 
             $user->fill([
                 'username' => $account['username'],
@@ -115,7 +127,9 @@ class UserSeeder extends Seeder
 
         /*
          * Assign each local facility-admin demo account only to its agreed
-         * group. sync() also removes stale demo assignments from earlier runs.
+         * group. sync() removes stale assignments from these three accounts.
+         * Other accounts, including the deactivated facility4 account, are
+         * deliberately left untouched.
          */
         $facilityGroups = [
             'facility1@uic.edu.ph' => ['avr', 'avr2'],
@@ -137,7 +151,7 @@ class UserSeeder extends Seeder
             $missingFacilityIds = array_values(array_diff($facilityIds, $existingFacilityIds));
 
             if ($missingFacilityIds !== []) {
-                throw new \RuntimeException(
+                throw new \\RuntimeException(
                     'Cannot finish demo facility assignments. Missing facility IDs: '
                     . implode(', ', $missingFacilityIds)
                     . '. Seed the local facilities first.'
