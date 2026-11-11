@@ -20,8 +20,8 @@ export default function SetPassword() {
             <Head title="Set ReserveIT Password" />
 
             <div className="mx-auto max-w-3xl p-6">
-                <div className="rounded-3xl border border-[#E8D8D1] bg-white p-8 shadow-lg">
-                    <p className="text-sm uppercase tracking-[0.2em] text-[#7A4A57]">
+                <div className="rounded-3xl border border-[#EEDFE6] bg-white p-8 shadow-lg">
+                    <p className="text-sm uppercase tracking-[0.2em] text-[#C65B8A]">
                         Account Security
                     </p>
 
@@ -50,7 +50,7 @@ export default function SetPassword() {
                                 autoComplete="new-password"
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
-                                className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-[#7A4A57] focus:outline-none focus:ring-2 focus:ring-[#7A4A57]/20"
+                                className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20"
                                 required
                             />
 
@@ -77,7 +77,7 @@ export default function SetPassword() {
                                 onChange={(e) =>
                                     setData('password_confirmation', e.target.value)
                                 }
-                                className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-[#7A4A57] focus:outline-none focus:ring-2 focus:ring-[#7A4A57]/20"
+                                className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20"
                                 required
                             />
 
@@ -92,7 +92,7 @@ export default function SetPassword() {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="w-full rounded-xl bg-[#7A4A57] px-5 py-3 font-semibold text-white transition hover:bg-[#633945] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="w-full rounded-xl bg-[#C65B8A] px-5 py-3 font-semibold text-white transition hover:bg-[#A94B75] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {processing
                                     ? 'Saving Password...'
@@ -101,7 +101,7 @@ export default function SetPassword() {
 
                             <Link
                                 href={route('profile.edit')}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#E8D8D1] bg-white px-5 py-3 font-semibold text-[#7A4A57] transition hover:bg-[#F9F4EF]"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#EEDFE6] bg-white px-5 py-3 font-semibold text-[#C65B8A] transition hover:bg-[#FFFCFD]"
                             >
                                 <span aria-hidden="true">&larr;</span>
                                 Back to Profile Settings
