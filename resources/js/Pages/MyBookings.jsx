@@ -1309,6 +1309,12 @@ export default function MyBookings({
                                                     <form onSubmit={handleExtensionRequest} className="space-y-3 rounded-xl border border-[#E8D8D1] bg-white p-3">
                                                         <div className="grid gap-3 sm:grid-cols-2">
                                                             <label className="text-xs font-semibold text-gray-600">
+                                                                Current booking end
+                                                                <div className="mt-1 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                                                                    {formatTime(selectedDetailBooking.end_time)}
+                                                                </div>
+                                                            </label>
+                                                            <label className="text-xs font-semibold text-gray-600">
                                                                 Requested new end time
                                                                 <input
                                                                     type="time"
@@ -1319,12 +1325,6 @@ export default function MyBookings({
                                                                     required
                                                                     className="mt-1 w-full rounded-lg border-gray-200 text-sm focus:border-[#A98C97] focus:ring-[#A98C97]"
                                                                 />
-                                                            </label>
-                                                            <label className="text-xs font-semibold text-gray-600">
-                                                                Current booking end
-                                                                <div className="mt-1 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-                                                                    {formatTime(selectedDetailBooking.end_time)}
-                                                                </div>
                                                             </label>
                                                         </div>
                                                         <label className="block text-xs font-semibold text-gray-600">
