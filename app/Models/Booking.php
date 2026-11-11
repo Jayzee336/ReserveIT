@@ -43,6 +43,8 @@ class Booking extends Model
         'checked_in_at',
         'checked_out_at',
         'overtime_notified_at',
+        'pending_reminder_sent_at',
+        'pending_expired_at',
 
         // Overtime billing and payment tracking.
         'overtime_minutes',
@@ -64,6 +66,8 @@ class Booking extends Model
         'checked_in_at' => 'datetime',
         'checked_out_at' => 'datetime',
         'overtime_notified_at' => 'datetime',
+        'pending_reminder_sent_at' => 'datetime',
+        'pending_expired_at' => 'datetime',
 
         // Overtime billing fields.
         'overtime_minutes' => 'integer',
