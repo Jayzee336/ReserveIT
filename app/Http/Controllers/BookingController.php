@@ -845,8 +845,8 @@ class BookingController extends Controller
                 ? ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240']
                 : ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
             'sir_rene_signature' => $requiresSirReneSignature
-                ? ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120']
-                : ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+                ? ['required', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:5120']
+                : ['nullable', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:5120'],
         ]);
 
         $attendeeCount = (int) ($validated['attendees'] ?? 1);
