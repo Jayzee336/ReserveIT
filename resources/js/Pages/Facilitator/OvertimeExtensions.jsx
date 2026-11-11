@@ -35,6 +35,8 @@ const formatTime = (value) => {
 };
 
 export default function OvertimeExtensions({ extensionRequests }) {
+    const openedFromApprovals = typeof window !== 'undefined'
+        && new URLSearchParams(window.location.search).get('from') === 'approvals';
     const [processingId, setProcessingId] = useState(null);
     const [declineId, setDeclineId] = useState(null);
     const [declineReason, setDeclineReason] = useState('');
@@ -76,9 +78,11 @@ export default function OvertimeExtensions({ extensionRequests }) {
             <main className="mx-auto w-full max-w-[1400px] space-y-5 px-3 py-5 sm:px-5 sm:py-7 lg:px-8">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                        <Link href={route('facilitator.bookings.index')} className="inline-flex items-center gap-1 text-xs font-semibold text-[#745D67] hover:underline">
-                            <ArrowLeft className="h-3.5 w-3.5" /> Back to booking approvals
-                        </Link>
+                        {openedFromApprovals && (
+                            <Link href={route('facilitator.bookings.index')} className="inline-flex items-center gap-1 text-xs font-semibold text-[#745D67] hover:underline">
+                                <ArrowLeft className="h-3.5 w-3.5" /> Back to booking approvals
+                            </Link>
+                        )}
                         <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Overtime extension requests</h1>
                         <p className="mt-1 text-sm text-slate-500">Review requested reservation extensions. Approval changes the booking end time only after availability and operating hours are rechecked.</p>
                     </div>
