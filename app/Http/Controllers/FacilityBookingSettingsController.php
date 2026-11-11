@@ -67,6 +67,8 @@ class FacilityBookingSettingsController extends Controller
             'hours.*.is_closed' => ['required', 'boolean'],
             'hours.*.opens_at' => ['nullable', 'date_format:H:i'],
             'hours.*.closes_at' => ['nullable', 'date_format:H:i'],
+            'overtime_fee_enabled' => ['sometimes', 'boolean'],
+            'overtime_fee_per_hour' => ['nullable', 'numeric', 'min:0', 'max:100000'],
         ]);
 
         if (
