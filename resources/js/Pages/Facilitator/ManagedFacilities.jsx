@@ -184,7 +184,7 @@ export default function ManagedFacilities({ facilities = [] }) {
 
                                         <button
                                             type="submit" disabled={isSubmitting}
-                                            className="w-full inline-flex justify-center items-center gap-1.5 py-2.5 bg-[#263348] hover:bg-[#A94B75] text-white rounded-xl text-sm font-semibold disabled:bg-[#DFC5D1]"
+                                            className="w-full inline-flex justify-center items-center gap-1.5 py-2.5 bg-[#C65B8A] hover:bg-[#A94B75] text-white rounded-xl text-sm font-semibold disabled:bg-[#DFC5D1]"
                                         >
                                             <Save className="h-4 w-4" /> {isSubmitting ? 'Saving…' : 'Save Changes'}
                                         </button>
