@@ -32,7 +32,7 @@ export default function GlobalPageLoader() {
                     aria-busy="true"
                 >
                     <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/80 px-6 py-5 shadow-xl ring-1 ring-black/5">
-                        <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-[#6A535C]/20 border-t-[#6A535C]" />
+                        <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-[#C65B8A]/20 border-t-[#C65B8A]" />
                         <p className="text-xs font-medium text-slate-500">Loading…</p>
                     </div>
                 </motion.div>
