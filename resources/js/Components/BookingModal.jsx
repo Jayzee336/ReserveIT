@@ -141,6 +141,8 @@ export default function BookingModal({
     const [designation, setDesignation] = useState('');
     const [facilitator, setFacilitator] = useState('');
     const [file, setFile] = useState(null);
+    const [activityPlanFile, setActivityPlanFile] = useState(null);
+    const [signatureFile, setSignatureFile] = useState(null);
     const [needsManpower, setNeedsManpower] = useState(false);
     const [guestEmail, setGuestEmail] = useState('');
     const [guestName, setGuestName] = useState('');
@@ -153,6 +155,20 @@ export default function BookingModal({
     // Consent and lead-time rules
     const isWeekendBooking = dateRangeWeekdays.some((weekday) => weekday === 0 || weekday === 6);
     const isAlwaysConsent = facility?.requirement === 'CONSENT_REQUIRED';
+    const normalizedFacilityName = String(facility?.name ?? '').trim().toLowerCase();
+    const requiresActivityPlan = [
+        'lobby',
+        'main auditorium',
+        'quadrangle or field',
+        'field',
+        'sky gym',
+        'view deck',
+    ].includes(normalizedFacilityName);
+    const requiresSirReneSignature = [
+        'quadrangle or field',
+        'field',
+        'sky gym',
+    ].includes(normalizedFacilityName);
 
     const facilityConsentRequired =
         isAlwaysConsent ||
@@ -395,6 +411,26 @@ export default function BookingModal({
             return;
         }
 
+        if (requiresActivityPlan && !activityPlanFile) {
+            setConflictError('An Activity Plan document is required for this facility.');
+            return;
+        }
+
+        if (requiresSirReneSignature && !signatureFile) {
+            setConflictError("Sir Rene's signed document is required for this facility.");
+            return;
+        }
+
+        if (activityPlanFile && activityPlanFile.size > 10 * 1024 * 1024) {
+            setConflictError('The Activity Plan file must not exceed 10MB.');
+            return;
+        }
+
+        if (signatureFile && signatureFile.size > 5 * 1024 * 1024) {
+            setConflictError("Sir Rene's signed document must not exceed 5MB.");
+            return;
+        }
+
         const scheduledClosureConflict = findScheduledClosureConflict(startTime, endTime);
         if (scheduledClosureConflict) {
             setConflictError(
@@ -441,6 +477,8 @@ export default function BookingModal({
                 guest_phone: isAuthenticated ? null : guestPhone,
                 needs_manpower: needsManpower,
                 consent_letter: file,
+                activity_plan_file: activityPlanFile,
+                sir_rene_signature: signatureFile,
             },
             {
                 forceFormData: true,
@@ -856,6 +894,79 @@ export default function BookingModal({
                     </label>
                 )}
             </div>
+
+            {(requiresActivityPlan || requiresSirReneSignature) && (
+                <div className="space-y-3 border-b border-gray-100 px-6 py-5">
+                    {requiresActivityPlan && (
+                        <div className="relative rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-4 hover:bg-[#F7F0F3]/40">
+                            <div className="flex items-center gap-3">
+                                <Upload className="h-5 w-5 flex-shrink-0 text-gray-400" />
+                                <div className="min-w-0">
+                                    <p className="break-words text-sm font-semibold text-gray-700">
+                                        {activityPlanFile?.name || 'Upload Activity Plan'}
+                                        <span className="ml-1 text-red-600">*</span>
+                                    </p>
+                                    <p className="text-xs text-gray-400">Required for single bookings at this facility · PDF, DOC, or DOCX · up to 10MB</p>
+                                </div>
+                            </div>
+                            <input
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                required
+                                aria-label="Upload Activity Plan"
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                onChange={(e) => {
+                                    const selected = e.target.files?.[0] || null;
+                                    if (selected && selected.size > 10 * 1024 * 1024) {
+                                        setActivityPlanFile(null);
+                                        e.target.value = '';
+                                        setConflictError('The Activity Plan file must not exceed 10MB.');
+                                        toast.error('The Activity Plan file must not exceed 10MB.');
+                                        return;
+                                    }
+                                    setActivityPlanFile(selected);
+                                    setConflictError('');
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    {requiresSirReneSignature && (
+                        <div className="relative rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-4 hover:bg-[#F7F0F3]/40">
+                            <div className="flex items-center gap-3">
+                                <Upload className="h-5 w-5 flex-shrink-0 text-gray-400" />
+                                <div className="min-w-0">
+                                    <p className="break-words text-sm font-semibold text-gray-700">
+                                        {signatureFile?.name || "Upload Sir Rene's Signed Document"}
+                                        <span className="ml-1 text-red-600">*</span>
+                                    </p>
+                                    <p className="text-xs text-gray-400">Required for Sky Gym and Quadrangle or Field · PDF, DOC, or DOCX · up to 5MB</p>
+                                </div>
+                            </div>
+                            <input
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                required
+                                aria-label="Upload Sir Rene's signed document"
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                onChange={(e) => {
+                                    const selected = e.target.files?.[0] || null;
+                                    if (selected && selected.size > 5 * 1024 * 1024) {
+                                        setSignatureFile(null);
+                                        e.target.value = '';
+                                        setConflictError("Sir Rene's signed document must not exceed 5MB.");
+                                        toast.error("Sir Rene's signed document must not exceed 5MB.");
+                                        return;
+                                    }
+                                    setSignatureFile(selected);
+                                    setConflictError('');
+                                }}
+                            />
+                        </div>
+                    )}
+                    <p className="text-xs text-gray-500">These documents are stored privately and can only be opened by you and authorized booking administrators.</p>
+                </div>
+            )}
 
             {/* Consent Letter Upload. Keep this available for weekend bookings as a safeguard
                 when shared settings and server-side consent rules are temporarily out of sync. */}
