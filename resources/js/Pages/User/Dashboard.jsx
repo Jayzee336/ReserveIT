@@ -58,7 +58,7 @@ function MetricCard({ icon: Icon, label, value, detail, onClick, href, compact =
                 <p className={`mt-2 font-bold tracking-tight text-[#493344] ${compact ? 'text-xl' : 'text-3xl'}`}>{value ?? 0}</p>
                 <p className={compact ? "mt-1 text-[11px] leading-4 text-slate-500" : "mt-1 text-xs text-slate-500"}>{detail}</p>
             </div>
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F8EDF2] text-[#493344]">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#F4E4EB] text-[#493344]">
                 <Icon className="h-5 w-5" aria-hidden="true" />
             </span>
         </div>
@@ -269,7 +269,7 @@ export default function Dashboard({
                                     {bookingTrends.map((item) => (
                                         <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
                                             <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
-                                            <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings`} aria-label={`View facilities booked in ${item.label}`} className={`flex min-h-0 w-full flex-1 items-end rounded-t-lg bg-[#F8EDF2] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#B96B8D] focus:ring-2 focus:ring-[#B96B8D] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#493344]' : ''}`}>
+                                            <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings`} aria-label={`View facilities booked in ${item.label}`} className={`flex min-h-0 w-full flex-1 items-end rounded-t-lg bg-[#F4E4EB] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#B96B8D] focus:ring-2 focus:ring-[#B96B8D] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#493344]' : ''}`}>
                                                 <span className="block w-full rounded-t-lg bg-[#B96B8D]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / trendMaximum * 100)}%` : '3px' }} />
                                             </button>
                                             <span title={item.label} className="w-full truncate text-center text-[10px] text-slate-500">{item.label}</span>
@@ -439,7 +439,7 @@ export default function Dashboard({
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center rounded-2xl border border-dashed border-[var(--ri-border-strong)] bg-[var(--ri-surface-subtle)] px-5 py-10 text-center">
-                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F8EDF2] text-[#493344]">
+                                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4E4EB] text-[#493344]">
                                         <CalendarDays className="h-6 w-6" />
                                     </span>
                                     <h3 className="mt-4 text-base font-bold text-slate-900">
@@ -496,7 +496,7 @@ export default function Dashboard({
 
                         <Link
                             href={route('schedule.index')}
-                            className="mt-6 flex items-center justify-between rounded-xl border border-[var(--ri-border)] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#B96B8D] hover:bg-[#F8EDF2] hover:text-[#604457]"
+                            className="mt-6 flex items-center justify-between rounded-xl border border-[var(--ri-border)] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#B96B8D] hover:bg-[#F4E4EB] hover:text-[#604457]"
                         >
                             View facility schedule
                             <ArrowRight className="h-4 w-4" />
