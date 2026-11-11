@@ -1,122 +1,94 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\\Console\\Commands;
 
-use App\Models\Facility;
-use App\Models\User;
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
+use App\\Models\\User;
+use Illuminate\\Console\\Command;
+use Illuminate\\Support\\Facades\\DB;
 
 class ProvisionUicDemoAccounts extends Command
 {
-    protected $signature = 'reserveit:provision-uic-demo-accounts {--dry-run : Report changes without writing to the database}';
+    protected $signature = 'reserveit:provision-uic-demo-accounts {--dry-run : Report email conversions without writing to the database}';
 
-    protected $description = 'Create only missing UIC demo accounts without modifying existing users or assignments';
+    protected $description = 'Safely convert existing production demo account emails to UIC addresses without changing other user data';
 
     public function handle(): int
     {
-        $password = (string) getenv('RESERVEIT_UIC_DEMO_PASSWORD');
-
-        if ($password === '') {
-            $this->error('RESERVEIT_UIC_DEMO_PASSWORD must be set. No changes were made.');
-            return self::FAILURE;
-        }
-
-        $accounts = [
-            ['username' => 'admin', 'name' => 'ReserveIT Super Admin', 'email' => 'admin@uic.edu.ph', 'role' => 'super_admin', 'member_type' => 'teacher'],
-            ['username' => 'facility1', 'name' => 'ReserveIT Facility Admin 1', 'email' => 'facility1@uic.edu.ph', 'role' => 'facility_admin', 'member_type' => 'teacher'],
-            ['username' => 'facility2', 'name' => 'ReserveIT Facility Admin 2', 'email' => 'facility2@uic.edu.ph', 'role' => 'facility_admin', 'member_type' => 'teacher'],
-            ['username' => 'facility3', 'name' => 'ReserveIT Facility Admin 3', 'email' => 'facility3@uic.edu.ph', 'role' => 'facility_admin', 'member_type' => 'teacher'],
-            ['username' => 'facility4', 'name' => 'ReserveIT Facility Admin 4', 'email' => 'facility4@uic.edu.ph', 'role' => 'facility_admin', 'member_type' => 'teacher'],
-            ['username' => 'user1', 'name' => 'ReserveIT Demo User 1', 'email' => 'user1@uic.edu.ph', 'role' => 'user', 'member_type' => 'student'],
-            ['username' => 'user2', 'name' => 'ReserveIT Demo User 2', 'email' => 'user2@uic.edu.ph', 'role' => 'user', 'member_type' => 'student'],
-            ['username' => 'user3', 'name' => 'ReserveIT Demo User 3', 'email' => 'user3@uic.edu.ph', 'role' => 'user', 'member_type' => 'student'],
+        // These are the existing production demo identities created by the
+        // explicitly enabled demo seeder. Only the email column is changed.
+        $conversions = [
+            ['from' => 'admin@test.com', 'to' => 'admin@uic.edu.ph'],
+            ['from' => 'facility@test.com', 'to' => 'facility1@uic.edu.ph'],
+            ['from' => 'facility2@test.com', 'to' => 'facility2@uic.edu.ph'],
+            ['from' => 'facility3@test.com', 'to' => 'facility3@uic.edu.ph'],
+            ['from' => 'facility4@test.com', 'to' => 'facility4@uic.edu.ph'],
+            ['from' => 'user@test.com', 'to' => 'user1@uic.edu.ph'],
+            ['from' => 'user2@test.com', 'to' => 'user2@uic.edu.ph'],
+            ['from' => 'user3@test.com', 'to' => 'user3@uic.edu.ph'],
         ];
 
-        $assignments = [
-            'facility1@uic.edu.ph' => ['avr', 'avr2'],
-            'facility2@uic.edu.ph' => ['lobby', 'f3', 'field', 'sky_gym', 'view_deck'],
-            'facility3@uic.edu.ph' => ['itrc', 'iot', 'open_lab'],
-            'facility4@uic.edu.ph' => ['itdif'],
-        ];
-
-        $created = [];
+        $updates = [];
+        $alreadyConverted = [];
         $conflicts = [];
-        $existing = [];
 
-        $describeMatch = static function (?User $user): string {
-            if (! $user) {
-                return 'not found';
-            }
+        foreach ($conversions as $conversion) {
+            $source = User::withTrashed()
+                ->where('email', $conversion['from'])
+                ->first();
 
-            $deleted = method_exists($user, 'trashed') && $user->trashed();
-            $active = (bool) ($user->is_active ?? false);
+            $target = User::withTrashed()
+                ->where('email', $conversion['to'])
+                ->first();
 
-            return sprintf(
-                'id=%s username=%s email=%s active=%s deleted=%s',
-                $user->getKey(),
-                (string) ($user->username ?? '(none)'),
-                (string) ($user->email ?? '(none)'),
-                $active ? 'yes' : 'no',
-                $deleted ? 'yes' : 'no'
-            );
-        };
-
-        foreach ($accounts as $account) {
-            $byEmail = User::withTrashed()->where('email', $account['email'])->first();
-            $byUsername = User::withTrashed()->where('username', $account['username'])->first();
-
-            if (! $byEmail && ! $byUsername) {
-                $created[] = $account;
+            if ($source && $target && $source->isNot($target)) {
+                $conflicts[] = $conversion['from'] . ' -> ' . $conversion['to']
+                    . ' (target email belongs to a different user; source ID=' . $source->getKey()
+                    . ', target ID=' . $target->getKey() . ')';
                 continue;
             }
 
-            if ($byEmail && $byUsername && $byEmail->is($byUsername) && ! $byEmail->trashed()) {
-                $existing[] = $account['email'];
+            if ($source && $source->trashed()) {
+                $conflicts[] = $conversion['from'] . ' -> ' . $conversion['to']
+                    . ' (source account ID=' . $source->getKey() . ' is soft-deleted)';
                 continue;
             }
 
-            $reasons = [];
-            if ($byEmail && ! $byUsername) {
-                $reasons[] = 'email exists but intended username does not match any row';
-            } elseif (! $byEmail && $byUsername) {
-                $reasons[] = 'username is already used by a different email';
-            } elseif ($byEmail && $byUsername && $byEmail->isNot($byUsername)) {
-                $reasons[] = 'email and username belong to different user rows';
+            if ($target && $target->trashed()) {
+                $conflicts[] = $conversion['from'] . ' -> ' . $conversion['to']
+                    . ' (target email belongs to soft-deleted account ID=' . $target->getKey() . ')';
+                continue;
             }
 
-            if (($byEmail && $byEmail->trashed()) || ($byUsername && $byUsername->trashed())) {
-                $reasons[] = 'at least one matching row is soft-deleted';
+            if ($source) {
+                $updates[] = [
+                    'user_id' => $source->getKey(),
+                    'from' => $conversion['from'],
+                    'to' => $conversion['to'],
+                ];
+                continue;
             }
 
-            $conflicts[] = [
-                'email' => $account['email'],
-                'reason' => implode('; ', $reasons),
-                'email_match' => $describeMatch($byEmail),
-                'username_match' => $describeMatch($byUsername),
-            ];
+            if ($target) {
+                $alreadyConverted[] = $conversion['to'] . ' (account ID=' . $target->getKey() . ')';
+                continue;
+            }
+
+            $conflicts[] = $conversion['from'] . ' -> ' . $conversion['to']
+                . ' (neither source nor target email exists)';
         }
 
-        foreach ($created as $account) {
-            if (isset($assignments[$account['email']])) {
-                $facilityIds = $assignments[$account['email']];
-                $foundIds = Facility::whereIn('id', $facilityIds)->pluck('id')->all();
-                $missing = array_diff($facilityIds, $foundIds);
-                if ($missing !== []) {
-                    $this->error('Missing required facilities for ' . $account['email'] . ': ' . implode(', ', $missing));
-                    return self::FAILURE;
-                }
-            }
+        $this->info('Existing accounts whose email will be changed: ' . count($updates));
+        foreach ($updates as $update) {
+            $this->line('  UPDATE EMAIL ONLY ' . $update['from'] . ' -> ' . $update['to']
+                . ' (preserve user ID ' . $update['user_id'] . ', password, role, username, bookings, and assignments)');
         }
 
-        $this->info('Accounts to create: ' . count($created));
-        foreach ($created as $account) $this->line('  CREATE ' . $account['email'] . ' (' . $account['role'] . ')');
-        foreach ($existing as $email) $this->line('  KEEP EXISTING ' . $email . ' (exact active email/username match; no changes)');
+        foreach ($alreadyConverted as $email) {
+            $this->line('  ALREADY CONVERTED ' . $email . ' (no changes)');
+        }
+
         foreach ($conflicts as $conflict) {
-            $this->warn('  REVIEW CONFLICT ' . $conflict['email']);
-            $this->line('    Reason: ' . $conflict['reason']);
-            $this->line('    Email lookup: ' . $conflict['email_match']);
-            $this->line('    Username lookup: ' . $conflict['username_match']);
+            $this->warn('  REVIEW CONFLICT ' . $conflict);
         }
 
         if ($this->option('dry-run')) {
@@ -125,31 +97,22 @@ class ProvisionUicDemoAccounts extends Command
         }
 
         if ($conflicts !== []) {
-            $this->error('Conflicts must be reviewed before provisioning. No accounts were created.');
+            $this->error('Conflicts must be resolved first. No email addresses were changed.');
             return self::FAILURE;
         }
 
-        DB::transaction(function () use ($created, $assignments, $password): void {
-            foreach ($created as $account) {
-                $user = User::create([
-                    'username' => $account['username'],
-                    'name' => $account['name'],
-                    'email' => $account['email'],
-                    'password' => $password,
-                    'role' => $account['role'],
-                    'uic_member_type' => $account['member_type'],
-                    'must_change_password' => true,
-                    'is_active' => true,
-                ]);
+        DB::transaction(function () use ($updates): void {
+            foreach ($updates as $update) {
+                $user = User::query()->whereKey($update['user_id'])->firstOrFail();
 
-                if (isset($assignments[$account['email']])) {
-                    $user->managedFacilities()->attach($assignments[$account['email']]);
-                }
+                // Update only email. Do not touch passwords, roles, usernames,
+                // account status, facility assignments, bookings, or other data.
+                $user->email = $update['to'];
+                $user->save();
             }
         });
 
-        $this->info('Provisioning completed. Existing accounts were not modified.');
-        $this->warn('New accounts must change their temporary password at first login.');
+        $this->info('UIC email conversion completed. Existing user records and related data were preserved.');
         return self::SUCCESS;
     }
 }
