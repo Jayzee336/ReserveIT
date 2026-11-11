@@ -96,7 +96,7 @@ export default function CalendarDashboard({
                                     type="button"
                                     onClick={() => handleScheduleViewChange('assigned')}
                                     aria-pressed={scheduleView === 'assigned'}
-                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'assigned' ? 'bg-white text-[#A94B75] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'assigned' ? 'bg-white text-[#A44773] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                                 >
                                     My Assigned Facilities
                                 </button>
@@ -104,7 +104,7 @@ export default function CalendarDashboard({
                                     type="button"
                                     onClick={() => handleScheduleViewChange('all')}
                                     aria-pressed={scheduleView === 'all'}
-                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'all' ? 'bg-white text-[#A94B75] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'all' ? 'bg-white text-[#A44773] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                                 >
                                     All Facilities
                                 </button>
@@ -125,7 +125,7 @@ export default function CalendarDashboard({
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-2 rounded-lg bg-[#F8EDF2] px-3 py-2 text-xs font-medium text-[#A94B75]">
+                            <div className="flex items-center gap-2 rounded-lg bg-[#F8EDF2] px-3 py-2 text-xs font-medium text-[#A44773]">
                                 <CalendarDays className="h-4 w-4" />
                                 {serverFacilities.length}{' '}
                                 {serverFacilities.length === 1
