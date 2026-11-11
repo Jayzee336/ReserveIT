@@ -528,7 +528,7 @@ export default function AdminDashboard({
                         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
                             <Link
                                 href={route('facilities.index')}
-                                className="ri-btn-primary !min-h-12 !border-white/10 !bg-white !px-5 !text-[#493344] hover:!border-white hover:!bg-[#FCFAFB]"
+                                className="ri-btn-primary !min-h-12 !border-[#C65B8A] !bg-[#C65B8A] !px-5 !text-white hover:!border-[#A44773] hover:!bg-[#A44773]"
                             >
                                 Book a Facility
                                 <ArrowRight className="h-4 w-4" />
