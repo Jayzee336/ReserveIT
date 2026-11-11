@@ -28,7 +28,7 @@ class AvrTwoFacilitySeederTest extends TestCase
 
         $this->seed(AvrTwoFacilitySeeder::class);
 
-        $this->assertDatabaseCount('facilities', 1);
+        $this->assertSame(1, Facility::query()->whereKey('avr2')->count());
         $this->assertDatabaseHas('facilities', [
             'id' => 'avr2',
             'name' => 'Audio Visual Room 2 (AVR 2)',
