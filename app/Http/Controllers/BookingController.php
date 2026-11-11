@@ -795,6 +795,21 @@ class BookingController extends Controller
         $validated['end_date'] = $validated['end_date'] ?? $validated['date'];
         $facility = Facility::findOrFail($validated['facility_id']);
 
+        $facilityName = mb_strtolower(trim((string) $facility->name));
+        $requiresActivityPlan = in_array($facilityName, [
+            'lobby',
+            'main auditorium',
+            'quadrangle or field',
+            'field',
+            'sky gym',
+            'view deck',
+        ], true);
+        $requiresSirReneSignature = in_array($facilityName, [
+            'quadrangle or field',
+            'field',
+            'sky gym',
+        ], true);
+
         if (! $facility->is_available) {
             throw ValidationException::withMessages([
                 'facility_id' => 'This facility is temporarily unavailable and cannot accept new bookings.',
@@ -821,6 +836,15 @@ class BookingController extends Controller
 
         $request->validate([
             'consent_letter' => $isConsentRequired
+                ? ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120']
+                : ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+        ]);
+
+        $request->validate([
+            'activity_plan_file' => $requiresActivityPlan
+                ? ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240']
+                : ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'sir_rene_signature' => $requiresSirReneSignature
                 ? ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120']
                 : ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
         ]);
@@ -876,6 +900,10 @@ class BookingController extends Controller
 
         $path = null;
         $originalName = null;
+        $activityPlanPath = null;
+        $activityPlanName = null;
+        $signaturePath = null;
+        $signatureName = null;
         $booking = null;
 
         try {
@@ -892,6 +920,28 @@ class BookingController extends Controller
                 $originalName = basename($file->getClientOriginalName());
             }
 
+            if ($request->hasFile('activity_plan_file')) {
+                $upload = $request->file('activity_plan_file');
+                $extension = strtolower($upload->getClientOriginalExtension());
+                $activityPlanPath = $upload->storeAs(
+                    'booking-activity-plans',
+                    bin2hex(random_bytes(24)) . '.' . $extension,
+                    'tigris'
+                );
+                $activityPlanName = basename($upload->getClientOriginalName());
+            }
+
+            if ($request->hasFile('sir_rene_signature')) {
+                $upload = $request->file('sir_rene_signature');
+                $extension = strtolower($upload->getClientOriginalExtension());
+                $signaturePath = $upload->storeAs(
+                    'booking-signatures',
+                    bin2hex(random_bytes(24)) . '.' . $extension,
+                    'tigris'
+                );
+                $signatureName = basename($upload->getClientOriginalName());
+            }
+
             $booking = DB::transaction(function () use (
                 $facility,
                 $validated,
@@ -899,6 +949,10 @@ class BookingController extends Controller
                 $needsManpower,
                 $path,
                 $originalName,
+                $activityPlanPath,
+                $activityPlanName,
+                $signaturePath,
+                $signatureName,
                 $autoApprove,
                 $isSuperAdmin,
                 $buffer,
@@ -969,6 +1023,10 @@ class BookingController extends Controller
                     'consent_file_uploaded' => $path !== null,
                     'consent_file_name' => $originalName,
                     'consent_file_path' => $path,
+                    'activity_plan_file_path' => $activityPlanPath,
+                    'activity_plan_file_name' => $activityPlanName,
+                    'sir_rene_signature_path' => $signaturePath,
+                    'sir_rene_signature_name' => $signatureName,
                     'status' => $autoApprove ? 'approved' : 'pending',
                     'approved_at' => $autoApprove ? now() : null,
                     'approved_by' => $autoApprove
@@ -981,12 +1039,20 @@ class BookingController extends Controller
                 ]);
             });
         } catch (\Throwable $e) {
-            if ($path !== null) {
+            foreach ([
+                $path,
+                $activityPlanPath,
+                $signaturePath,
+            ] as $uploadedPath) {
+                if ($uploadedPath === null) {
+                    continue;
+                }
+
                 try {
-                    Storage::disk('tigris')->delete($path);
+                    Storage::disk('tigris')->delete($uploadedPath);
                 } catch (\Throwable $cleanupException) {
-                    Log::error('Failed to clean up consent upload.', [
-                        'path' => $path,
+                    Log::error('Failed to clean up booking attachment.', [
+                        'path' => $uploadedPath,
                         'error' => $cleanupException->getMessage(),
                     ]);
                 }
