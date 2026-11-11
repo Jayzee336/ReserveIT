@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 const inputClass =
-    'mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#6A535C] focus:ring-2 focus:ring-[#6A535C]/15';
+    'mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-[#263348] focus:ring-2 focus:ring-[#263348]/15';
 
 const labelClass = 'block text-sm font-semibold text-slate-800';
 
@@ -20,7 +20,7 @@ function SectionCard({ icon: Icon, title, description, children }) {
     return (
         <section className="min-w-0 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
             <div className="mb-5 flex items-start gap-3 border-b border-slate-100 pb-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#6A535C]/10 text-[#6A535C]">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#263348]/10 text-[#263348]">
                     <Icon className="h-5 w-5" />
                 </span>
 
@@ -142,7 +142,7 @@ export default function SystemSettings({ settings }) {
         <AuthenticatedLayout
             header={
                 <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#6A535C]/10 text-[#6A535C]">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#263348]/10 text-[#263348]">
                         <Settings2 className="h-5 w-5" />
                     </span>
                     <div>
@@ -391,7 +391,7 @@ export default function SystemSettings({ settings }) {
                                 </p>
                             </div>
 
-                            <div className="rounded-xl border border-[#6A535C]/15 bg-[#6A535C]/5 p-4">
+                            <div className="rounded-xl border border-[#263348]/15 bg-[#263348]/5 p-4">
                                 <div className="mb-3">
                                     <p className="text-sm font-semibold text-slate-800">Rate breakdown</p>
                                     <p className="mt-1 text-xs leading-5 text-slate-500">
@@ -402,7 +402,7 @@ export default function SystemSettings({ settings }) {
                                     {[{ label: '15 minutes', minutes: 15 }, { label: '30 minutes', minutes: 30 }, { label: '1 hour', minutes: 60 }].map((period) => (
                                         <div key={period.minutes} className="rounded-lg border border-white bg-white px-3 py-3">
                                             <p className="text-xs text-slate-500">{period.label}</p>
-                                            <p className="mt-1 text-base font-bold text-[#6A535C]">
+                                            <p className="mt-1 text-base font-bold text-[#263348]">
                                                 ₱{((Number(fee) || 0) * period.minutes / 60).toFixed(2)}
                                             </p>
                                         </div>
@@ -430,7 +430,7 @@ export default function SystemSettings({ settings }) {
                                 <span className="mt-1 block text-xs font-normal text-slate-500">Default: 24 hours. Set to 0 to disable reminders.</span>
                             </label>
                         </div>
-                        <p className="mt-4 rounded-xl border border-[#E8D8D1] bg-[#FFFBF8] px-4 py-3 text-sm text-slate-700">The scheduler checks every 15 minutes. The requester and assigned Facility Admins receive reminders and expiration notifications.</p>
+                        <p className="mt-4 rounded-xl border border-[#EEDFE6] bg-[#FFFCFD] px-4 py-3 text-sm text-slate-700">The scheduler checks every 15 minutes. The requester and assigned Facility Admins receive reminders and expiration notifications.</p>
                     </SectionCard>
                     </div>
                 </div>
@@ -439,7 +439,7 @@ export default function SystemSettings({ settings }) {
                     {hasChanges ? 'You have unsaved changes. Save to apply them.' : 'Your booking settings are up to date.'}
                 </p>
                 <button type="button" onClick={saveSettings} disabled={!hasChanges || saving}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#58434B] focus:outline-none focus:ring-2 focus:ring-[#6A535C]/30 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#58434B] focus:outline-none focus:ring-2 focus:ring-[#263348]/30 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                     {saving ? <Clock3 className="h-4 w-4 animate-pulse" /> : <CheckCircle2 className="h-4 w-4" />}
                     {saving ? 'Saving…' : 'Save Changes'}
                 </button>
