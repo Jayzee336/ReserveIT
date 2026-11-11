@@ -15,7 +15,7 @@ class ProvisionUicDemoAccounts extends Command
 
     public function handle(): int
     {
-        $password = (string) env('RESERVEIT_UIC_DEMO_PASSWORD', '');
+        $password = (string) getenv('RESERVEIT_UIC_DEMO_PASSWORD');
 
         if ($password === '') {
             $this->error('RESERVEIT_UIC_DEMO_PASSWORD must be set. No changes were made.');
