@@ -488,7 +488,7 @@ export default function ActiveBookings() {
                             className="w-full max-w-md overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl"
                             onClick={(event) => event.stopPropagation()}
                         >
-                            <div className="border-b border-stone-100 bg-[#FFFAF7] px-6 py-5">
+                            <div className="border-b border-stone-100 bg-[#FCFAFB] px-6 py-5">
                                 <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F8EDF2] text-[#493344]">
                                     <CreditCard className="h-5 w-5" />
                                 </div>
