@@ -114,7 +114,7 @@ export default function Dashboard({ auth, facilities }) {
                     <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
                         <div className="mr-auto flex flex-wrap items-center gap-2">
                             {filterType !== 'All' && (
-                                <span className="inline-flex items-center gap-1 rounded-full border border-[#EEDFE6] bg-[#F8EAF0] px-2.5 py-1 text-xs font-semibold text-[#A94B75]">
+                                <span className="inline-flex items-center gap-1 rounded-full border border-[#E8E1E7] bg-[#F8EDF2] px-2.5 py-1 text-xs font-semibold text-[#A94B75]">
                                     {filterType}
                                     <button
                                         type="button"
@@ -148,7 +148,7 @@ export default function Dashboard({ auth, facilities }) {
                                 type="text"
                                 placeholder="Search facilities..."
                                 aria-label="Search facilities"
-                                className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm shadow-sm focus:border-[#B96D91] focus:ring-2 focus:ring-[#B96D91]"
+                                className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm shadow-sm focus:border-[#647D91] focus:ring-2 focus:ring-[#647D91]"
                                 value={searchTerm}
                                 onChange={(event) =>
                                     setSearchTerm(event.target.value)
@@ -161,7 +161,7 @@ export default function Dashboard({ auth, facilities }) {
                             onClick={openModal}
                             className={`relative flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
                                 activeFilterCount > 0
-                                    ? 'border-[#DFC5D1] bg-[#F8EAF0] text-[#A94B75] hover:bg-[#EEDFE6]'
+                                    ? 'border-[#D9C8D4] bg-[#F8EDF2] text-[#A94B75] hover:bg-[#E8E1E7]'
                                     : 'border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50'
                             }`}
                         >
@@ -169,7 +169,7 @@ export default function Dashboard({ auth, facilities }) {
                             <span>Filters</span>
 
                             {activeFilterCount > 0 && (
-                                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#263348] text-[10px] font-bold text-white">
+                                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#493344] text-[10px] font-bold text-white">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -182,7 +182,7 @@ export default function Dashboard({ auth, facilities }) {
                             <Link
                                 key={facility.id}
                                 href={`/facility/${facility.id}`}
-                                className={`ri-facility-card flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#EEDFE6] bg-white shadow-sm ${facility.is_available === false ? 'grayscale opacity-60' : ''}`}
+                                className={`ri-facility-card flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#E8E1E7] bg-white shadow-sm ${facility.is_available === false ? 'grayscale opacity-60' : ''}`}
                             >
                                 <div className="relative h-56 w-full shrink-0 overflow-hidden bg-slate-100">
                                     <img
@@ -246,7 +246,7 @@ export default function Dashboard({ auth, facilities }) {
                                             </span>
                                         </div>
 
-                                        <span className="shrink-0 font-semibold text-[#263348]">
+                                        <span className="shrink-0 font-semibold text-[#493344]">
                                             {facility.is_available === false ? 'View details' : 'Book →'}
                                         </span>
                                     </div>
@@ -287,7 +287,7 @@ export default function Dashboard({ auth, facilities }) {
                     >
                         <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-6 py-4">
                             <div className="flex items-center gap-2">
-                                <Filter className="h-4 w-4 text-[#263348]" />
+                                <Filter className="h-4 w-4 text-[#493344]" />
                                 <h3
                                     id="facility-filter-title"
                                     className="font-bold text-gray-900"
@@ -323,8 +323,8 @@ export default function Dashboard({ auth, facilities }) {
                                             onClick={() => setPendingType(type)}
                                             className={`flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm font-medium transition-all ${
                                                 pendingType === type
-                                                    ? 'border-[#263348] bg-[#263348] text-white shadow-sm'
-                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-[#DFC5D1] hover:text-[#263348]'
+                                                    ? 'border-[#493344] bg-[#493344] text-white shadow-sm'
+                                                    : 'border-gray-200 bg-white text-gray-600 hover:border-[#D9C8D4] hover:text-[#493344]'
                                             }`}
                                         >
                                             {pendingType === type && (
@@ -352,14 +352,14 @@ export default function Dashboard({ auth, facilities }) {
                                             onClick={() => setPendingSort(value)}
                                             className={`flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition-all ${
                                                 pendingSort === value
-                                                    ? 'border-[#DFC5D1] bg-[#F8EAF0] text-[#A94B75]'
+                                                    ? 'border-[#D9C8D4] bg-[#F8EDF2] text-[#A94B75]'
                                                     : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                                             }`}
                                         >
                                             <span>{label}</span>
 
                                             {pendingSort === value && (
-                                                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#263348]">
+                                                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#493344]">
                                                     <Check className="h-2.5 w-2.5 text-white" />
                                                 </span>
                                             )}
