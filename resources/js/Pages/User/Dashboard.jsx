@@ -177,7 +177,7 @@ export default function Dashboard({
             <Head title="Dashboard" />
 
             <div className="ri-page-shell space-y-7">
-                <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#263348] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
+                <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#C65B8A] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
                     <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#C65B8A]/50 blur-3xl" />
                     <div className="pointer-events-none absolute -bottom-32 right-1/3 -z-10 h-64 w-64 rounded-full bg-[#B88D59]/20 blur-3xl" />
 
@@ -450,7 +450,7 @@ export default function Dashboard({
                                     </p>
                                     <Link
                                         href={route('facilities.index')}
-                                        className="ri-btn-primary mt-5 !border-[#263348] !bg-[#263348] hover:!border-[#533E45] hover:!bg-[#533E45]"
+                                        className="ri-btn-primary mt-5 !border-[#C65B8A] !bg-[#C65B8A] hover:!border-[#533E45] hover:!bg-[#A94B75]"
                                     >
                                         Explore facilities
                                         <ArrowRight className="h-4 w-4" />
@@ -475,19 +475,19 @@ export default function Dashboard({
 
                         <ul className="mt-5 space-y-4">
                             <li className="flex gap-3">
-                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#263348]" />
+                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#C65B8A]" />
                                 <p className="text-sm leading-6 text-slate-600">
                                     Submit requests early so the facility team has time to review them.
                                 </p>
                             </li>
                             <li className="flex gap-3">
-                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#263348]" />
+                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#C65B8A]" />
                                 <p className="text-sm leading-6 text-slate-600">
                                     Review the facility requirements before sending your request.
                                 </p>
                             </li>
                             <li className="flex gap-3">
-                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#263348]" />
+                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#C65B8A]" />
                                 <p className="text-sm leading-6 text-slate-600">
                                     Check your booking status for approval updates and next steps.
                                 </p>
@@ -496,7 +496,7 @@ export default function Dashboard({
 
                         <Link
                             href={route('schedule.index')}
-                            className="mt-6 flex items-center justify-between rounded-xl border border-[var(--ri-border)] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#263348] hover:bg-[#F8EAF0] hover:text-[#533E45]"
+                            className="mt-6 flex items-center justify-between rounded-xl border border-[var(--ri-border)] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#C65B8A] hover:bg-[#F8EAF0] hover:text-[#533E45]"
                         >
                             View facility schedule
                             <ArrowRight className="h-4 w-4" />
