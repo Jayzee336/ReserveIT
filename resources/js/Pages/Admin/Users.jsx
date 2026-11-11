@@ -322,6 +322,7 @@ function AddUserModal({ facilities = [], onClose }) {
         name: '',
         username: '',
         email: '',
+        uic_member_type: '',
         role: 'facility_admin',
         password_mode: 'generated',
         password: '',
@@ -391,9 +392,34 @@ function AddUserModal({ facilities = [], onClose }) {
                         required
                         placeholder="Email address"
                         value={form.email}
-                        onChange={(e) => updateField('email', e.target.value)}
+                        onChange={(e) => {
+                            const email = e.target.value;
+                            setForm((current) => ({
+                                ...current,
+                                email,
+                                uic_member_type: email.trim().toLowerCase().endsWith('@uic.edu.ph')
+                                    ? current.uic_member_type
+                                    : '',
+                            }));
+                        }}
                         className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                     />
+
+                    {form.email.trim().toLowerCase().endsWith('@uic.edu.ph') && (
+                        <div>
+                            <label className="mb-1 block text-xs font-medium text-gray-500">UIC Account Classification</label>
+                            <select
+                                required
+                                value={form.uic_member_type}
+                                onChange={(e) => updateField('uic_member_type', e.target.value)}
+                                className="block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
+                            >
+                                <option value="">Select classification</option>
+                                <option value="student">UIC Student</option>
+                                <option value="teacher">UIC Teacher</option>
+                            </select>
+                        </div>
+                    )}
 
                     <div>
                         <label className="mb-1 block text-xs font-medium text-gray-500">Password Setup</label>
@@ -485,6 +511,7 @@ function EditUserModal({ user, facilities = [], onClose }) {
         name: user.name,
         username: user.username ?? '',
         email: user.email,
+        uic_member_type: user.uic_member_type ?? '',
         assigned_facility_ids: user.assigned_facility_ids ?? [],
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -573,10 +600,35 @@ function EditUserModal({ user, facilities = [], onClose }) {
                             required
                             placeholder="Email address"
                             value={form.email}
-                            onChange={(e) => updateField('email', e.target.value)}
+                            onChange={(e) => {
+                                const email = e.target.value;
+                                setForm((current) => ({
+                                    ...current,
+                                    email,
+                                    uic_member_type: email.trim().toLowerCase().endsWith('@uic.edu.ph')
+                                        ? current.uic_member_type
+                                        : '',
+                                }));
+                            }}
                             className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
                         />
                     </div>
+
+                    {form.email.trim().toLowerCase().endsWith('@uic.edu.ph') && (
+                        <div>
+                            <label className="mb-1 block text-xs font-medium text-gray-500">UIC Account Classification</label>
+                            <select
+                                required
+                                value={form.uic_member_type}
+                                onChange={(e) => updateField('uic_member_type', e.target.value)}
+                                className="block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#A98C97]"
+                            >
+                                <option value="">Select classification</option>
+                                <option value="student">UIC Student</option>
+                                <option value="teacher">UIC Teacher</option>
+                            </select>
+                        </div>
+                    )}
 
                     {user.role === 'facility_admin' && (
                         <div>
@@ -1191,6 +1243,9 @@ export default function Users({
 
                                                 <td className="px-6 py-4 text-sm text-gray-500">
                                                     {user.email}
+                                                    <p className="mt-1 text-xs font-medium text-slate-500">
+                                                        {user.account_type_label || 'Account type not classified'}
+                                                    </p>
                                                 </td>
 
                                                 <td className="px-6 py-4">
