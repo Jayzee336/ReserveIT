@@ -1,10 +1,10 @@
 <?php
 
-namespace Database\\Seeders;
+namespace Database\Seeders;
 
-use App\\Models\\Facility;
-use App\\Models\\User;
-use Illuminate\\Database\\Seeder;
+use App\Models\Facility;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
 /**
  * Local/demo accounts only.
