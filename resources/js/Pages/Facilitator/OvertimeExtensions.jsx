@@ -71,7 +71,7 @@ export default function OvertimeExtensions({ extensionRequests }) {
         <AuthenticatedLayout
             header={
                 <div className="flex items-center gap-2">
-                    <Clock3 className="h-5 w-5 text-[#6A535C]" />
+                    <Clock3 className="h-5 w-5 text-[#263348]" />
                     <h2 className="text-lg font-semibold text-gray-800">Overtime Extension Requests</h2>
                 </div>
             }
@@ -82,7 +82,7 @@ export default function OvertimeExtensions({ extensionRequests }) {
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         {openedFromApprovals && (
-                            <Link href={route(approvalsRoute)} className="inline-flex items-center gap-1 text-xs font-semibold text-[#745D67] hover:underline">
+                            <Link href={route(approvalsRoute)} className="inline-flex items-center gap-1 text-xs font-semibold text-[#A94B75] hover:underline">
                                 <ArrowLeft className="h-3.5 w-3.5" /> Back to booking approvals
                             </Link>
                         )}
@@ -126,9 +126,9 @@ export default function OvertimeExtensions({ extensionRequests }) {
                                         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Current booking time</p>
                                         <p className="mt-1 text-sm font-bold text-slate-800">{formatTime(booking.start_time)} – {formatTime(item.original_end_time)}</p>
                                     </div>
-                                    <div className="rounded-lg bg-[#F7F0F3] p-3">
-                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-[#846A75]">Requested new end time</p>
-                                        <p className="mt-1 text-sm font-bold text-[#543F48]">{formatTime(item.requested_end_time)} <span className="text-xs font-semibold">(+{item.requested_minutes} min)</span></p>
+                                    <div className="rounded-lg bg-[#F8EAF0] p-3">
+                                        <p className="text-[10px] font-semibold uppercase tracking-wide text-[#C65B8A]">Requested new end time</p>
+                                        <p className="mt-1 text-sm font-bold text-[#A94B75]">{formatTime(item.requested_end_time)} <span className="text-xs font-semibold">(+{item.requested_minutes} min)</span></p>
                                     </div>
                                     <div className="rounded-lg bg-slate-50 p-3">
                                         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Request submitted</p>
