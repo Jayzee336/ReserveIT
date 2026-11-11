@@ -320,6 +320,11 @@ function BookingDetailModal({
                                 {booking.user?.email ?? booking.guest_email}
                             </p>
                         )}
+                        {booking.user?.account_type_label && (
+                            <p className="mt-1 text-xs font-semibold text-slate-600">
+                                Requester type: {booking.user.account_type_label}
+                            </p>
+                        )}
                     </div>
 
                     <div className="rounded-xl bg-stone-50 p-4">
