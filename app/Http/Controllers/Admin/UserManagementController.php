@@ -102,11 +102,7 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:30', Rule::unique('users', 'username')->ignore($user->id)],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'uic_member_type' => [
-                Rule::requiredIf(fn () => str_ends_with(strtolower(trim((string) $request->input('email'))), '@uic.edu.ph')),
-                'nullable',
-                Rule::in(['student', 'teacher']),
-            ],
+            'uic_member_type' => ['sometimes', 'nullable', Rule::in(['student', 'teacher'])],
             'assigned_facility_ids' => ['sometimes', 'nullable', 'array', 'max:100'],
             'assigned_facility_ids.*' => ['required', 'string', 'distinct', 'exists:facilities,id'],
         ]);
@@ -121,10 +117,15 @@ class UserManagementController extends Controller
                 'name' => $validated['name'],
                 'username' => $validated['username'],
                 'email' => $validated['email'],
-                'uic_member_type' => str_ends_with(strtolower($validated['email']), '@uic.edu.ph')
-                    ? ($validated['uic_member_type'] ?? null)
-                    : null,
             ];
+
+            if (array_key_exists('uic_member_type', $validated)) {
+                $details['uic_member_type'] = str_ends_with(strtolower($validated['email']), '@uic.edu.ph')
+                    ? ($validated['uic_member_type'] ?: null)
+                    : null;
+            } elseif (! str_ends_with(strtolower($validated['email']), '@uic.edu.ph')) {
+                $details['uic_member_type'] = null;
+            }
 
             $lockedUser->update($details);
 
