@@ -164,7 +164,7 @@ export default function ActiveBookings() {
                     <div>
                         <Link
                             href={route('dashboard')}
-                            className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-[#493344] transition hover:text-[#A44773]"
+                            className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-[#493344] transition hover:text-[#96516F]"
                         >
                             <ArrowLeft className="h-4 w-4" />
                             Back to Dashboard
@@ -492,7 +492,7 @@ export default function ActiveBookings() {
                                 <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F8EDF2] text-[#493344]">
                                     <CreditCard className="h-5 w-5" />
                                 </div>
-                                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#C65B8A]">Overtime billing</p>
+                                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#B96B8D]">Overtime billing</p>
                                 <h2 id="record-payment-title" className="mt-1 text-xl font-bold text-slate-900">Record payment received</h2>
                                 <p className="mt-1 text-sm text-slate-500">Confirm that the outstanding overtime fee has already been collected.</p>
                             </div>
@@ -528,7 +528,7 @@ export default function ActiveBookings() {
                                         type="button"
                                         onClick={() => handleRecordPayment(paymentBooking)}
                                         disabled={processingId === paymentBooking.id}
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773] disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#B96B8D] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#96516F] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         <CheckCircle className="h-4 w-4" />
                                         {processingId === paymentBooking.id ? 'Recording…' : 'Confirm payment received'}
