@@ -65,8 +65,8 @@ export default function DashboardDrilldownModal({ title, description, items = []
             >
                 <header className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4 sm:px-6">
                     <div>
-                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#846A75]">Dashboard details</p>
-                        <h2 className="mt-1 text-lg font-bold text-[#6A535C]">{title}</h2>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#C65B8A]">Dashboard details</p>
+                        <h2 className="mt-1 text-lg font-bold text-[#263348]">{title}</h2>
                         {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
                     </div>
                     <button type="button" onClick={onClose} aria-label="Close details" className="rounded-lg p-2 text-slate-500 transition hover:bg-stone-100 hover:text-slate-900">
@@ -88,7 +88,7 @@ export default function DashboardDrilldownModal({ title, description, items = []
                                             <p className="font-semibold text-slate-900">{item.name || 'Client'}</p>
                                             {item.email && <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500"><Mail className="h-3.5 w-3.5"/>{item.email}</p>}
                                         </div>
-                                        <span className="rounded-lg bg-[#F4ECEF] px-3 py-1.5 text-xs font-semibold text-[#6A535C]">{item.bookings || 0} bookings</span>
+                                        <span className="rounded-lg bg-[#F8EAF0] px-3 py-1.5 text-xs font-semibold text-[#263348]">{item.bookings || 0} bookings</span>
                                     </div>
                                     {item.lastBooking && <p className="mt-2 text-xs text-slate-500">Last booking: {formatDate(item.lastBooking)}</p>}
                                 </article>
@@ -99,10 +99,10 @@ export default function DashboardDrilldownModal({ title, description, items = []
                             {records.map((item, index) => (
                                 <article key={String(item.name) + '-' + index} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 p-4">
                                     <div className="flex min-w-0 items-center gap-3">
-                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F4ECEF] text-[#6A535C]"><Building2 className="h-4 w-4"/></span>
+                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F8EAF0] text-[#263348]"><Building2 className="h-4 w-4"/></span>
                                         <p className="truncate text-sm font-semibold text-slate-800">{item.name}</p>
                                     </div>
-                                    <span className="shrink-0 text-sm font-bold text-[#6A535C]">{item.bookings || 0} bookings</span>
+                                    <span className="shrink-0 text-sm font-bold text-[#263348]">{item.bookings || 0} bookings</span>
                                 </article>
                             ))}
                         </div>
@@ -133,7 +133,7 @@ export default function DashboardDrilldownModal({ title, description, items = []
                 </div>
                 <footer className="flex items-center justify-between border-t border-stone-200 px-5 py-3">
                     <span className="text-xs text-slate-500">{records.length} {records.length === 1 ? 'record' : 'records'}</span>
-                    <button type="button" onClick={onClose} className="rounded-xl bg-[#6A535C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#533E45]">Close</button>
+                    <button type="button" onClick={onClose} className="rounded-xl bg-[#C65B8A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#533E45]">Close</button>
                 </footer>
             </section>
         </div>
