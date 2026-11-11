@@ -503,15 +503,18 @@ export default function BookingModal({
 
                     const firstError = Object.values(errors)[0];
 
+                    const fileError =
+                        errors.consent_letter ||
+                        errors.activity_plan_file ||
+                        errors.sir_rene_signature;
                     const message =
-                        errors.consent_letter &&
-                        /size|large|max/i.test(errors.consent_letter)
+                        errors.consent_letter && /size|large|max/i.test(errors.consent_letter)
                             ? CONSENT_FILE_SIZE_ERROR
                             : firstError || 'An error occurred.';
 
                     setConflictError(message);
 
-                    if (errors.consent_letter) {
+                    if (fileError) {
                         toast.error(message);
                     }
                 },
@@ -520,8 +523,9 @@ export default function BookingModal({
                     setIsSubmitting(false);
 
                     if (response.status === 413) {
-                        setConflictError(CONSENT_FILE_SIZE_ERROR);
-                        toast.error(CONSENT_FILE_SIZE_ERROR);
+                        const message = 'One or more uploaded files exceed the server request-size limit. Reduce the file sizes and try again.';
+                        setConflictError(message);
+                        toast.error(message);
                         return false;
                     }
                 },
