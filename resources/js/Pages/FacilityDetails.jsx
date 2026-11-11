@@ -39,7 +39,7 @@ export default function FacilityDetails({
                             <AlertCircle className="mx-auto mb-4 h-12 w-12 text-[#C65B8A]" />
                             <h2 className="mb-2 text-2xl font-bold text-gray-900">Facility not found</h2>
                             <p className="text-sm text-gray-500">The facility may no longer be available.</p>
-                            <Link href="/facilities" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#A94B75]">
+                            <Link href="/facilities" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#A44773]">
                                 <ArrowLeft className="h-4 w-4" /> Back to facilities
                             </Link>
                         </div>
@@ -78,7 +78,7 @@ export default function FacilityDetails({
                     <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                         <Link
                             href="/facilities"
-                            className="group inline-flex items-center gap-2 rounded-lg py-2 pr-3 text-sm font-semibold text-[#493344] transition hover:text-[#3F3036]"
+                            className="group inline-flex items-center gap-2 rounded-lg py-2 pr-3 text-sm font-semibold text-[#493344] transition hover:text-[#302632]"
                         >
                             <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E8E1E7] bg-white transition group-hover:-translate-x-0.5 group-hover:bg-[#F8EDF2]">
                                 <ArrowLeft className="h-4 w-4" />
@@ -101,7 +101,7 @@ export default function FacilityDetails({
                                     className="absolute inset-0 h-full w-full object-cover transition duration-700 hover:scale-[1.015]"
                                 />
                             ) : (
-                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#8D7480] via-[#493344] to-[#3F3036]">
+                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#C65B8A] via-[#493344] to-[#302632]">
                                     <Building2 className="h-20 w-20 text-white/30" />
                                 </div>
                             )}
@@ -157,7 +157,7 @@ export default function FacilityDetails({
                                 <section>
                                     <div className="mb-3 flex items-center gap-2">
                                         <span className="h-6 w-1 rounded-full bg-[#C65B8A]" />
-                                        <h2 className="text-lg font-bold tracking-tight text-[#30252B]">About this facility</h2>
+                                        <h2 className="text-lg font-bold tracking-tight text-[#302632]">About this facility</h2>
                                     </div>
                                     <p className="whitespace-pre-line break-words text-sm leading-7 text-gray-600 sm:text-[15px]">
                                         {facility.description || 'No description is available for this facility.'}
@@ -167,7 +167,7 @@ export default function FacilityDetails({
                                 <section>
                                     <div className="mb-3 flex items-center gap-2">
                                         <span className="h-6 w-1 rounded-full bg-[#C65B8A]" />
-                                        <h2 className="text-lg font-bold tracking-tight text-[#30252B]">Facility information</h2>
+                                        <h2 className="text-lg font-bold tracking-tight text-[#302632]">Facility information</h2>
                                     </div>
                                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#F4EDF1] bg-[#FCFAFB] p-4">
@@ -176,7 +176,7 @@ export default function FacilityDetails({
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Location</p>
-                                                <p className="mt-1 break-words text-sm font-bold text-[#30252B]">{facility.location || 'Not specified'}</p>
+                                                <p className="mt-1 break-words text-sm font-bold text-[#302632]">{facility.location || 'Not specified'}</p>
                                             </div>
                                         </div>
                                         <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#F4EDF1] bg-[#FCFAFB] p-4">
@@ -185,7 +185,7 @@ export default function FacilityDetails({
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Maximum capacity</p>
-                                                <p className="mt-1 break-words text-sm font-bold text-[#30252B]">
+                                                <p className="mt-1 break-words text-sm font-bold text-[#302632]">
                                                     {facility.capacity ? `${facility.capacity} people` : 'Unspecified'}
                                                 </p>
                                             </div>
@@ -196,7 +196,7 @@ export default function FacilityDetails({
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Booking method</p>
-                                                <p className="mt-1 break-words text-sm font-bold text-[#30252B]">{isAlwaysConsent ? 'Consent required' : 'Standard booking'}</p>
+                                                <p className="mt-1 break-words text-sm font-bold text-[#302632]">{isAlwaysConsent ? 'Consent required' : 'Standard booking'}</p>
                                             </div>
                                         </div>
                                         <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#F4EDF1] bg-[#FCFAFB] p-4">
@@ -251,7 +251,7 @@ export default function FacilityDetails({
                                                     <BadgeCheck className="h-5 w-5" />
                                                 </span>
                                                 <div>
-                                                    <h3 className="text-base font-bold text-[#30252B]">Facility administrators</h3>
+                                                    <h3 className="text-base font-bold text-[#302632]">Facility administrators</h3>
                                                     <p className="text-xs text-gray-500">People responsible for managing this facility</p>
                                                 </div>
                                             </div>
@@ -262,11 +262,11 @@ export default function FacilityDetails({
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                                             {facility.facility_admins.map((admin) => (
                                                 <div key={admin.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-[#F4EDF1] bg-white p-3.5">
-                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F8EDF2] text-sm font-bold text-[#A94B75]">
+                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F8EDF2] text-sm font-bold text-[#A44773]">
                                                         {(admin.name || 'A').charAt(0).toUpperCase()}
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="break-words text-sm font-bold leading-5 text-[#30252B]">{admin.name}</p>
+                                                        <p className="break-words text-sm font-bold leading-5 text-[#302632]">{admin.name}</p>
                                                         <p className="mt-0.5 break-all text-xs text-gray-500">{admin.email}</p>
                                                     </div>
                                                 </div>
@@ -283,7 +283,7 @@ export default function FacilityDetails({
                                         <CalendarIcon className="h-5 w-5" />
                                     </div>
                                     <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#C65B8A]">Make a reservation</p>
-                                    <h2 className="mt-1 text-xl font-bold tracking-tight text-[#30252B]">Reserve this facility</h2>
+                                    <h2 className="mt-1 text-xl font-bold tracking-tight text-[#302632]">Reserve this facility</h2>
                                     <p className="mt-2 text-sm leading-6 text-gray-600">
                                         Choose your preferred date and time to request a booking for {facility.name}.
                                     </p>
@@ -291,11 +291,11 @@ export default function FacilityDetails({
                                     <div className="my-5 space-y-3 border-y border-[#E7DCE1] py-4">
                                         <div className="flex items-center justify-between gap-3 text-sm">
                                             <span className="text-gray-500">Capacity</span>
-                                            <span className="font-semibold text-[#30252B]">{facility.capacity ? `${facility.capacity} people` : 'Not specified'}</span>
+                                            <span className="font-semibold text-[#302632]">{facility.capacity ? `${facility.capacity} people` : 'Not specified'}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-3 text-sm">
                                             <span className="text-gray-500">Booking type</span>
-                                            <span className="font-semibold text-[#30252B]">{isAlwaysConsent ? 'Consent required' : 'Standard'}</span>
+                                            <span className="font-semibold text-[#302632]">{isAlwaysConsent ? 'Consent required' : 'Standard'}</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-3 text-sm">
                                             <span className="text-gray-500">Availability</span>
@@ -309,7 +309,7 @@ export default function FacilityDetails({
                                         type="button"
                                         onClick={() => setBookingOpen(true)}
                                         disabled={!isFacilityAvailable}
-                                        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-3 text-sm font-bold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:bg-[#A94B75] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none disabled:hover:translate-y-0"
+                                        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-3 text-sm font-bold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:bg-[#A44773] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none disabled:hover:translate-y-0"
                                     >
                                         <CalendarIcon className="h-4 w-4" />
                                         {isFacilityAvailable ? 'Book this facility' : 'Temporarily unavailable'}
@@ -320,7 +320,7 @@ export default function FacilityDetails({
                                         onClick={(event) => {
                                             if (!isFacilityAvailable) event.preventDefault();
                                         }}
-                                        className={`mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#D7C5CD] bg-white px-4 py-3 text-center text-sm font-semibold text-[#A94B75] transition duration-200 hover:-translate-y-0.5 hover:border-[#B99FA9] hover:bg-[#FDFBFC] hover:shadow-sm ${!isFacilityAvailable ? 'pointer-events-none opacity-50' : ''}`}
+                                        className={`mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#D7C5CD] bg-white px-4 py-3 text-center text-sm font-semibold text-[#A44773] transition duration-200 hover:-translate-y-0.5 hover:border-[#B99FA9] hover:bg-[#FDFBFC] hover:shadow-sm ${!isFacilityAvailable ? 'pointer-events-none opacity-50' : ''}`}
                                     >
                                         <CalendarIcon className="h-4 w-4" />
                                         Create recurring activity plan
