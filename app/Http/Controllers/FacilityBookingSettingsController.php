@@ -41,6 +41,7 @@ class FacilityBookingSettingsController extends Controller
             'scheduledClosures' => $facility->unavailabilityPeriods,
             'defaultOpeningTime' => substr((string) $settings->opening_time, 0, 5),
             'defaultClosingTime' => substr((string) $settings->closing_time, 0, 5),
+            'canConfigureOvertimeFee' => true,
             'dayNames' => self::DAY_NAMES,
         ]);
     }
@@ -84,6 +85,15 @@ class FacilityBookingSettingsController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            if (array_key_exists('overtime_fee_enabled', $validated)) {
+                $facility->update([
+                    'overtime_fee_enabled' => (bool) $validated['overtime_fee_enabled'],
+                    'overtime_fee_per_hour' => (bool) $validated['overtime_fee_enabled']
+                        ? (float) ($validated['overtime_fee_per_hour'] ?? 0)
+                        : 0,
+                ]);
+            }
+
             foreach ($validated['hours'] as $day) {
                 $dayOfWeek = (int) $day['day_of_week'];
                 $isClosed = (bool) $day['is_closed'];
@@ -124,7 +134,7 @@ class FacilityBookingSettingsController extends Controller
 
         return back()->with('toast', [
             'type' => 'success',
-            'message' => 'Facility booking hours saved.',
+            'message' => 'Facility booking settings saved.',
         ]);
     }
 
