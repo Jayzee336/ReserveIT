@@ -32,6 +32,22 @@ class User extends Authenticatable
         return $this->hasMany(UserConcern::class);
     }
 
+    protected $appends = ['account_type', 'account_type_label'];
+
+    public function getAccountTypeAttribute(): string
+    {
+        return str_ends_with(strtolower(trim((string) $this->email)), '@uic.edu.ph')
+            ? 'uic_member'
+            : 'outsider';
+    }
+
+    public function getAccountTypeLabelAttribute(): string
+    {
+        return $this->account_type === 'uic_member'
+            ? 'UIC Student / Teacher'
+            : 'Outsider';
+    }
+
     /**
      * The attributes that are mass assignable.
      *
