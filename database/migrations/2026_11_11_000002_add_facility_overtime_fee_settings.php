@@ -12,7 +12,9 @@ return new class extends Migration
         'lobby',
         'sky gym',
         'main auditorium',
+        'university auditorium',
         'quadrangle or field',
+        'field',
         'view deck',
     ];
 
