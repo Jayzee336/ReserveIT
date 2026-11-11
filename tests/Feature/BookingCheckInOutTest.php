@@ -258,10 +258,10 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
 
             $facility = $this->createFacility(
                 'user-overtime-checkout',
-                'User Overtime Checkout Facility'
+                'Lobby'
             );
-
-            SystemSetting::current()->update([
+            $facility->update([
+                'overtime_fee_enabled' => true,
                 'overtime_fee_per_hour' => 10.00,
             ]);
 
@@ -381,12 +381,12 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
 
             $facility = $this->createFacility(
                 'overtime-test',
-                'Overtime Test Facility'
+                'Sky Gym'
             );
 
             $facility->facilityAdmins()->attach($admin);
-
-            SystemSetting::current()->update([
+            $facility->update([
+                'overtime_fee_enabled' => true,
                 'overtime_fee_per_hour' => 5.00,
             ]);
 
@@ -489,11 +489,11 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
 
             $facility = $this->createFacility(
                 'checkout-rate-snapshot',
-                'Rate Snapshot Facility'
+                'Main Auditorium'
             );
             $facility->facilityAdmins()->attach($admin);
-
-            SystemSetting::current()->update([
+            $facility->update([
+                'overtime_fee_enabled' => true,
                 'overtime_fee_per_hour' => 10.00,
             ]);
 
@@ -676,10 +676,13 @@ public function test_assigned_facility_admin_can_check_in_an_approved_booking():
                 'role' => 'facility_admin',
                 'is_active' => true,
             ]);
-            $facility = $this->createFacility('overtime-grace-config', 'Overtime Grace Facility');
+            $facility = $this->createFacility('overtime-grace-config', 'View Deck');
             $facility->facilityAdmins()->attach($admin);
-            SystemSetting::current()->update([
+            $facility->update([
+                'overtime_fee_enabled' => true,
                 'overtime_fee_per_hour' => 60.00,
+            ]);
+            SystemSetting::current()->update([
                 'overtime_grace_minutes' => 15,
             ]);
 
