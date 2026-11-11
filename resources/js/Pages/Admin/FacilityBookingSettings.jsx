@@ -133,7 +133,7 @@ export default function FacilityBookingSettings({
             <div className="mx-auto w-full max-w-4xl min-w-0 space-y-5 px-3 py-5 sm:px-6 sm:py-7">
                 <Link
                     href={backHref}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#6A535C]"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#263348]"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Back to Managed Facilities
@@ -142,13 +142,13 @@ export default function FacilityBookingSettings({
                 <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <p className="text-xs font-bold uppercase tracking-wide text-[#846A75]">Operating hours</p>
+                            <p className="text-xs font-bold uppercase tracking-wide text-[#C65B8A]">Operating hours</p>
                             <h1 className="mt-1 break-words text-xl font-bold text-slate-900 sm:text-2xl">{facility.name}</h1>
                             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500">
                                 Configure the times when this facility accepts bookings. Closed days cannot be reserved. These hours apply to all new bookings and activity sessions for this facility.
                             </p>
                         </div>
-                        <span className="rounded-full bg-[#F7F0F3] px-3 py-1 text-xs font-semibold text-[#543F48]">
+                        <span className="rounded-full bg-[#F8EAF0] px-3 py-1 text-xs font-semibold text-[#A94B75]">
                             {auth?.user?.role === 'super_admin' ? 'Super Admin controls' : 'Assigned facility'}
                         </span>
                     </div>
@@ -157,7 +157,7 @@ export default function FacilityBookingSettings({
                         {hours.map((item) => (
                             <div key={item.day_of_week} className="grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-[minmax(130px,0.8fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center">
                                 <div className="flex items-center gap-2">
-                                    <Clock3 className="h-4 w-4 shrink-0 text-[#846A75]" />
+                                    <Clock3 className="h-4 w-4 shrink-0 text-[#C65B8A]" />
                                     <span className="text-sm font-semibold text-slate-800">{DAYS[item.day_of_week]}</span>
                                 </div>
 
@@ -188,7 +188,7 @@ export default function FacilityBookingSettings({
                                         type="checkbox"
                                         checked={item.is_closed}
                                         onChange={(event) => updateDay(item.day_of_week, 'is_closed', event.target.checked)}
-                                        className="h-4 w-4 rounded border-slate-300 text-[#6A535C] focus:ring-[#A98C97]"
+                                        className="h-4 w-4 rounded border-slate-300 text-[#263348] focus:ring-[#B96D91]"
                                     />
                                     Closed
                                 </label>
@@ -196,7 +196,7 @@ export default function FacilityBookingSettings({
                         ))}
 
                         {canConfigureOvertimeFee && (
-                        <div className="rounded-xl border border-[#E8D8D1] bg-[#FFFBF8] p-4">
+                        <div className="rounded-xl border border-[#EEDFE6] bg-[#FFFCFD] p-4">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div className="min-w-0">
                                     <h3 className="text-sm font-bold text-slate-900">Overtime fee settings</h3>
@@ -209,7 +209,7 @@ export default function FacilityBookingSettings({
                                         type="checkbox"
                                         checked={overtimeFeeEnabled}
                                         onChange={(event) => setOvertimeFeeEnabled(event.target.checked)}
-                                        className="h-4 w-4 rounded border-slate-300 text-[#6A535C] focus:ring-[#A98C97]"
+                                        className="h-4 w-4 rounded border-slate-300 text-[#263348] focus:ring-[#B96D91]"
                                     />
                                     Enable overtime fee
                                 </label>
@@ -241,7 +241,7 @@ export default function FacilityBookingSettings({
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A94B75] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <Save className="h-4 w-4" />
                                 {isSaving ? 'Saving…' : 'Save operating hours'}
@@ -256,7 +256,7 @@ export default function FacilityBookingSettings({
                             <CalendarClock className="h-5 w-5" />
                         </span>
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-wide text-[#846A75]">Temporary closure</p>
+                            <p className="text-xs font-bold uppercase tracking-wide text-[#C65B8A]">Temporary closure</p>
                             <h2 className="mt-1 text-lg font-bold text-slate-900">Schedule a facility closure</h2>
                             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500">
                                 Block a specific future date and time without making the facility unavailable for the entire day. Only owners with overlapping pending or approved bookings will be notified.
@@ -315,7 +315,7 @@ export default function FacilityBookingSettings({
                             <button
                                 type="submit"
                                 disabled={isSchedulingClosure || !closureForm.reason.trim()}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A94B75] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 <CalendarClock className="h-4 w-4" />
                                 {isSchedulingClosure ? 'Saving closure…' : 'Save scheduled closure'}
