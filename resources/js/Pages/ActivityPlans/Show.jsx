@@ -161,7 +161,7 @@ export default function Show({ activityPlan }) {
                 <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <p className="text-xs font-bold uppercase tracking-wide text-[#C65B8A]">Recurring activity plan</p>
+                            <p className="text-xs font-bold uppercase tracking-wide text-[#B96B8D]">Recurring activity plan</p>
                             <h1 className="mt-1 break-words text-xl font-bold text-slate-900 sm:text-2xl">{activityPlan.title}</h1>
                             <p className="mt-1 text-sm text-slate-500">{activityPlan.facility?.name} · Submitted by {activityPlan.user?.name || 'User'}</p>
                         </div>
@@ -225,7 +225,7 @@ export default function Show({ activityPlan }) {
                                 type="button"
                                 onClick={approvePlan}
                                 disabled={processing || status === 'approved'}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#A44773] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#B96B8D] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#96516F] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <CheckCircle2 className="h-4 w-4" />
                                 Approve eligible sessions
@@ -256,7 +256,7 @@ export default function Show({ activityPlan }) {
                                             </span>
                                         </div>
                                         <p className="mt-1 flex items-center gap-2 text-sm text-slate-600">
-                                            <CalendarDays className="h-4 w-4 shrink-0 text-[#C65B8A]" />
+                                            <CalendarDays className="h-4 w-4 shrink-0 text-[#B96B8D]" />
                                             {formatDate(session.date || session.booking_date)}
                                         </p>
                                         <p className="mt-1 flex items-center gap-2 text-xs text-slate-500">
