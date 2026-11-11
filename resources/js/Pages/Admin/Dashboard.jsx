@@ -785,7 +785,7 @@ export default function AdminDashboard({
                                                 onClick={() => setSelectedTrendLabel(item.label)}
                                                 title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`}
                                                 aria-label={`View facilities booked in ${item.label}`}
-                                                className={`flex w-full flex-1 items-end rounded-t-lg bg-[#F8EDF2] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#B96B8D] focus:ring-2 focus:ring-[#B96B8D] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#493344]' : ''}`}
+                                                className={`flex w-full flex-1 items-end rounded-t-lg bg-[#F4E4EB] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#B96B8D] focus:ring-2 focus:ring-[#B96B8D] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#493344]' : ''}`}
                                             >
                                                 <span className="block w-full rounded-t-lg bg-[#B96B8D]" style={{ height: `${(item.bookings / maximum) * 100}%`, minHeight: item.bookings ? '8px' : '2px' }}/>
                                             </button>
