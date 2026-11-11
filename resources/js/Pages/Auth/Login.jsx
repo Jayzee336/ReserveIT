@@ -44,7 +44,7 @@ export default function Login({ status, canResetPassword }) {
         <GuestLayout>
             <Head title="Log in" />
 
-            <div className="w-full max-w-md rounded-3xl border border-[#EEDFE6] bg-white p-8 shadow-xl shadow-[#C65B8A]/5 sm:p-10">
+            <div className="w-full max-w-md rounded-3xl border border-[#E8E1E7] bg-white p-8 shadow-xl shadow-[#C65B8A]/5 sm:p-10">
                 <Link
                     href="/"
                     className="mb-5 inline-flex items-center gap-2 rounded-lg text-xs font-semibold text-slate-500 transition hover:text-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/30 focus:ring-offset-2"
@@ -97,7 +97,7 @@ export default function Login({ status, canResetPassword }) {
                     <button
                         type="button"
                         onClick={handleGoogleLogin}
-                        className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#EEDFE6] bg-white px-4 py-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-[#C65B8A]/40 hover:bg-[#FFF8F2] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20"
+                        className="flex w-full items-center justify-center gap-3 rounded-2xl border border-[#E8E1E7] bg-white px-4 py-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-[#C65B8A]/40 hover:bg-[#FFF8F2] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20"
                     >
                         <svg
                             className="h-4 w-4 shrink-0"
@@ -129,7 +129,7 @@ export default function Login({ status, canResetPassword }) {
                 {/* Divider */}
                 <div className="relative mb-6">
                     <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-[#EEDFE6]" />
+                        <div className="w-full border-t border-[#E8E1E7]" />
                     </div>
 
                     <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-wider">
@@ -155,7 +155,7 @@ export default function Login({ status, canResetPassword }) {
                                 name="email"
                                 value={data.email}
                                 placeholder="Enter your username or email"
-                                className="block w-full rounded-2xl border-[#EEDFE6] bg-[#FFFCFD] px-3.5 py-2.5 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
+                                className="block w-full rounded-2xl border-[#E8E1E7] bg-[#FCFAFB] px-3.5 py-2.5 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
                                 autoComplete="username"
                                 isFocused={true}
                                 onChange={(e) =>
@@ -212,7 +212,7 @@ export default function Login({ status, canResetPassword }) {
                                 name="password"
                                 value={data.password}
                                 placeholder="••••••••••••"
-                                className="block w-full rounded-2xl border-[#EEDFE6] bg-[#FFFCFD] py-2.5 pl-3.5 pr-10 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
+                                className="block w-full rounded-2xl border-[#E8E1E7] bg-[#FCFAFB] py-2.5 pl-3.5 pr-10 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
                                 autoComplete="current-password"
                                 onChange={(e) =>
                                     setData('password', e.target.value)
@@ -235,7 +235,7 @@ export default function Login({ status, canResetPassword }) {
                                 onChange={(e) =>
                                     setData('remember', e.target.checked)
                                 }
-                                className="rounded-md border-[#EEDFE6] text-[#C65B8A] focus:ring-[#C65B8A]"
+                                className="rounded-md border-[#E8E1E7] text-[#C65B8A] focus:ring-[#C65B8A]"
                             />
 
                             <span className="ms-2 text-xs font-medium text-slate-600">
