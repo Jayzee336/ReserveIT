@@ -15,18 +15,18 @@
     --ri-ink: #211A22;
     --ri-ink-soft: #453B47;
     --ri-muted: #77707A;
-    --ri-brand: #D93683;
-    --ri-brand-strong: #B82068;
-    --ri-brand-soft: #FCEAF2;
-    --ri-accent: #C45B91;
-    --ri-accent-soft: #FBEFF5;
+    --ri-brand: #C65B8A;
+    --ri-brand-strong: #A94B75;
+    --ri-brand-soft: #F8EAF0;
+    --ri-accent: #B96D91;
+    --ri-accent-soft: #F7EFF3;
     --ri-highlight: #526B83;
     --ri-highlight-soft: #EDF2F7;
-    --ri-canvas: #F7F5F7;
+    --ri-canvas: #FAF8F9;
     --ri-surface: #FFFFFF;
-    --ri-surface-subtle: #FFFAFC;
-    --ri-border: #F0DCE6;
-    --ri-border-strong: #E5C2D3;
+    --ri-surface-subtle: #FFFCFD;
+    --ri-border: #EEDFE6;
+    --ri-border-strong: #DFC5D1;
     --ri-success: #287A59;
     --ri-warning: #9B681D;
     --ri-danger: #B44949;
@@ -36,7 +36,7 @@
     --ri-radius-sm: 0.625rem;
     --ri-radius-md: 1rem;
     --ri-radius-lg: 1.5rem;
-    --ri-focus-ring: 0 0 0 3px rgb(217 54 131 / 20%);
+    --ri-focus-ring: 0 0 0 3px rgb(198 91 138 / 18%);
 }
 
 @layer base {
@@ -55,7 +55,7 @@
     }
 
     ::selection {
-        background: rgb(217 54 131 / 18%);
+        background: rgb(198 91 138 / 16%);
         color: var(--ri-ink);
     }
 
@@ -176,7 +176,7 @@
     .ri-btn-primary:hover:not(:disabled) {
         border-color: var(--ri-brand-strong);
         background: var(--ri-brand-strong);
-        box-shadow: 0 6px 16px rgb(184 32 104 / 22%);
+        box-shadow: 0 6px 16px rgb(169 75 117 / 18%);
         transform: translateY(-1px);
     }
 
@@ -202,7 +202,7 @@
 
 /* Keep long admin tables usable without adding a visible scrollbar. */
 * {
-    scrollbar-color: #E5C2D3 transparent;
+    scrollbar-color: #DFC5D1 transparent;
     scrollbar-width: thin;
 }
 
@@ -214,12 +214,12 @@
 *::-webkit-scrollbar-thumb {
     border: 2px solid transparent;
     border-radius: 999px;
-    background: #E5C2D3;
+    background: #DFC5D1;
     background-clip: padding-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background: #C66A96;
+    background: #B96D91;
     background-clip: padding-box;
 }
 
@@ -230,7 +230,7 @@
     select:hover,
     textarea:hover {
         border-color: var(--ri-brand);
-        box-shadow: 0 0 0 2px rgb(217 54 131 / 8%);
+        box-shadow: 0 0 0 2px rgb(198 91 138 / 7%);
         transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
     }
 
@@ -242,7 +242,7 @@
     input[type="file"]:hover {
         border-color: var(--ri-brand);
         background-color: var(--ri-brand-soft);
-        box-shadow: 0 0 0 2px rgb(217 54 131 / 8%);
+        box-shadow: 0 0 0 2px rgb(198 91 138 / 7%);
     }
 
     input[type="file"]::file-selector-button {
@@ -287,8 +287,8 @@
     }
 
     .ri-calendar-cell:hover {
-        background-color: #FCEAF2;
-        box-shadow: inset 0 0 0 1px rgb(217 54 131 / 18%);
+        background-color: #F8EAF0;
+        box-shadow: inset 0 0 0 1px rgb(198 91 138 / 16%);
     }
 
     .ri-facility-card {
