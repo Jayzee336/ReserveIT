@@ -241,12 +241,12 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
             <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-xl">
                 <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#493344] to-[#A94B75] text-white shadow-lg shadow-[#3F3037]/15">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#C65B8A] to-[#493344] text-white shadow-lg shadow-[#302632]/15">
                             <FileText className="h-5 w-5" />
                         </span>
                         <div className="min-w-0">
                             <div className="mb-1 flex flex-wrap items-center gap-2">
-                                <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#A94B75]">
+                                <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#A44773]">
                                     ReserveIT
                                 </span>
                                 <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
@@ -271,7 +271,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
                             type="button"
                             onClick={handleDownload}
                             disabled={isDownloading}
-                            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#A94B75] px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-[#3F3037]/10 transition hover:bg-[#4E3A43] focus:outline-none focus:ring-2 focus:ring-[#F8EDF2]0 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
+                            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-[#302632]/10 transition hover:bg-[#493344] focus:outline-none focus:ring-2 focus:ring-[#F8EDF2]0 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
                         >
                             {isDownloading
                                 ? <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -289,7 +289,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
                                     type="button"
                                     onClick={() => goToPage(currentPage - 1)}
                                     disabled={currentPage <= 1}
-                                    className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-[#A94B75] disabled:cursor-not-allowed disabled:opacity-35"
+                                    className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-[#A44773] disabled:cursor-not-allowed disabled:opacity-35"
                                     aria-label="Previous page"
                                     title="Previous page"
                                 >
@@ -302,7 +302,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
                                     type="button"
                                     onClick={() => goToPage(currentPage + 1)}
                                     disabled={currentPage >= pdfDocument.numPages}
-                                    className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-[#A94B75] disabled:cursor-not-allowed disabled:opacity-35"
+                                    className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-[#A44773] disabled:cursor-not-allowed disabled:opacity-35"
                                     aria-label="Next page"
                                     title="Next page"
                                 >
@@ -315,7 +315,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
                                     type="button"
                                     onClick={() => changeZoom(-0.1)}
                                     disabled={zoom <= 0.7}
-                                    className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-[#A94B75] disabled:opacity-35"
+                                    className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-[#A44773] disabled:opacity-35"
                                     aria-label="Zoom out"
                                     title="Zoom out"
                                 >
@@ -328,7 +328,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
                                     type="button"
                                     onClick={() => changeZoom(0.1)}
                                     disabled={zoom >= 1.8}
-                                    className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-[#A94B75] disabled:opacity-35"
+                                    className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-[#A44773] disabled:opacity-35"
                                     aria-label="Zoom in"
                                     title="Zoom in"
                                 >
@@ -338,7 +338,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
                                 <button
                                     type="button"
                                     onClick={() => setZoom(1)}
-                                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-white hover:text-[#A94B75]"
+                                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-white hover:text-[#A44773]"
                                     title="Fit page to viewer width"
                                 >
                                     <Maximize2 className="h-3.5 w-3.5" />
@@ -353,7 +353,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
             <main className="mx-auto max-w-7xl px-3 py-5 sm:px-6 sm:py-7">
                 <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#A94B75]">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#A44773]">
                             Document workspace
                         </p>
                         <h2 className="mt-1 text-lg font-bold tracking-tight text-slate-900">
@@ -373,7 +373,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
                 >
                     {isLoading && (
                         <div className="flex min-h-[55vh] flex-col items-center justify-center gap-3 text-center">
-                            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#A94B75] shadow-sm">
+                            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#A44773] shadow-sm">
                                 <LoaderCircle className="h-6 w-6 animate-spin" />
                             </span>
                             <div>
@@ -396,7 +396,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
 
                     {!isLoading && !error && !pdfDataBase64 && (
                         <div className="flex min-h-[55vh] flex-col items-center justify-center gap-3 px-4 text-center">
-                            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#A94B75] shadow-sm">
+                            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#A44773] shadow-sm">
                                 <FileText className="h-6 w-6" />
                             </span>
                             <h3 className="text-base font-bold text-slate-900">This file type cannot be previewed here</h3>
