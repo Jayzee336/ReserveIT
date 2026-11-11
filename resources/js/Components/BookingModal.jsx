@@ -559,8 +559,8 @@ export default function BookingModal({
 
                 {isAuthenticated ? (
                     <div className="flex items-center gap-3 rounded-xl border border-[#E8E1E7] bg-[#F8EDF2] px-4 py-3">
-                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#E8E1E7]">
-                            <span className="text-xs font-bold text-[#4E3A43]">
+                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#F3D5E2]">
+                            <span className="text-xs font-bold text-[#493344]">
                                 {(user?.name || 'U')
                                     .split(' ')
                                     .map((word) => word[0])
@@ -570,10 +570,10 @@ export default function BookingModal({
                             </span>
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-[#3F3037]">
+                            <p className="text-sm font-bold text-[#302632]">
                                 {user?.name}
                             </p>
-                            <p className="text-xs text-[#F8EDF2]0">
+                            <p className="text-xs text-[#A44773]">
                                 {user?.email}
                             </p>
                         </div>
@@ -590,7 +590,7 @@ export default function BookingModal({
                                 placeholder="Full Name"
                                 value={guestName}
                                 onChange={(e) => setGuestName(e.target.value)}
-                                className="block w-full rounded-xl border border-gray-200 p-2.5 pl-10 text-sm focus:ring-2 focus:ring-[#647D91]"
+                                className="block w-full rounded-xl border border-gray-200 p-2.5 pl-10 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                             />
                         </div>
 
@@ -600,7 +600,7 @@ export default function BookingModal({
                             placeholder="Email address"
                             value={guestEmail}
                             onChange={(e) => setGuestEmail(e.target.value)}
-                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
+                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                         />
 
                         <input
@@ -609,7 +609,7 @@ export default function BookingModal({
                             placeholder="Phone number"
                             value={guestPhone}
                             onChange={(e) => setGuestPhone(e.target.value)}
-                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
+                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                         />
                     </div>
                 )}
@@ -627,7 +627,7 @@ export default function BookingModal({
                     placeholder="Event name / title"
                     value={eventName}
                     onChange={(e) => setEventName(e.target.value)}
-                    className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
+                    className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                 />
 
                 <div className="grid grid-cols-2 gap-3">
@@ -637,7 +637,7 @@ export default function BookingModal({
                         placeholder="Department / Org"
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
-                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
+                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                     />
 
                     <input
@@ -646,7 +646,7 @@ export default function BookingModal({
                         placeholder="Designation"
                         value={designation}
                         onChange={(e) => setDesignation(e.target.value)}
-                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
+                        className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                     />
                 </div>
 
@@ -655,7 +655,7 @@ export default function BookingModal({
                     placeholder="Facilitator (optional)"
                     value={facilitator}
                     onChange={(e) => setFacilitator(e.target.value)}
-                    className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
+                    className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                 />
 
                 <textarea
@@ -664,7 +664,7 @@ export default function BookingModal({
                     placeholder="Purpose of the event…"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="block w-full resize-none rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
+                    className="block w-full resize-none rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                 />
             </div>
 
@@ -705,7 +705,7 @@ export default function BookingModal({
                                 setEndTime('');
                                 setConflictError('');
                             }}
-                            className={'block w-full rounded-xl border p-2.5 text-sm focus:ring-2 focus:ring-[#647D91] ' + (isDateTooSoon ? 'border-red-300 bg-red-50' : 'border-gray-200') + (selectedDate ? ' cursor-not-allowed bg-gray-100' : '')}
+                            className={'block w-full rounded-xl border p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A] ' + (isDateTooSoon ? 'border-red-300 bg-red-50' : 'border-gray-200') + (selectedDate ? ' cursor-not-allowed bg-gray-100' : '')}
                         />
                     </label>
                     <label className="block">
@@ -722,7 +722,7 @@ export default function BookingModal({
                                 setEndTime('');
                                 setConflictError('');
                             }}
-                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
+                            className="block w-full rounded-xl border border-gray-200 p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                         />
                     </label>
                 </div>
@@ -762,8 +762,8 @@ export default function BookingModal({
 
                 {requireConsentGlobally && (
                     <div className="flex items-start gap-2 rounded-xl border border-[#E8E1E7] bg-[#F8EDF2] px-3 py-2.5">
-                        <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#F8EDF2]0" />
-                        <p className="text-xs text-[#A94B75]">
+                        <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#A44773]" />
+                        <p className="text-xs text-[#A44773]">
                             A consent letter is required for every booking under the current system settings.
                         </p>
                     </div>
@@ -785,7 +785,7 @@ export default function BookingModal({
                                 setEndTime('');
                                 setConflictError('');
                             }}
-                            className={`block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#647D91] ${
+                            className={`block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A] ${
                                 selectedStartTime
                                     ? 'cursor-not-allowed bg-gray-100'
                                     : ''
@@ -819,7 +819,7 @@ export default function BookingModal({
                                 setEndTime(e.target.value);
                                 setConflictError('');
                             }}
-                            className="block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
+                            className="block w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
                         >
                             <option value="">Select time</option>
 
@@ -863,7 +863,7 @@ export default function BookingModal({
                                 setAttendees('1');
                             }
                         }}
-                        className={`block w-full rounded-xl border p-2.5 text-sm focus:ring-2 focus:ring-[#647D91] ${
+                        className={`block w-full rounded-xl border p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A] ${
                             isOverCapacity
                                 ? 'border-red-300 bg-red-50'
                                 : 'border-gray-200'
@@ -884,7 +884,7 @@ export default function BookingModal({
                             type="checkbox"
                             checked={needsManpower}
                             onChange={(e) => setNeedsManpower(e.target.checked)}
-                            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-gray-300 text-[#493344] focus:ring-[#647D91]"
+                            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-gray-300 text-[#493344] focus:ring-[#C65B8A]"
                         />
 
                         <div className="flex-1">
@@ -1053,7 +1053,7 @@ export default function BookingModal({
                             isOverCapacity ||
                             !!isDateTooSoon
                         }
-                        className="flex-1 rounded-xl bg-[#C65B8A] py-3 text-sm font-semibold text-white hover:bg-[#A94B75] disabled:bg-[#D9C8D4]"
+                        className="flex-1 rounded-xl bg-[#C65B8A] py-3 text-sm font-semibold text-white hover:bg-[#A44773] disabled:bg-[#D9C8D4]"
                     >
                         {isSubmitting
                             ? 'Submitting…'
