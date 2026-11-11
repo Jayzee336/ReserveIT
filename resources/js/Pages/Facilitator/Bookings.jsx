@@ -1013,7 +1013,7 @@ export default function Bookings({
                     </div>
 
                     <Link
-                        href={route('overtime-extensions.index')}
+                        href={route('overtime-extensions.index', { from: 'approvals' })}
                         className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D9C8CF] bg-white px-4 py-2.5 text-sm font-semibold text-[#543F48] shadow-sm transition hover:bg-[#F7F0F3]"
                     >
                         <Clock className="h-4 w-4" />
