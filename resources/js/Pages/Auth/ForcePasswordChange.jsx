@@ -13,7 +13,7 @@ export default function ForcePasswordChange() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAF8F9] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center p-4">
             <Head title="Set Your Password" />
 
             <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl border border-[#E8E1E7] p-8">
@@ -57,7 +57,7 @@ export default function ForcePasswordChange() {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="w-full py-3 bg-[#493344] hover:bg-[#A94B75] text-white rounded-xl text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+                        className="w-full py-3 bg-[#493344] hover:bg-[#A44773] text-white rounded-xl text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {processing ? 'Saving…' : 'Set Password & Continue'}
                     </button>
