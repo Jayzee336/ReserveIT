@@ -195,6 +195,10 @@ function PendingBookingCard({
                         </span>
                     </p>
 
+                    <p className="mt-1 text-[11px] font-semibold text-[#6A535C]">
+                        {booking.user?.account_type_label ?? (booking.guest_email?.toLowerCase().endsWith('@uic.edu.ph') ? 'UIC Student / Teacher' : 'Outsider')}
+                    </p>
+
                     <p className="mt-1 flex min-w-0 items-start gap-1.5 break-words text-sm text-gray-500">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
                         {booking.date ?? booking.booking_date}{booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date ?? booking.booking_date).slice(0, 10) ? ' – ' + booking.end_date : ''} · {formatTime(booking.start_time)} - {formatTime(booking.end_time)}
