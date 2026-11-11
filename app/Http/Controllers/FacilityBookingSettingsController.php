@@ -15,6 +15,17 @@ use Inertia\Inertia;
 
 class FacilityBookingSettingsController extends Controller
 {
+    private const BILLABLE_FACILITY_NAMES = [
+        'i.t. development and incubation facility (itdif)',
+        'lobby',
+        'sky gym',
+        'main auditorium',
+        'university auditorium',
+        'quadrangle or field',
+        'field',
+        'view deck',
+    ];
+
     private const DAY_NAMES = [
         'Sunday', 'Monday', 'Tuesday', 'Wednesday',
         'Thursday', 'Friday', 'Saturday',
@@ -41,7 +52,7 @@ class FacilityBookingSettingsController extends Controller
             'scheduledClosures' => $facility->unavailabilityPeriods,
             'defaultOpeningTime' => substr((string) $settings->opening_time, 0, 5),
             'defaultClosingTime' => substr((string) $settings->closing_time, 0, 5),
-            'canConfigureOvertimeFee' => true,
+            'canConfigureOvertimeFee' => in_array(mb_strtolower(trim($facility->name)), self::BILLABLE_FACILITY_NAMES, true),
             'dayNames' => self::DAY_NAMES,
         ]);
     }
@@ -57,6 +68,15 @@ class FacilityBookingSettingsController extends Controller
             'hours.*.opens_at' => ['nullable', 'date_format:H:i'],
             'hours.*.closes_at' => ['nullable', 'date_format:H:i'],
         ]);
+
+        if (
+            ($validated['overtime_fee_enabled'] ?? false)
+            && ! in_array(mb_strtolower(trim($facility->name)), self::BILLABLE_FACILITY_NAMES, true)
+        ) {
+            throw ValidationException::withMessages([
+                'overtime_fee_enabled' => 'Overtime fees are not enabled for this facility.',
+            ]);
+        }
 
         foreach ($validated['hours'] as $index => $day) {
             if ($day['is_closed']) {
@@ -80,13 +100,13 @@ class FacilityBookingSettingsController extends Controller
         }
 
         DB::transaction(function () use ($facility, $validated, $request) {
-            Facility::query()
+            $lockedFacility = Facility::query()
                 ->whereKey($facility->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
 
             if (array_key_exists('overtime_fee_enabled', $validated)) {
-                $facility->update([
+                $lockedFacility->update([
                     'overtime_fee_enabled' => (bool) $validated['overtime_fee_enabled'],
                     'overtime_fee_per_hour' => (bool) $validated['overtime_fee_enabled']
                         ? (float) ($validated['overtime_fee_per_hour'] ?? 0)
