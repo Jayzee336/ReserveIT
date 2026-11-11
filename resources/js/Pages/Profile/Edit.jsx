@@ -12,7 +12,7 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
             <div className="space-y-6">
                 <section className="rounded-[2rem] border border-[#E8E1E7] bg-white p-8 shadow-[0_32px_90px_rgba(0,0,0,0.08)]">
                     <div className="mb-6">
-                        <p className="text-sm uppercase tracking-[0.27em] text-[#C65B8A]">
+                        <p className="text-sm uppercase tracking-[0.27em] text-[#B96B8D]">
                             Profile management
                         </p>
 
@@ -50,7 +50,7 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
 
                                     <Link
                                         href={route('password.set.edit')}
-                                        className="mt-4 inline-flex items-center rounded-xl bg-[#C65B8A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#633945]"
+                                        className="mt-4 inline-flex items-center rounded-xl bg-[#B96B8D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#633945]"
                                     >
                                         Set ReserveIT Password
                                     </Link>
