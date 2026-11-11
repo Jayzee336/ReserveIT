@@ -58,9 +58,9 @@ export default function Receipt({ auth, booking }) {
                         <div className="border-b border-gray-200 bg-[#C65B8A] px-6 py-8 text-white sm:px-10">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
-                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#EEDFE6]">ReserveIT</p>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#E8E1E7]">ReserveIT</p>
                                     <h1 className="mt-2 text-3xl font-bold">Booking Receipt</h1>
-                                    <p className="mt-2 text-sm text-[#EEDFE6]">Facility reservation confirmation</p>
+                                    <p className="mt-2 text-sm text-[#E8E1E7]">Facility reservation confirmation</p>
                                 </div>
                                 <CheckCircle className="h-10 w-10 flex-shrink-0 text-green-300" />
                             </div>
