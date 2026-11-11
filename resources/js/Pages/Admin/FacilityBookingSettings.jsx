@@ -20,6 +20,7 @@ export default function FacilityBookingSettings({
     defaultOpeningTime = '08:00',
     defaultClosingTime = '17:00',
     scheduledClosures = [],
+    canConfigureOvertimeFee = false,
 }) {
     const { auth } = usePage().props;
     const [hours, setHours] = useState(() => DAYS.map((day, dayOfWeek) => {
@@ -194,6 +195,7 @@ export default function FacilityBookingSettings({
                             </div>
                         ))}
 
+                        {canConfigureOvertimeFee && (
                         <div className="rounded-xl border border-[#E8D8D1] bg-[#FFFBF8] p-4">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div className="min-w-0">
@@ -226,6 +228,8 @@ export default function FacilityBookingSettings({
                                 />
                             </label>
                         </div>
+
+                        )}
 
                         <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
                             <Link
