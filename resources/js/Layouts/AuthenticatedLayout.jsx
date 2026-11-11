@@ -71,7 +71,7 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
             } ${
                 active
                     ? 'bg-[#D17A9F] text-white shadow-inner'
-                    : 'text-white/90 hover:bg-[#A94B75] hover:text-white'
+                    : 'text-white/90 hover:bg-[#604457] hover:text-white'
             }`}
         >
             <Icon
@@ -468,14 +468,14 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
             {/* Sidebar Navigation */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col justify-between bg-[#C65B8A] text-white shadow-xl transition-all duration-300 md:z-20 md:translate-x-0 ${
+                className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col justify-between bg-[#493344] text-white shadow-xl transition-all duration-300 md:z-20 md:translate-x-0 ${
                     mobileNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 } ${collapsed ? 'md:w-16' : 'md:w-64'}`}
             >
                 <div>
                     {/* App title and sidebar collapse button */}
                     <div
-                        className={`flex items-center border-b border-[#A94B75] transition-all duration-300 ${
+                        className={`flex items-center border-b border-[#604457] transition-all duration-300 ${
                             collapsed
                                 ? 'flex-col justify-center gap-3 px-2 py-4'
                                 : 'justify-between p-5'
@@ -709,10 +709,10 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 </div>
 
                 {/* Sidebar footer actions */}
-                <div className="border-t border-[#A94B75] bg-[#A94B75] p-4">
+                <div className="border-t border-[#A94B75] bg-[#362536] p-4">
                     {/* User profile badge */}
                     <div
-                        className={`mb-3 flex items-center rounded-xl border border-[#A94B75]/40 bg-[#984365]/50 p-2.5 ${
+                        className={`mb-3 flex items-center rounded-xl border border-[#A94B75]/40 bg-[#604457]/55 p-2.5 ${
                             collapsed ? 'justify-center' : 'gap-3'
                         }`}
                         title={collapsed ? user?.name ?? 'User' : undefined}
@@ -736,7 +736,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     <Link
                         href={route('profile.edit')}
                         title={collapsed ? 'Settings' : undefined}
-                        className={`mb-1 flex w-full items-center rounded-xl text-sm font-medium text-white/90 transition-colors hover:bg-[#984365] hover:text-white ${
+                        className={`mb-1 flex w-full items-center rounded-xl text-sm font-medium text-white/90 transition-colors hover:bg-[#604457] hover:text-white ${
                             collapsed
                                 ? 'justify-center px-0 py-2.5'
                                 : 'gap-3 px-4 py-2.5'
