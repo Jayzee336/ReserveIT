@@ -225,7 +225,7 @@ export default function Show({ activityPlan }) {
                                 type="button"
                                 onClick={approvePlan}
                                 disabled={processing || status === 'approved'}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#A94B75] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#A44773] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <CheckCircle2 className="h-4 w-4" />
                                 Approve eligible sessions
