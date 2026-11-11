@@ -70,8 +70,8 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
                 collapsed ? 'justify-center px-0 py-3' : 'px-4 py-3'
             } ${
                 active
-                    ? 'bg-[#846A75] text-white shadow-inner'
-                    : 'text-purple-100 hover:bg-[#543F48] hover:text-white'
+                    ? 'bg-[#E45B9A] text-white shadow-inner'
+                    : 'text-purple-100 hover:bg-[#B82068] hover:text-white'
             }`}
         >
             <Icon
@@ -455,7 +455,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
     };
 
     return (
-        <div className="flex min-h-screen min-w-0 bg-[#FDF6F0]">
+        <div className="flex min-h-screen min-w-0 bg-[#FFF7FB]">
             {/* Mobile navigation backdrop */}
             {mobileNavOpen && (
                 <button
@@ -468,14 +468,14 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
             {/* Sidebar Navigation */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col justify-between bg-[#6A535C] text-white shadow-xl transition-all duration-300 md:z-20 md:translate-x-0 ${
+                className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col justify-between bg-[#D93683] text-white shadow-xl transition-all duration-300 md:z-20 md:translate-x-0 ${
                     mobileNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 } ${collapsed ? 'md:w-16' : 'md:w-64'}`}
             >
                 <div>
                     {/* App title and sidebar collapse button */}
                     <div
-                        className={`flex items-center border-b border-[#543F48] transition-all duration-300 ${
+                        className={`flex items-center border-b border-[#B82068] transition-all duration-300 ${
                             collapsed
                                 ? 'flex-col justify-center gap-3 px-2 py-4'
                                 : 'justify-between p-5'
@@ -493,7 +493,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             onClick={() => setCollapsed((current) => !current)}
                             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                            className="hidden rounded-lg p-1.5 text-purple-100 transition-colors hover:bg-[#543F48] hover:text-white md:inline-flex"
+                            className="hidden rounded-lg p-1.5 text-purple-100 transition-colors hover:bg-[#B82068] hover:text-white md:inline-flex"
                         >
                             {collapsed ? (
                                 <PanelLeftOpen className="h-5 w-5 shrink-0" />
@@ -709,15 +709,15 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 </div>
 
                 {/* Sidebar footer actions */}
-                <div className="border-t border-[#543F48] bg-[#5C4750] p-4">
+                <div className="border-t border-[#B82068] bg-[#B82068] p-4">
                     {/* User profile badge */}
                     <div
-                        className={`mb-3 flex items-center rounded-xl border border-[#543F48]/40 bg-[#4E3A43]/50 p-2.5 ${
+                        className={`mb-3 flex items-center rounded-xl border border-[#B82068]/40 bg-[#A91B5D]/50 p-2.5 ${
                             collapsed ? 'justify-center' : 'gap-3'
                         }`}
                         title={collapsed ? user?.name ?? 'User' : undefined}
                     >
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-[#6A535C]">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-[#D93683]">
                             {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
                         </div>
 
@@ -736,7 +736,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     <Link
                         href={route('profile.edit')}
                         title={collapsed ? 'Settings' : undefined}
-                        className={`mb-1 flex w-full items-center rounded-xl text-sm font-medium text-purple-100 transition-colors hover:bg-[#4E3A43] hover:text-white ${
+                        className={`mb-1 flex w-full items-center rounded-xl text-sm font-medium text-purple-100 transition-colors hover:bg-[#A91B5D] hover:text-white ${
                             collapsed
                                 ? 'justify-center px-0 py-2.5'
                                 : 'gap-3 px-4 py-2.5'
@@ -778,7 +778,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             onClick={() => setMobileNavOpen(true)}
                             aria-label="Open navigation menu"
                             aria-expanded={mobileNavOpen}
-                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E8DDE0] bg-white text-[#6A535C] shadow-sm transition hover:bg-[#F7F0ED] md:hidden"
+                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#F0DCE6] bg-white text-[#D93683] shadow-sm transition hover:bg-[#FCEAF2] md:hidden"
                         >
                             <Menu className="h-5 w-5" />
                         </button>
@@ -830,7 +830,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                     aria-label={notificationSoundEnabled ? 'Turn notification sounds off' : 'Turn notification sounds on'}
                                                     aria-pressed={notificationSoundEnabled}
                                                     title={notificationSoundEnabled ? 'Notification sound on' : 'Notification sound off'}
-                                                    className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${notificationSoundEnabled ? 'border-[#DCCBD2] bg-[#F7F0F3] text-[#6A535C]' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                                                    className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${notificationSoundEnabled ? 'border-[#E5C2D3] bg-[#FCEAF2] text-[#D93683]' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
                                                 >
                                                     {notificationSoundEnabled ? (
                                                         <Volume2 className="h-3.5 w-3.5" />
@@ -840,8 +840,8 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                     Sound {notificationSoundEnabled ? 'On' : 'Off'}
                                                 </button>
 
-                                                <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1.5 text-[11px] font-bold text-[#6A535C]">
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-[#8D6B7A]" />
+                                                <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1.5 text-[11px] font-bold text-[#D93683]">
+                                                    <span className="h-1.5 w-1.5 rounded-full bg-[#D93683]" />
                                                     {unreadCount} New
                                                 </span>
 
@@ -850,7 +850,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                         type="button"
                                                         onClick={clearAllNotifications}
                                                         disabled={isClearingNotifications || isLoggingOut}
-                                                        className="ml-auto inline-flex min-h-8 items-center justify-center rounded-full border border-[#E8D8D1] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#6A535C] transition hover:bg-[#F9F4EF] disabled:cursor-not-allowed disabled:opacity-50"
+                                                        className="ml-auto inline-flex min-h-8 items-center justify-center rounded-full border border-[#F0DCE6] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#D93683] transition hover:bg-[#FFF7FB] disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
                                                         {isClearingNotifications ? 'Updating…' : 'Mark all as read'}
                                                     </button>
@@ -866,7 +866,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                 type="button"
                                                 onClick={() => setNotificationToastsEnabled((enabled) => !enabled)}
                                                 aria-pressed={notificationToastsEnabled}
-                                                className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold transition ${notificationToastsEnabled ? 'bg-white text-[#6A535C] shadow-sm' : 'text-gray-400 hover:bg-white'}`}
+                                                className={`rounded-lg px-2.5 py-1.5 text-[10px] font-semibold transition ${notificationToastsEnabled ? 'bg-white text-[#D93683] shadow-sm' : 'text-gray-400 hover:bg-white'}`}
                                             >
                                                 In-app alerts {notificationToastsEnabled ? 'On' : 'Off'}
                                             </button>
@@ -936,7 +936,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                             <Link
                                                 href={route('notifications.index')}
                                                 onClick={() => setNotificationsOpen(false)}
-                                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F7F0ED] px-3 py-2.5 text-xs font-bold text-[#6A535C] transition hover:bg-[#EFE3E0]"
+                                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#FCEAF2] px-3 py-2.5 text-xs font-bold text-[#D93683] transition hover:bg-[#FCEAF2]"
                                             >
                                                 View notification history
                                                 <ArrowUpRight className="h-3.5 w-3.5" />
@@ -980,7 +980,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     >
                         <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">
+                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#D93683]">
                                     Notification
                                 </p>
                                 <h3 className="mt-1 text-xl font-semibold text-gray-900">
@@ -1014,7 +1014,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 <Link
                                     href={getBookingNotificationHref(role, viewingNotification.booking_id)}
                                     onClick={() => setViewingNotification(null)}
-                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#D93683] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#B82068]"
                                 >
                                     View related booking
                                     <ArrowUpRight className="h-4 w-4" />
@@ -1024,7 +1024,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 <Link
                                     href={viewingNotification.facility_url}
                                     onClick={() => setViewingNotification(null)}
-                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#533e45]"
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#D93683] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#B82068]"
                                 >
                                     View facility
                                     <ArrowUpRight className="h-4 w-4" />
@@ -1045,7 +1045,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     setHelpOpen(true);
                 }}
                 disabled={isLoggingOut}
-                className="fixed bottom-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-[#6A535C] text-xl font-semibold text-white shadow-lg transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14"
+                className="fixed bottom-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-[#D93683] text-xl font-semibold text-white shadow-lg transition hover:bg-[#B82068] disabled:cursor-not-allowed disabled:opacity-60 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14"
                 aria-label="Submit a ticket"
                 title="Submit a ticket"
             >
@@ -1065,7 +1065,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     <div className="w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 shadow-2xl">
                         <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#6A535C]">
+                                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#D93683]">
                                     Submit a Ticket
                                 </p>
                                 <h3 className="mt-1 text-xl font-semibold text-gray-900">
@@ -1184,7 +1184,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                         ticketDetailedInfo.trim().length === 0 ||
                                         ticketDetailedInfo.trim().length > TICKET_DESCRIPTION_MAX_LENGTH
                                     }
-                                    className="rounded-xl bg-[#6A535C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#533e45] disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="rounded-xl bg-[#D93683] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#B82068] disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isSubmittingTicket
                                         ? 'Submitting…'
