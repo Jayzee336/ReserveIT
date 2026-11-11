@@ -474,10 +474,11 @@ The current project is configured for Docker-based hosting and can be adapted to
    - Laravel application settings (`APP_KEY`, `APP_ENV`, `APP_DEBUG`, and `APP_URL`);
    - Neon PostgreSQL connection values (`DB_CONNECTION=pgsql`, host, port, database, username, password, and SSL mode);
    - Tigris credentials and bucket settings.
-6. Deploy the service and inspect the build/runtime logs.
-7. Confirm that database migrations complete successfully.
-8. Verify login, booking creation, approval, check-in/check-out, consent upload, and authorized consent download.
-9. Configure and verify a scheduler process for Laravel's scheduled commands.
+6. Before deploying, review all pending migrations and create a backup of the Neon production database.
+7. Deploy the service and inspect the build/runtime logs. Docker startup automation applies pending migrations; `AUTORUN_LARAVEL_MIGRATION_SEED=false` prevents automatic database seeding.
+8. Confirm that migrations complete successfully and that the service passes its `/up` health check.
+9. Verify login, booking creation, approval, check-in/check-out, extension requests, required document uploads, and authorized document downloads.
+10. Configure and verify a scheduler process for Laravel's scheduled commands.
 
 The repository's Dockerfile configures the web container to listen on port 10000 and exposes Laravel's `/up` health-check endpoint. If adapting the Dockerfile to another host, follow that host's port and health-check requirements.
 
