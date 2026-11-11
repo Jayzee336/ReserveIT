@@ -20,7 +20,7 @@ import {
 
 const CATEGORY_COLORS = {
     Facility: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-    'UI Improvements': 'bg-[#F8EAF0] text-[#A94B75] ring-[#263348]/20',
+    'UI Improvements': 'bg-[#F8EDF2] text-[#A94B75] ring-[#493344]/20',
     Account: 'bg-amber-50 text-amber-700 ring-amber-600/20',
     Bug: 'bg-red-50 text-red-700 ring-red-600/20',
     Others: 'bg-gray-50 text-gray-700 ring-gray-600/20',
@@ -298,7 +298,7 @@ export default function Concerns({ concerns, filters = {} }) {
                             onChange={(e) => handleSearch(e.target.value)}
                             placeholder="Search by description or user name..."
                             aria-label="Search concerns"
-                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none transition focus:border-[#B96D91] focus:ring-2 focus:ring-[#EEDFE6]"
+                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none transition focus:border-[#647D91] focus:ring-2 focus:ring-[#E8E1E7]"
                         />
                     </div>
 
@@ -311,7 +311,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 handleCategoryFilter(e.target.value)
                             }
                             aria-label="Filter concerns by category"
-                            className="w-full appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-700 outline-none transition focus:border-[#B96D91] focus:ring-2 focus:ring-[#EEDFE6]"
+                            className="w-full appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-700 outline-none transition focus:border-[#647D91] focus:ring-2 focus:ring-[#E8E1E7]"
                         >
                             <option value="">All Categories</option>
                             <option value="Facility">Facility</option>
@@ -562,7 +562,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                         </div>
 
                                                         {histories.length > 0 && (
-                                                            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-[#A94B75] ring-1 ring-[#EEDFE6]">
+                                                            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-[#A94B75] ring-1 ring-[#E8E1E7]">
                                                                 <Pencil className="h-3 w-3" />
                                                                 Edited
                                                             </span>
@@ -603,7 +603,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                                     concern,
                                                                 )
                                                             }
-                                                            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#F8EAF0] px-3 py-2.5 text-sm font-semibold text-[#A94B75] transition hover:bg-[#EEDFE6] focus:outline-none focus:ring-2 focus:ring-[#EEDFE6]"
+                                                            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#F8EDF2] px-3 py-2.5 text-sm font-semibold text-[#A94B75] transition hover:bg-[#E8E1E7] focus:outline-none focus:ring-2 focus:ring-[#E8E1E7]"
                                                         >
                                                             <MessageCircle className="h-4 w-4" />
                                                             Reply
@@ -616,7 +616,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                                     concern,
                                                                 )
                                                             }
-                                                            className="inline-flex items-center justify-center rounded-xl bg-[#C65B8A] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F3F63] focus:outline-none focus:ring-2 focus:ring-[#263348]/30"
+                                                            className="inline-flex items-center justify-center rounded-xl bg-[#C65B8A] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773] focus:outline-none focus:ring-2 focus:ring-[#493344]/30"
                                                         >
                                                             Mark resolved
                                                         </button>
@@ -632,7 +632,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                                 concern,
                                                             )
                                                         }
-                                                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#EEDFE6] bg-white px-3 py-2.5 text-sm font-semibold text-[#A94B75] transition hover:bg-[#F8EAF0] focus:outline-none focus:ring-2 focus:ring-[#EEDFE6]"
+                                                        className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#E8E1E7] bg-white px-3 py-2.5 text-sm font-semibold text-[#A94B75] transition hover:bg-[#F8EDF2] focus:outline-none focus:ring-2 focus:ring-[#E8E1E7]"
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                         Edit Reply
@@ -778,7 +778,7 @@ export default function Concerns({ concerns, filters = {} }) {
                         className="my-auto w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl"
                     >
                         <div className="mb-5">
-                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#263348]">
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#493344]">
                                 Support response
                             </p>
 
@@ -814,7 +814,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 }
                                 rows={5}
                                 maxLength={5000}
-                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-[#B96D91] focus:ring-2 focus:ring-[#EEDFE6]"
+                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-[#647D91] focus:ring-2 focus:ring-[#E8E1E7]"
                                 placeholder="Write a clear and helpful response..."
                                 required
                             />
@@ -858,7 +858,7 @@ export default function Concerns({ concerns, filters = {} }) {
                         className="my-auto w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl"
                     >
                         <div className="mb-5">
-                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#263348]">
+                            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#493344]">
                                 <Pencil className="h-4 w-4" />
                                 Reply management
                             </p>
@@ -893,7 +893,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 onChange={(e) => setEditText(e.target.value)}
                                 rows={6}
                                 maxLength={5000}
-                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-[#B96D91] focus:ring-2 focus:ring-[#EEDFE6]"
+                                className="block w-full resize-y rounded-2xl border border-slate-200 p-3 text-sm text-slate-700 outline-none transition focus:border-[#647D91] focus:ring-2 focus:ring-[#E8E1E7]"
                                 placeholder="Update the admin reply..."
                                 required
                             />
