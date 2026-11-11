@@ -55,7 +55,7 @@ export default function CalendarDashboard({
         <AuthenticatedLayout
             header={
                 <div className="flex items-center gap-2">
-                    <CalendarDays className="h-5 w-5 text-[#263348]" />
+                    <CalendarDays className="h-5 w-5 text-[#493344]" />
                     <h2 className="text-lg font-semibold text-gray-800">
                         Facility Calendar
                     </h2>
@@ -69,8 +69,8 @@ export default function CalendarDashboard({
                     {/* Page heading */}
                     <div className="mb-5">
                         <div className="mb-1 flex items-center gap-2">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F8EAF0]">
-                                <CalendarDays className="h-5 w-5 text-[#263348]" />
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F8EDF2]">
+                                <CalendarDays className="h-5 w-5 text-[#493344]" />
                             </div>
                             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                                 Facility Schedule
@@ -125,7 +125,7 @@ export default function CalendarDashboard({
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-2 rounded-lg bg-[#F8EAF0] px-3 py-2 text-xs font-medium text-[#A94B75]">
+                            <div className="flex items-center gap-2 rounded-lg bg-[#F8EDF2] px-3 py-2 text-xs font-medium text-[#A94B75]">
                                 <CalendarDays className="h-4 w-4" />
                                 {serverFacilities.length}{' '}
                                 {serverFacilities.length === 1
