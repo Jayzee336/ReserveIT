@@ -417,7 +417,7 @@ export default function BookingModal({
         }
 
         if (requiresSirReneSignature && !signatureFile) {
-            setConflictError("Sir Rene's signed document is required for this facility.");
+            setConflictError("Sir Rene's signature file is required for this facility.");
             return;
         }
 
@@ -427,7 +427,7 @@ export default function BookingModal({
         }
 
         if (signatureFile && signatureFile.size > 5 * 1024 * 1024) {
-            setConflictError("Sir Rene's signed document must not exceed 5MB.");
+            setConflictError("Sir Rene's signature file must not exceed 5MB.");
             return;
         }
 
@@ -937,17 +937,17 @@ export default function BookingModal({
                                 <Upload className="h-5 w-5 flex-shrink-0 text-gray-400" />
                                 <div className="min-w-0">
                                     <p className="break-words text-sm font-semibold text-gray-700">
-                                        {signatureFile?.name || "Upload Sir Rene's Signed Document"}
+                                        {signatureFile?.name || "Upload Sir Rene's Signature File"}
                                         <span className="ml-1 text-red-600">*</span>
                                     </p>
-                                    <p className="text-xs text-gray-400">Required for Sky Gym and Quadrangle or Field · PDF, DOC, or DOCX · up to 5MB</p>
+                                    <p className="text-xs text-gray-400">Required for Sky Gym and Quadrangle or Field · PDF, DOC, DOCX, JPG, or PNG · up to 5MB</p>
                                 </div>
                             </div>
                             <input
                                 type="file"
-                                accept=".pdf,.doc,.docx"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                                 required
-                                aria-label="Upload Sir Rene's signed document"
+                                aria-label="Upload Sir Rene's signature file"
                                 className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                                 onChange={(e) => {
                                     const selected = e.target.files?.[0] || null;
