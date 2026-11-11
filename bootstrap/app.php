@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
+    ->withCommands([
+        __DIR__.'/../app/Console/Commands',
+    ])
     ->withMiddleware(function (Middleware $middleware): void {
         // Trust Render's reverse proxy headers so Laravel detects the original HTTPS request.
         $middleware->trustProxies(
