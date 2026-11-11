@@ -36,10 +36,10 @@ export default function FacilityDetails({
                 >
                     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
                         <div className="rounded-3xl border border-gray-200 bg-white px-6 py-16 text-center shadow-sm">
-                            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-[#846A75]" />
+                            <AlertCircle className="mx-auto mb-4 h-12 w-12 text-[#C65B8A]" />
                             <h2 className="mb-2 text-2xl font-bold text-gray-900">Facility not found</h2>
                             <p className="text-sm text-gray-500">The facility may no longer be available.</p>
-                            <Link href="/facilities" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#6A535C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#543F48]">
+                            <Link href="/facilities" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#C65B8A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#A94B75]">
                                 <ArrowLeft className="h-4 w-4" /> Back to facilities
                             </Link>
                         </div>
@@ -78,15 +78,15 @@ export default function FacilityDetails({
                     <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                         <Link
                             href="/facilities"
-                            className="group inline-flex items-center gap-2 rounded-lg py-2 pr-3 text-sm font-semibold text-[#6A535C] transition hover:text-[#3F3036]"
+                            className="group inline-flex items-center gap-2 rounded-lg py-2 pr-3 text-sm font-semibold text-[#263348] transition hover:text-[#3F3036]"
                         >
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E9DDE2] bg-white transition group-hover:-translate-x-0.5 group-hover:bg-[#F7F0F3]">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#EEDFE6] bg-white transition group-hover:-translate-x-0.5 group-hover:bg-[#F8EAF0]">
                                 <ArrowLeft className="h-4 w-4" />
                             </span>
                             Back to facilities
                         </Link>
                         <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-500 shadow-sm">
-                            <Building2 className="h-3.5 w-3.5 text-[#846A75]" />
+                            <Building2 className="h-3.5 w-3.5 text-[#C65B8A]" />
                             Facility overview
                         </span>
                     </div>
@@ -101,7 +101,7 @@ export default function FacilityDetails({
                                     className="absolute inset-0 h-full w-full object-cover transition duration-700 hover:scale-[1.015]"
                                 />
                             ) : (
-                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#8D7480] via-[#6A535C] to-[#3F3036]">
+                                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#8D7480] via-[#263348] to-[#3F3036]">
                                     <Building2 className="h-20 w-20 text-white/30" />
                                 </div>
                             )}
@@ -156,7 +156,7 @@ export default function FacilityDetails({
                             <div className="min-w-0 space-y-8">
                                 <section>
                                     <div className="mb-3 flex items-center gap-2">
-                                        <span className="h-6 w-1 rounded-full bg-[#846A75]" />
+                                        <span className="h-6 w-1 rounded-full bg-[#C65B8A]" />
                                         <h2 className="text-lg font-bold tracking-tight text-[#30252B]">About this facility</h2>
                                     </div>
                                     <p className="whitespace-pre-line break-words text-sm leading-7 text-gray-600 sm:text-[15px]">
@@ -166,12 +166,12 @@ export default function FacilityDetails({
 
                                 <section>
                                     <div className="mb-3 flex items-center gap-2">
-                                        <span className="h-6 w-1 rounded-full bg-[#846A75]" />
+                                        <span className="h-6 w-1 rounded-full bg-[#C65B8A]" />
                                         <h2 className="text-lg font-bold tracking-tight text-[#30252B]">Facility information</h2>
                                     </div>
                                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                        <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#EEE8EB] bg-[#FCFAFB] p-4">
-                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F0E6EB] text-[#6A535C]">
+                                        <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#F4EDF1] bg-[#FFFCFD] p-4">
+                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8EAF0] text-[#263348]">
                                                 <MapPin className="h-5 w-5" />
                                             </div>
                                             <div className="min-w-0">
@@ -179,8 +179,8 @@ export default function FacilityDetails({
                                                 <p className="mt-1 break-words text-sm font-bold text-[#30252B]">{facility.location || 'Not specified'}</p>
                                             </div>
                                         </div>
-                                        <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#EEE8EB] bg-[#FCFAFB] p-4">
-                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F0E6EB] text-[#6A535C]">
+                                        <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#F4EDF1] bg-[#FFFCFD] p-4">
+                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8EAF0] text-[#263348]">
                                                 <Users className="h-5 w-5" />
                                             </div>
                                             <div className="min-w-0">
@@ -190,8 +190,8 @@ export default function FacilityDetails({
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#EEE8EB] bg-[#FCFAFB] p-4">
-                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F0E6EB] text-[#6A535C]">
+                                        <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#F4EDF1] bg-[#FFFCFD] p-4">
+                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8EAF0] text-[#263348]">
                                                 <CalendarIcon className="h-5 w-5" />
                                             </div>
                                             <div className="min-w-0">
@@ -199,8 +199,8 @@ export default function FacilityDetails({
                                                 <p className="mt-1 break-words text-sm font-bold text-[#30252B]">{isAlwaysConsent ? 'Consent required' : 'Standard booking'}</p>
                                             </div>
                                         </div>
-                                        <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#EEE8EB] bg-[#FCFAFB] p-4">
-                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F0E6EB] text-[#6A535C]">
+                                        <div className="flex min-w-0 items-center gap-4 rounded-2xl border border-[#F4EDF1] bg-[#FFFCFD] p-4">
+                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8EAF0] text-[#263348]">
                                                 {isFacilityAvailable ? <CheckCircle2 className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
                                             </div>
                                             <div className="min-w-0">
@@ -247,7 +247,7 @@ export default function FacilityDetails({
                                     <section className="border-t border-gray-100 pt-6">
                                         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                                             <div className="flex items-center gap-2.5">
-                                                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F0E6EB] text-[#6A535C]">
+                                                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F8EAF0] text-[#263348]">
                                                     <BadgeCheck className="h-5 w-5" />
                                                 </span>
                                                 <div>
@@ -255,14 +255,14 @@ export default function FacilityDetails({
                                                     <p className="text-xs text-gray-500">People responsible for managing this facility</p>
                                                 </div>
                                             </div>
-                                            <span className="rounded-full bg-[#F7F0F3] px-3 py-1 text-xs font-semibold text-[#6A535C]">
+                                            <span className="rounded-full bg-[#F8EAF0] px-3 py-1 text-xs font-semibold text-[#263348]">
                                                 {facility.facility_admins.length} assigned
                                             </span>
                                         </div>
                                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                                             {facility.facility_admins.map((admin) => (
-                                                <div key={admin.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-[#EEE8EB] bg-white p-3.5">
-                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F0E6EB] text-sm font-bold text-[#543F48]">
+                                                <div key={admin.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-[#F4EDF1] bg-white p-3.5">
+                                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F8EAF0] text-sm font-bold text-[#A94B75]">
                                                         {(admin.name || 'A').charAt(0).toUpperCase()}
                                                     </div>
                                                     <div className="min-w-0">
@@ -279,10 +279,10 @@ export default function FacilityDetails({
                             {/* Booking panel */}
                             <aside className="min-w-0">
                                 <div className="rounded-2xl border border-[#E8DDE2] bg-gradient-to-b from-[#FBF7F9] to-[#F6EEF2] p-5 shadow-sm lg:sticky lg:top-6">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#6A535C] shadow-sm">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-[#263348] shadow-sm">
                                         <CalendarIcon className="h-5 w-5" />
                                     </div>
-                                    <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#846A75]">Make a reservation</p>
+                                    <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#C65B8A]">Make a reservation</p>
                                     <h2 className="mt-1 text-xl font-bold tracking-tight text-[#30252B]">Reserve this facility</h2>
                                     <p className="mt-2 text-sm leading-6 text-gray-600">
                                         Choose your preferred date and time to request a booking for {facility.name}.
@@ -309,7 +309,7 @@ export default function FacilityDetails({
                                         type="button"
                                         onClick={() => setBookingOpen(true)}
                                         disabled={!isFacilityAvailable}
-                                        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-3 text-sm font-bold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:bg-[#543F48] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#846A75] focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none disabled:hover:translate-y-0"
+                                        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-3 text-sm font-bold text-white shadow-md transition duration-200 hover:-translate-y-0.5 hover:bg-[#A94B75] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none disabled:hover:translate-y-0"
                                     >
                                         <CalendarIcon className="h-4 w-4" />
                                         {isFacilityAvailable ? 'Book this facility' : 'Temporarily unavailable'}
@@ -320,7 +320,7 @@ export default function FacilityDetails({
                                         onClick={(event) => {
                                             if (!isFacilityAvailable) event.preventDefault();
                                         }}
-                                        className={`mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#D7C5CD] bg-white px-4 py-3 text-center text-sm font-semibold text-[#543F48] transition duration-200 hover:-translate-y-0.5 hover:border-[#B99FA9] hover:bg-[#FDFBFC] hover:shadow-sm ${!isFacilityAvailable ? 'pointer-events-none opacity-50' : ''}`}
+                                        className={`mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#D7C5CD] bg-white px-4 py-3 text-center text-sm font-semibold text-[#A94B75] transition duration-200 hover:-translate-y-0.5 hover:border-[#B99FA9] hover:bg-[#FDFBFC] hover:shadow-sm ${!isFacilityAvailable ? 'pointer-events-none opacity-50' : ''}`}
                                     >
                                         <CalendarIcon className="h-4 w-4" />
                                         Create recurring activity plan
@@ -350,9 +350,9 @@ export default function FacilityDetails({
                             aria-labelledby="booking-modal-title"
                             className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"
                         >
-                            <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#F7F0F3] to-white px-4 py-4 sm:px-6">
+                            <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#F8EAF0] to-white px-4 py-4 sm:px-6">
                                 <div className="min-w-0">
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-[#846A75]">New reservation</p>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-[#C65B8A]">New reservation</p>
                                     <h2 id="booking-modal-title" className="mt-1 break-words font-bold text-gray-900">Book {facility.name}</h2>
                                 </div>
                                 <button
