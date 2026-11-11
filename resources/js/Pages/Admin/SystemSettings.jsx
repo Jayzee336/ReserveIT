@@ -55,9 +55,8 @@ export default function SystemSettings({ settings }) {
     const [requireConsent, setRequireConsent] = useState(
         Boolean(settings.require_consent_letter)
     );
-    const [autoPurgeDays, setAutoPurgeDays] = useState(
-        Number(settings.auto_purge_unapproved_days ?? 0)
-    );
+    const [pendingExpiryHours, setPendingExpiryHours] = useState(Number(settings.pending_booking_expiry_hours ?? 72));
+    const [pendingReminderHours, setPendingReminderHours] = useState(Number(settings.pending_booking_reminder_hours ?? 24));
     const [openingTime, setOpeningTime] = useState(settings.opening_time?.slice(0, 5) ?? '08:00');
     const [closingTime, setClosingTime] = useState(settings.closing_time?.slice(0, 5) ?? '00:00');
     const [earlyCheckIn, setEarlyCheckIn] = useState(settings.early_check_in_minutes ?? 15);
@@ -97,7 +96,8 @@ export default function SystemSettings({ settings }) {
             cleanup_buffer_minutes: cleanupBuffer,
             max_advance_days: maxAdvanceDays,
             require_consent_letter: requireConsent,
-            auto_purge_unapproved_days: autoPurgeDays,
+            pending_booking_expiry_hours: pendingExpiryHours,
+            pending_booking_reminder_hours: pendingReminderHours,
             opening_time: openingTime,
             closing_time: closingTime,
             early_check_in_minutes: earlyCheckIn,
@@ -414,89 +414,23 @@ export default function SystemSettings({ settings }) {
 
                     <div className="xl:col-span-2">
                     <SectionCard
-                        icon={Trash2}
-                        title="Unapproved Booking Cleanup"
-                        description="Choose how long expired pending bookings are retained before automated cleanup."
+                        icon={Clock3}
+                        title="Pending Booking Expiration"
+                        description="Choose how long a request can remain pending before it expires. Expired records remain in booking history."
                     >
-                        <div className="grid gap-5 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-                        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
-                            <div>
-                                <p className="text-sm font-semibold text-amber-900">
-                                    Permanent deletion
-                                </p>
-                                <p className="mt-1 text-sm leading-5 text-amber-800">
-                                    Eligible pending bookings are permanently deleted by the scheduled cleanup command. Approved bookings are not targeted by this command.
-                                </p>
-                            </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <label className={labelClass}>
+                                Expire pending bookings after (hours)
+                                <input type="number" min="1" max="720" value={pendingExpiryHours} disabled={saving} onChange={(event) => { setPendingExpiryHours(event.target.value); markChanged(); }} className={inputClass} />
+                                <span className="mt-1 block text-xs font-normal text-slate-500">Default: 72 hours (3 days).</span>
+                            </label>
+                            <label className={labelClass}>
+                                Reminder before expiration (hours)
+                                <input type="number" min="0" max="168" value={pendingReminderHours} disabled={saving} onChange={(event) => { setPendingReminderHours(event.target.value); markChanged(); }} className={inputClass} />
+                                <span className="mt-1 block text-xs font-normal text-slate-500">Default: 24 hours. Set to 0 to disable reminders.</span>
+                            </label>
                         </div>
-
-                        <fieldset disabled={saving}>
-                            <legend className="mb-3 text-sm font-semibold text-slate-800">
-                                Automatic cleanup policy
-                            </legend>
-
-                            <div className="grid gap-3 sm:grid-cols-3">
-                                {purgeOptions.map((option) => {
-                                    const selected =
-                                        Number(autoPurgeDays) === option.days;
-
-                                    return (
-                                        <button
-                                            key={option.days}
-                                            type="button"
-                                            aria-pressed={selected}
-                                            onClick={() => {
-                                                setAutoPurgeDays(option.days);
-                                                markChanged();
-                                            }}
-                                            className={`rounded-xl border-2 p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-[#6A535C]/30 ${
-                                                selected
-                                                    ? 'border-[#6A535C] bg-[#6A535C]/5'
-                                                    : 'border-slate-200 bg-white hover:border-[#6A535C]/40 hover:bg-slate-50'
-                                            }`}
-                                        >
-                                            <span className="flex items-center justify-between gap-2">
-                                                <span className={`text-sm font-bold ${
-                                                    selected
-                                                        ? 'text-[#6A535C]'
-                                                        : 'text-slate-800'
-                                                }`}>
-                                                    {option.title}
-                                                </span>
-                                                {selected && (
-                                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-[#6A535C]" />
-                                                )}
-                                            </span>
-                                            <span className="mt-2 block text-xs leading-5 text-slate-500">
-                                                {option.detail}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </fieldset>
-                        </div>
-
-                        {Number(autoPurgeDays) > 0 ? (
-                            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-                                <p className="text-sm font-semibold text-amber-900">
-                                    Cleanup is enabled
-                                </p>
-                                <p className="mt-1 text-sm leading-5 text-amber-800">
-                                    The scheduled command runs daily at midnight. It will target pending bookings that meet the configured retention rule of {autoPurgeDays} day(s). Verify the cutoff behavior before using this on real data.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                                <p className="text-sm font-medium text-slate-700">
-                                    Cleanup is currently disabled.
-                                </p>
-                                <p className="mt-1 text-sm leading-5 text-slate-500">
-                                    Pending bookings will not be automatically deleted by this command.
-                                </p>
-                            </div>
-                        )}
+                        <p className="mt-4 rounded-xl border border-[#E8D8D1] bg-[#FFFBF8] px-4 py-3 text-sm text-slate-700">The scheduler checks every 15 minutes. The requester and assigned Facility Admins receive reminders and expiration notifications.</p>
                     </SectionCard>
                     </div>
                 </div>
