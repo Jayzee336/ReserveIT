@@ -150,7 +150,7 @@ function CheckInOutActions({
                 type="button"
                 onClick={() => onCheckOut(booking.id)}
                 disabled={isProcessing}
-                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#C65B8A] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#A44773] disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#B96B8D] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#96516F] disabled:cursor-not-allowed disabled:opacity-50"
             >
                 <LogOut className="h-3.5 w-3.5" />
                 {isProcessing ? 'Processing…' : 'Check Out'}
@@ -472,7 +472,7 @@ function BookingDetailModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773]"
+                        className="rounded-xl bg-[#B96B8D] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#96516F]"
                     >
                         Close
                     </button>
@@ -1042,13 +1042,13 @@ export default function Bookings({
                             value={searchQuery}
                             onChange={handleSearchChange}
                             placeholder="Search by facility, user or guest name…"
-                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none focus:border-[#C65B8A] focus:ring-2 focus:ring-[#E8E1E7]"
+                            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none focus:border-[#B96B8D] focus:ring-2 focus:ring-[#E8E1E7]"
                         />
                     </div>
 
                     <Link
                         href={route('overtime-extensions.index', { from: 'approvals', approval_role: isSuperAdmin ? 'super_admin' : 'facility_admin' })}
-                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D9C8D4] bg-white px-4 py-2.5 text-sm font-semibold text-[#A44773] shadow-sm transition hover:bg-[#F8EDF2]"
+                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D9C8D4] bg-white px-4 py-2.5 text-sm font-semibold text-[#96516F] shadow-sm transition hover:bg-[#F8EDF2]"
                     >
                         <Clock className="h-4 w-4" />
                         Extension requests
@@ -1057,7 +1057,7 @@ export default function Bookings({
                     <select
                         value={statusFilter}
                         onChange={handleStatusChange}
-                        className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-[#C65B8A] focus:ring-2 focus:ring-[#E8E1E7] xl:w-56"
+                        className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-[#B96B8D] focus:ring-2 focus:ring-[#E8E1E7] xl:w-56"
                     >
                         <option value="">All statuses</option>
                         <option value="pending">Pending</option>
