@@ -134,6 +134,16 @@ class UserSeeder extends Seeder
                 ->pluck('id')
                 ->all();
 
+            $missingFacilityIds = array_values(array_diff($facilityIds, $existingFacilityIds));
+
+            if ($missingFacilityIds !== []) {
+                throw new \\RuntimeException(
+                    'Cannot finish demo facility assignments. Missing facility IDs: '
+                    . implode(', ', $missingFacilityIds)
+                    . '. Seed the local facilities first.'
+                );
+            }
+
             $facilityAdmin->managedFacilities()->sync($existingFacilityIds);
         }
     }
