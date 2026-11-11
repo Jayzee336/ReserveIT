@@ -48,14 +48,14 @@ export default function Receipt({ auth, booking }) {
                         <button
                             type="button"
                             onClick={() => window.print()}
-                            className="inline-flex items-center gap-2 rounded-lg bg-[#C65B8A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#A94B75]"
+                            className="inline-flex items-center gap-2 rounded-lg bg-[#C65B8A] px-4 py-2 text-sm font-semibold text-white hover:bg-[#A44773]"
                         >
                             <Printer className="h-4 w-4" /> Print / Save PDF
                         </button>
                     </div>
 
                     <article className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm print:rounded-none print:border-0 print:shadow-none">
-                        <div className="border-b border-gray-200 bg-[#C65B8A] px-6 py-8 text-white sm:px-10">
+                        <div className="border-b border-gray-200 bg-[#493344] px-6 py-8 text-white sm:px-10">
                             <div className="flex items-start justify-between gap-4">
                                 <div>
                                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#E8E1E7]">ReserveIT</p>
