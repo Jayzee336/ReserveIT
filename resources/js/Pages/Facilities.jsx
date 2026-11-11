@@ -114,13 +114,13 @@ export default function Dashboard({ auth, facilities }) {
                     <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
                         <div className="mr-auto flex flex-wrap items-center gap-2">
                             {filterType !== 'All' && (
-                                <span className="inline-flex items-center gap-1 rounded-full border border-[#E8E1E7] bg-[#F8EDF2] px-2.5 py-1 text-xs font-semibold text-[#A94B75]">
+                                <span className="inline-flex items-center gap-1 rounded-full border border-[#E8E1E7] bg-[#F8EDF2] px-2.5 py-1 text-xs font-semibold text-[#A44773]">
                                     {filterType}
                                     <button
                                         type="button"
                                         aria-label="Clear category filter"
                                         onClick={() => setFilterType('All')}
-                                        className="ml-0.5 hover:text-[#3F3037]"
+                                        className="ml-0.5 hover:text-[#302632]"
                                     >
                                         <X className="h-3 w-3" />
                                     </button>
@@ -148,7 +148,7 @@ export default function Dashboard({ auth, facilities }) {
                                 type="text"
                                 placeholder="Search facilities..."
                                 aria-label="Search facilities"
-                                className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm shadow-sm focus:border-[#647D91] focus:ring-2 focus:ring-[#647D91]"
+                                className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-4 text-sm shadow-sm focus:border-[#C65B8A] focus:ring-2 focus:ring-[#C65B8A]"
                                 value={searchTerm}
                                 onChange={(event) =>
                                     setSearchTerm(event.target.value)
@@ -161,7 +161,7 @@ export default function Dashboard({ auth, facilities }) {
                             onClick={openModal}
                             className={`relative flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
                                 activeFilterCount > 0
-                                    ? 'border-[#D9C8D4] bg-[#F8EDF2] text-[#A94B75] hover:bg-[#E8E1E7]'
+                                    ? 'border-[#D9C8D4] bg-[#F8EDF2] text-[#A44773] hover:bg-[#E8E1E7]'
                                     : 'border-gray-200 bg-white text-gray-600 shadow-sm hover:bg-gray-50'
                             }`}
                         >
@@ -169,7 +169,7 @@ export default function Dashboard({ auth, facilities }) {
                             <span>Filters</span>
 
                             {activeFilterCount > 0 && (
-                                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#493344] text-[10px] font-bold text-white">
+                                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#C65B8A] text-[10px] font-bold text-white">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -323,7 +323,7 @@ export default function Dashboard({ auth, facilities }) {
                                             onClick={() => setPendingType(type)}
                                             className={`flex items-center gap-1.5 rounded-xl border px-4 py-2 text-sm font-medium transition-all ${
                                                 pendingType === type
-                                                    ? 'border-[#493344] bg-[#493344] text-white shadow-sm'
+                                                    ? 'border-[#C65B8A] bg-[#C65B8A] text-white shadow-sm'
                                                     : 'border-gray-200 bg-white text-gray-600 hover:border-[#D9C8D4] hover:text-[#493344]'
                                             }`}
                                         >
@@ -352,7 +352,7 @@ export default function Dashboard({ auth, facilities }) {
                                             onClick={() => setPendingSort(value)}
                                             className={`flex items-center justify-between rounded-xl border px-4 py-2.5 text-left text-sm font-medium transition-all ${
                                                 pendingSort === value
-                                                    ? 'border-[#D9C8D4] bg-[#F8EDF2] text-[#A94B75]'
+                                                    ? 'border-[#D9C8D4] bg-[#F8EDF2] text-[#A44773]'
                                                     : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
                                             }`}
                                         >
@@ -381,7 +381,7 @@ export default function Dashboard({ auth, facilities }) {
                             <button
                                 type="button"
                                 onClick={applyFilters}
-                                className="flex-1 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#A94B75]"
+                                className="flex-1 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#A44773]"
                             >
                                 Apply Filters
                             </button>
