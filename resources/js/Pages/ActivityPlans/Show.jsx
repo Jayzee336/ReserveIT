@@ -152,7 +152,7 @@ export default function Show({ activityPlan }) {
             <main className="mx-auto w-full max-w-5xl min-w-0 space-y-5 px-3 py-5 sm:px-6 sm:py-7">
                 <Link
                     href={route('facility.show', activityPlan.facility_id)}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#6A535C]"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#263348]"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Back to facility
@@ -161,7 +161,7 @@ export default function Show({ activityPlan }) {
                 <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <p className="text-xs font-bold uppercase tracking-wide text-[#846A75]">Recurring activity plan</p>
+                            <p className="text-xs font-bold uppercase tracking-wide text-[#C65B8A]">Recurring activity plan</p>
                             <h1 className="mt-1 break-words text-xl font-bold text-slate-900 sm:text-2xl">{activityPlan.title}</h1>
                             <p className="mt-1 text-sm text-slate-500">{activityPlan.facility?.name} · Submitted by {activityPlan.user?.name || 'User'}</p>
                         </div>
@@ -193,7 +193,7 @@ export default function Show({ activityPlan }) {
 
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 p-3">
                         <div className="flex min-w-0 items-center gap-3">
-                            <div className="rounded-lg bg-[#F7F0F3] p-2 text-[#6A535C]">
+                            <div className="rounded-lg bg-[#F8EAF0] p-2 text-[#263348]">
                                 <FileText className="h-5 w-5" />
                             </div>
                             <div className="min-w-0">
@@ -225,7 +225,7 @@ export default function Show({ activityPlan }) {
                                 type="button"
                                 onClick={approvePlan}
                                 disabled={processing || status === 'approved'}
-                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6A535C] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#543F48] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#A94B75] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <CheckCircle2 className="h-4 w-4" />
                                 Approve eligible sessions
@@ -256,7 +256,7 @@ export default function Show({ activityPlan }) {
                                             </span>
                                         </div>
                                         <p className="mt-1 flex items-center gap-2 text-sm text-slate-600">
-                                            <CalendarDays className="h-4 w-4 shrink-0 text-[#846A75]" />
+                                            <CalendarDays className="h-4 w-4 shrink-0 text-[#C65B8A]" />
                                             {formatDate(session.date || session.booking_date)}
                                         </p>
                                         <p className="mt-1 flex items-center gap-2 text-xs text-slate-500">
@@ -273,7 +273,7 @@ export default function Show({ activityPlan }) {
                                     {isPlanOwner && sessionStatus === 'pending' && (
                                         <div className="sm:col-span-2">
                                             {editingSessionId === session.id ? (
-                                                <form onSubmit={saveSessionEdit} className="grid grid-cols-1 gap-3 rounded-xl border border-[#D9C8CF] bg-[#FBF8F9] p-3 sm:grid-cols-2 lg:grid-cols-3">
+                                                <form onSubmit={saveSessionEdit} className="grid grid-cols-1 gap-3 rounded-xl border border-[#DFC5D1] bg-[#FBF8F9] p-3 sm:grid-cols-2 lg:grid-cols-3">
                                                     <label className="text-[10px] font-semibold text-slate-500">Session date
                                                         <input type="date" required min={localToday()} value={editData.date} onChange={(event) => setEditData((current) => ({ ...current, date: event.target.value }))} className="mt-1 w-full rounded-lg border-slate-200 text-xs" />
                                                     </label>
@@ -287,7 +287,7 @@ export default function Show({ activityPlan }) {
                                                         <input type="number" required min="1" max={activityPlan.facility?.capacity || undefined} value={editData.attendees} onChange={(event) => setEditData((current) => ({ ...current, attendees: Number(event.target.value) }))} className="mt-1 w-full rounded-lg border-slate-200 text-xs" />
                                                     </label>
                                                     <label className="flex items-center gap-2 self-end rounded-lg bg-white p-2.5 text-xs font-medium text-slate-700">
-                                                        <input type="checkbox" checked={editData.needs_manpower} disabled={!activityPlan.facility?.allowTdevsManpower} onChange={(event) => setEditData((current) => ({ ...current, needs_manpower: event.target.checked }))} className="rounded border-slate-300 text-[#6A535C]" />
+                                                        <input type="checkbox" checked={editData.needs_manpower} disabled={!activityPlan.facility?.allowTdevsManpower} onChange={(event) => setEditData((current) => ({ ...current, needs_manpower: event.target.checked }))} className="rounded border-slate-300 text-[#263348]" />
                                                         Request TDEVS manpower
                                                     </label>
                                                     <label className="text-[10px] font-semibold text-slate-500 sm:col-span-2 lg:col-span-3">Session notes
@@ -295,7 +295,7 @@ export default function Show({ activityPlan }) {
                                                     </label>
                                                     <div className="flex flex-wrap justify-end gap-2 sm:col-span-2 lg:col-span-3">
                                                         <button type="button" onClick={() => setEditingSessionId(null)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600">Cancel</button>
-                                                        <button type="submit" disabled={processing} className="inline-flex items-center gap-1.5 rounded-lg bg-[#6A535C] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"><Save className="h-3.5 w-3.5" /> Save session changes</button>
+                                                        <button type="submit" disabled={processing} className="inline-flex items-center gap-1.5 rounded-lg bg-[#263348] px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"><Save className="h-3.5 w-3.5" /> Save session changes</button>
                                                     </div>
                                                 </form>
                                             ) : (
