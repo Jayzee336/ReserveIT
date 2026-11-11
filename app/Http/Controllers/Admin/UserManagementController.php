@@ -22,7 +22,7 @@ class UserManagementController extends Controller
      */
     public function index(): Response
     {
-        $users = User::select('id', 'name', 'username', 'email', 'role', 'is_active', 'created_at')
+        $users = User::select('id', 'name', 'username', 'email', 'uic_member_type', 'role', 'is_active', 'created_at')
             ->with('managedFacilities:id,name')
             ->orderBy('name')
             ->get()
@@ -49,6 +49,11 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:30', 'unique:users,username'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'uic_member_type' => [
+                Rule::requiredIf(fn () => str_ends_with(strtolower(trim((string) $request->input('email'))), '@uic.edu.ph')),
+                'nullable',
+                Rule::in(['student', 'teacher']),
+            ],
             'role' => ['required', Rule::in(['super_admin', 'facility_admin', 'user'])],
             'password_mode' => ['required', Rule::in(['generated', 'manual'])],
             'password' => ['required_if:password_mode,manual', 'nullable', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
@@ -64,6 +69,9 @@ class UserManagementController extends Controller
                 'name' => $validated['name'],
                 'username' => $validated['username'],
                 'email' => $validated['email'],
+                'uic_member_type' => str_ends_with(strtolower($validated['email']), '@uic.edu.ph')
+                    ? ($validated['uic_member_type'] ?? null)
+                    : null,
                 'role' => $validated['role'],
                 'password' => Hash::make($accountPassword),
                 'must_change_password' => $isTemporaryPassword,
@@ -94,6 +102,11 @@ class UserManagementController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:30', Rule::unique('users', 'username')->ignore($user->id)],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'uic_member_type' => [
+                Rule::requiredIf(fn () => str_ends_with(strtolower(trim((string) $request->input('email'))), '@uic.edu.ph')),
+                'nullable',
+                Rule::in(['student', 'teacher']),
+            ],
             'assigned_facility_ids' => ['sometimes', 'nullable', 'array', 'max:100'],
             'assigned_facility_ids.*' => ['required', 'string', 'distinct', 'exists:facilities,id'],
         ]);
@@ -108,6 +121,9 @@ class UserManagementController extends Controller
                 'name' => $validated['name'],
                 'username' => $validated['username'],
                 'email' => $validated['email'],
+                'uic_member_type' => str_ends_with(strtolower($validated['email']), '@uic.edu.ph')
+                    ? ($validated['uic_member_type'] ?? null)
+                    : null,
             ];
 
             $lockedUser->update($details);
