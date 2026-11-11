@@ -178,8 +178,8 @@ export default function Dashboard({
 
             <div className="ri-page-shell space-y-7">
                 <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#493344] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
-                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#C65B8A]/50 blur-3xl" />
-                    <div className="pointer-events-none absolute -bottom-32 right-1/3 -z-10 h-64 w-64 rounded-full bg-[#647D91]/15 blur-3xl" />
+                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#C65B8A]/25 blur-3xl" />
+                    <div className="pointer-events-none absolute -bottom-32 right-1/3 -z-10 h-64 w-64 rounded-full bg-[#647D91]/10 blur-3xl" />
 
                     <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl">
