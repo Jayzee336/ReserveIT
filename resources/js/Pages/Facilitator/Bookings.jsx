@@ -435,6 +435,24 @@ function BookingDetailModal({
                         </div>
                     )}
 
+                    {(booking.activity_plan_file_path || booking.sir_rene_signature_path) && (
+                        <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-blue-900">Booking Documents</p>
+                            <div className="flex flex-wrap gap-3 text-sm">
+                                {booking.activity_plan_file_path && (
+                                    <a href={`/bookings/${booking.id}/attachments/activity-plan`} className="font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900">
+                                        View Activity Plan · {booking.activity_plan_file_name || 'Attached document'}
+                                    </a>
+                                )}
+                                {booking.sir_rene_signature_path && (
+                                    <a href={`/bookings/${booking.id}/attachments/sir-rene-signature`} className="font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900">
+                                        View Sir Rene's Signed Document · {booking.sir_rene_signature_name || 'Attached document'}
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <BookingConsentAttachment booking={booking} />
                 </div>
 
