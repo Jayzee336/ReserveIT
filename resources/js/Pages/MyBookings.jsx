@@ -64,6 +64,7 @@ const STATUS_OPTIONS = [
     { key: 'completed', label: 'Completed' },
     { key: 'declined', label: 'Declined' },
     { key: 'cancelled', label: 'Cancelled' },
+    { key: 'expired', label: 'Expired' },
 ];
 
 const suggestExtendedEndTime = (currentEnd) => {
@@ -518,6 +519,7 @@ export default function MyBookings({
         completed: 0,
         declined: 0,
         cancelled: 0,
+        expired: 0,
     };
 
     userBookings.forEach((booking) => {
