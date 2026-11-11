@@ -28,7 +28,7 @@ export default function Register() {
         <GuestLayout>
             <Head title="Register" />
 
-            <div className="w-full max-w-md rounded-3xl border border-[#EEDFE6] bg-white p-8 shadow-xl shadow-[#C65B8A]/5 sm:p-10">
+            <div className="w-full max-w-md rounded-3xl border border-[#E8E1E7] bg-white p-8 shadow-xl shadow-[#C65B8A]/5 sm:p-10">
                 <Link
                     href="/"
                     className="mb-5 inline-flex items-center gap-2 rounded-lg text-xs font-semibold text-slate-500 transition hover:text-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/30 focus:ring-offset-2"
@@ -60,7 +60,7 @@ export default function Register() {
                                 id="name"
                                 name="name"
                                 value={data.name}
-                                className="block w-full rounded-2xl border-[#EEDFE6] bg-[#FFFCFD] py-2.5 px-3.5 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
+                                className="block w-full rounded-2xl border-[#E8E1E7] bg-[#FCFAFB] py-2.5 px-3.5 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
                                 autoComplete="name"
                                 isFocused={true}
                                 onChange={(e) => setData('name', e.target.value)}
@@ -78,7 +78,7 @@ export default function Register() {
                                 id="username"
                                 name="username"
                                 value={data.username}
-                                className="block w-full rounded-2xl border-[#EEDFE6] bg-[#FFFCFD] py-2.5 px-3.5 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
+                                className="block w-full rounded-2xl border-[#E8E1E7] bg-[#FCFAFB] py-2.5 px-3.5 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
                                 autoComplete="username"
                                 onChange={(e) => setData('username', e.target.value.toLowerCase())}
                                 required
@@ -97,7 +97,7 @@ export default function Register() {
                                 type="email"
                                 name="email"
                                 value={data.email}
-                                className="block w-full rounded-2xl border-[#EEDFE6] bg-[#FFFCFD] py-2.5 px-3.5 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
+                                className="block w-full rounded-2xl border-[#E8E1E7] bg-[#FCFAFB] py-2.5 px-3.5 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
                                 autoComplete="email"
                                 onChange={(e) => setData('email', e.target.value)}
                                 required
@@ -135,7 +135,7 @@ export default function Register() {
                                 type={showPassword ? 'text' : 'password'}
                                 name="password"
                                 value={data.password}
-                                className="block w-full rounded-2xl border-[#EEDFE6] bg-[#FFFCFD] py-2.5 pl-3.5 pr-10 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
+                                className="block w-full rounded-2xl border-[#E8E1E7] bg-[#FCFAFB] py-2.5 pl-3.5 pr-10 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
                                 autoComplete="new-password"
                                 onChange={(e) => setData('password', e.target.value)}
                                 required
@@ -153,7 +153,7 @@ export default function Register() {
                                 type={showPassword ? 'text' : 'password'}
                                 name="password_confirmation"
                                 value={data.password_confirmation}
-                                className="block w-full rounded-2xl border-[#EEDFE6] bg-[#FFFCFD] py-2.5 pl-3.5 pr-10 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
+                                className="block w-full rounded-2xl border-[#E8E1E7] bg-[#FCFAFB] py-2.5 pl-3.5 pr-10 text-xs font-medium text-slate-900 focus:border-[#C65B8A] focus:ring-[#C65B8A]"
                                 autoComplete="new-password"
                                 onChange={(e) => setData('password_confirmation', e.target.value)}
                                 required
