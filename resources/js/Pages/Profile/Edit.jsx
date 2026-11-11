@@ -10,9 +10,9 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
             <Head title="Profile" />
 
             <div className="space-y-6">
-                <section className="rounded-[2rem] border border-[#E8D8D1] bg-white p-8 shadow-[0_32px_90px_rgba(0,0,0,0.08)]">
+                <section className="rounded-[2rem] border border-[#EEDFE6] bg-white p-8 shadow-[0_32px_90px_rgba(0,0,0,0.08)]">
                     <div className="mb-6">
-                        <p className="text-sm uppercase tracking-[0.27em] text-[#7A4A57]">
+                        <p className="text-sm uppercase tracking-[0.27em] text-[#C65B8A]">
                             Profile management
                         </p>
 
@@ -27,7 +27,7 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
                     </div>
 
                     <div className="space-y-8">
-                        <div className="rounded-3xl bg-[#F9F4EF] p-6">
+                        <div className="rounded-3xl bg-[#FFFCFD] p-6">
                             <UpdateProfileInformationForm
                                 mustVerifyEmail={mustVerifyEmail}
                                 status={status}
@@ -35,7 +35,7 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
                             />
                         </div>
 
-                        <div className="rounded-3xl bg-[#F9F4EF] p-6">
+                        <div className="rounded-3xl bg-[#FFFCFD] p-6">
                             {isSsoUser ? (
                                 <div className="max-w-2xl">
                                     <h2 className="text-lg font-medium text-slate-900">
@@ -50,7 +50,7 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
 
                                     <Link
                                         href={route('password.set.edit')}
-                                        className="mt-4 inline-flex items-center rounded-xl bg-[#7A4A57] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#633945]"
+                                        className="mt-4 inline-flex items-center rounded-xl bg-[#C65B8A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#633945]"
                                     >
                                         Set ReserveIT Password
                                     </Link>
