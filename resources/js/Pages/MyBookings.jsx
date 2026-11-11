@@ -881,14 +881,14 @@ export default function MyBookings({
                                 Manage, search, and track your facility reservations.
                             </p>
                         </div>
-                        <span className="rounded-full bg-[#F8EAF0] px-3 py-1.5 text-xs font-semibold text-[#A94B75]">
+                        <span className="rounded-full bg-[#F8EDF2] px-3 py-1.5 text-xs font-semibold text-[#A94B75]">
                             {filteredBookings.length} of {userBookings.length}{' '}
                             {userBookings.length === 1 ? 'booking' : 'bookings'}
                         </span>
                     </div>
 
                     <section aria-label="Booking status summary" className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-                        <SummaryCard label="All Bookings" count={bookingCounts.all} active={statusFilter === 'all'} colorClass="border-[#EEDFE6] bg-[#F8EAF0] text-[#263348]" onClick={() => setStatusFilter('all')} />
+                        <SummaryCard label="All Bookings" count={bookingCounts.all} active={statusFilter === 'all'} colorClass="border-[#E8E1E7] bg-[#F8EDF2] text-[#493344]" onClick={() => setStatusFilter('all')} />
                         <SummaryCard label="Pending" count={bookingCounts.pending} active={statusFilter === 'pending'} colorClass="border-amber-200 bg-amber-50 text-amber-800" onClick={() => setStatusFilter('pending')} />
                         <SummaryCard label="Approved" count={bookingCounts.approved} active={statusFilter === 'approved'} colorClass="border-green-200 bg-green-50 text-green-800" onClick={() => setStatusFilter('approved')} />
                         <SummaryCard label="Completed" count={bookingCounts.completed} active={statusFilter === 'completed'} colorClass="border-blue-200 bg-blue-50 text-blue-800" onClick={() => setStatusFilter('completed')} />
@@ -898,7 +898,7 @@ export default function MyBookings({
 
                     <section className="mb-5 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                         <div className="mb-3 flex items-center gap-2">
-                            <Filter className="h-4 w-4 text-[#263348]" />
+                            <Filter className="h-4 w-4 text-[#493344]" />
                             <h2 className="text-sm font-bold text-gray-800">Find a Booking</h2>
                         </div>
 
@@ -923,14 +923,14 @@ export default function MyBookings({
                         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
                             <div className="flex flex-wrap gap-2">
                                 {STATUS_OPTIONS.map((option) => (
-                                    <button key={option.key} type="button" onClick={() => setStatusFilter(option.key)} aria-pressed={statusFilter === option.key} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${statusFilter === option.key ? 'border-[#263348] bg-[#263348] text-white shadow-sm' : 'border-gray-200 bg-white text-gray-600 hover:border-[#EEDFE6] hover:bg-[#F8EAF0] hover:text-[#A94B75]'}`}>
+                                    <button key={option.key} type="button" onClick={() => setStatusFilter(option.key)} aria-pressed={statusFilter === option.key} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${statusFilter === option.key ? 'border-[#493344] bg-[#493344] text-white shadow-sm' : 'border-gray-200 bg-white text-gray-600 hover:border-[#E8E1E7] hover:bg-[#F8EDF2] hover:text-[#A94B75]'}`}>
                                         {option.label}
                                         {option.key !== 'all' && <span className="ml-1.5 opacity-75">{bookingCounts[option.key]}</span>}
                                     </button>
                                 ))}
                             </div>
                             {hasActiveFilters && (
-                                <button type="button" onClick={clearFilters} className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold text-[#A94B75] hover:bg-[#F8EAF0]">
+                                <button type="button" onClick={clearFilters} className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold text-[#A94B75] hover:bg-[#F8EDF2]">
                                     <RotateCcw className="h-3.5 w-3.5" />
                                     Clear filters
                                 </button>
@@ -971,7 +971,7 @@ export default function MyBookings({
                                         <div className="flex-1 p-4">
                                             <div className="mb-3 flex items-start justify-between gap-3">
                                                 <div className="min-w-0">
-                                                    <span className="mb-1 inline-flex rounded-full bg-[#F8EAF0] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#A94B75]">{facility.type || 'Facility'}</span>
+                                                    <span className="mb-1 inline-flex rounded-full bg-[#F8EDF2] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#A94B75]">{facility.type || 'Facility'}</span>
                                                     <h3 className="break-words text-base font-bold text-gray-900">{facility.name}</h3>
                                                     <p className="mt-1 break-all text-[10px] text-gray-400">Booking ID: {booking.id}</p>
                                                 </div>
@@ -996,7 +996,7 @@ export default function MyBookings({
                                                 </div>
                                                 {booking.needs_manpower && (
                                                     <div className="flex items-center gap-2 sm:col-span-2">
-                                                        <Wrench className="h-4 w-4 text-[#263348]" />
+                                                        <Wrench className="h-4 w-4 text-[#493344]" />
                                                         <span className="text-xs font-medium text-[#A94B75]">TDEVS manpower requested</span>
                                                     </div>
                                                 )}
@@ -1009,7 +1009,7 @@ export default function MyBookings({
                                                     <Eye className="mr-1.5 h-4 w-4" /> {status === 'pending' ? 'View / Edit' : 'View Details'}
                                                 </button>
                                                 {status === 'approved' && (
-                                                    <Link href={`/receipt/${booking.id}`} className="inline-flex items-center justify-center rounded-md bg-[#F8EAF0] px-3 py-2 text-xs font-semibold text-[#A94B75] hover:bg-[#EEDFE6]">
+                                                    <Link href={`/receipt/${booking.id}`} className="inline-flex items-center justify-center rounded-md bg-[#F8EDF2] px-3 py-2 text-xs font-semibold text-[#A94B75] hover:bg-[#E8E1E7]">
                                                         <ExternalLink className="mr-1.5 h-4 w-4" /> Receipt
                                                     </Link>
                                                 )}
@@ -1073,7 +1073,7 @@ export default function MyBookings({
                             <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-gray-100 bg-white px-4 py-3 sm:px-5">
                                 <div className="min-w-0">
                                     <div className="mb-1 flex flex-wrap items-center gap-2">
-                                        <span className="rounded-full bg-[#F8EAF0] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#A94B75]">{selectedFacility.type || 'Facility'}</span>
+                                        <span className="rounded-full bg-[#F8EDF2] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#A94B75]">{selectedFacility.type || 'Facility'}</span>
                                         <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ${getStatusBadgeClass(selectedDetailBooking.status)}`}>
                                             <StatusIcon status={selectedDetailBooking.status} />
                                             <span className="capitalize">{getStatus(selectedDetailBooking.status)}</span>
@@ -1097,7 +1097,7 @@ export default function MyBookings({
 
                             <div className="space-y-4 p-4 sm:p-5">
                                 <section>
-                                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><Calendar className="h-4 w-4 text-[#263348]" /> Reservation Schedule</h3>
+                                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><Calendar className="h-4 w-4 text-[#493344]" /> Reservation Schedule</h3>
                                     <div className="grid grid-cols-1 gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3 sm:grid-cols-2 lg:grid-cols-4">
                                         <div>
                                             <label className="mb-1 block text-xs font-semibold text-gray-600">Start Date</label>
@@ -1270,7 +1270,7 @@ export default function MyBookings({
                                 )}
 
                                 {(canRequestExtension || extensionRequests.length > 0) && (
-                                    <section className="rounded-lg border border-[#EEDFE6] bg-[#FFFBF8] p-3">
+                                    <section className="rounded-lg border border-[#E8E1E7] bg-[#FFFBF8] p-3">
                                         <div className="flex flex-wrap items-start justify-between gap-2">
                                             <div>
                                                 <h3 className="text-sm font-bold text-gray-800">{canRequestExtension ? 'Request an overtime extension' : 'Overtime extension history'}</h3>
@@ -1290,7 +1290,7 @@ export default function MyBookings({
                                         {extensionRequests.length > 0 && (
                                             <div className="mt-3 space-y-2">
                                                 {extensionRequests.slice(0, 3).map((item) => (
-                                                    <div key={item.id} className="rounded-lg border border-[#EEDFE6] bg-white p-2.5">
+                                                    <div key={item.id} className="rounded-lg border border-[#E8E1E7] bg-white p-2.5">
                                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                                             <p className="text-xs font-semibold text-gray-800">
                                                                 Requested until {formatTime(item.requested_end_time)}
@@ -1325,7 +1325,7 @@ export default function MyBookings({
                                                         Request extension
                                                     </button>
                                                 ) : (
-                                                    <form onSubmit={handleExtensionRequest} className="space-y-3 rounded-xl border border-[#EEDFE6] bg-white p-3">
+                                                    <form onSubmit={handleExtensionRequest} className="space-y-3 rounded-xl border border-[#E8E1E7] bg-white p-3">
                                                         <div className="grid gap-3 sm:grid-cols-2">
                                                             <label className="text-xs font-semibold text-gray-600">
                                                                 Current booking end
@@ -1342,7 +1342,7 @@ export default function MyBookings({
                                                                     value={extensionEndTime}
                                                                     onChange={(event) => setExtensionEndTime(event.target.value)}
                                                                     required
-                                                                    className="mt-1 w-full rounded-lg border-gray-200 text-sm focus:border-[#B96D91] focus:ring-[#B96D91]"
+                                                                    className="mt-1 w-full rounded-lg border-gray-200 text-sm focus:border-[#647D91] focus:ring-[#647D91]"
                                                                 />
                                                             </label>
                                                         </div>
@@ -1356,7 +1356,7 @@ export default function MyBookings({
                                                                 value={extensionReason}
                                                                 onChange={(event) => setExtensionReason(event.target.value)}
                                                                 placeholder="Explain why additional time is needed."
-                                                                className="mt-1 w-full rounded-lg border-gray-200 text-sm focus:border-[#B96D91] focus:ring-[#B96D91]"
+                                                                className="mt-1 w-full rounded-lg border-gray-200 text-sm focus:border-[#647D91] focus:ring-[#647D91]"
                                                             />
                                                             <p className="mt-1 text-[11px] font-normal text-gray-500">
                                                                 You may submit before the original end time. The requested end time must be at least 15 minutes later, and the reason must contain at least 5 characters.
@@ -1379,7 +1379,7 @@ export default function MyBookings({
                                 )}
 
                                 <section>
-                                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><Users className="h-4 w-4 text-[#263348]" /> Attendance and Manpower</h3>
+                                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><Users className="h-4 w-4 text-[#493344]" /> Attendance and Manpower</h3>
                                     <div className="grid grid-cols-1 gap-3 rounded-lg border border-gray-100 p-3 sm:grid-cols-2">
                                         <div>
                                             <label className="mb-1 block text-xs font-semibold text-gray-600">Number of Attendees</label>
@@ -1401,11 +1401,11 @@ export default function MyBookings({
                                         <div>
                                             <p className="mb-1 text-xs font-semibold text-gray-600">TDEVS Manpower Request</p>
                                             {canRequestManpower ? (
-                                                <div className="rounded-lg border border-[#EEDFE6] bg-[#F8EAF0]/60 p-3">
+                                                <div className="rounded-lg border border-[#E8E1E7] bg-[#F8EDF2]/60 p-3">
                                                     <label className={`flex items-start gap-2 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
-                                                        <input type="checkbox" checked={Boolean(data.needs_manpower)} disabled={!isEditing || processing} onChange={(e) => setData('needs_manpower', e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#263348] focus:ring-[#C65B8A] disabled:cursor-not-allowed disabled:opacity-70" />
+                                                        <input type="checkbox" checked={Boolean(data.needs_manpower)} disabled={!isEditing || processing} onChange={(e) => setData('needs_manpower', e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#493344] focus:ring-[#C65B8A] disabled:cursor-not-allowed disabled:opacity-70" />
                                                         <span className="min-w-0">
-                                                            <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-800"><Wrench className="h-4 w-4 text-[#263348]" /> Request TDEVS manpower</span>
+                                                            <span className="flex items-center gap-1.5 text-sm font-semibold text-gray-800"><Wrench className="h-4 w-4 text-[#493344]" /> Request TDEVS manpower</span>
                                                             <span className="mt-1 block text-xs text-gray-600">{data.needs_manpower ? 'Manpower is requested for this booking.' : 'No manpower is currently requested.'}</span>
                                                             {isEditing && <span className="mt-1 block text-xs font-medium text-[#A94B75]">Check to request, or uncheck to remove the request.</span>}
                                                         </span>
@@ -1418,7 +1418,7 @@ export default function MyBookings({
                                 </section>
 
                                 <section>
-                                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><FileText className="h-4 w-4 text-[#263348]" /> Booking Information</h3>
+                                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><FileText className="h-4 w-4 text-[#493344]" /> Booking Information</h3>
                                     <div className="grid grid-cols-1 gap-3 rounded-lg border border-gray-100 p-3 sm:grid-cols-2">
                                         {isEditing ? (
                                             <>
@@ -1462,7 +1462,7 @@ export default function MyBookings({
                                 )}
 
                                 <section>
-                                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><History className="h-4 w-4 text-[#263348]" /> Status History</h3>
+                                    <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><History className="h-4 w-4 text-[#493344]" /> Status History</h3>
                                     <div className="rounded-lg border border-gray-100">
                                         {activityLogs.filter((log) => String(log.booking_id) === String(selectedDetailBooking.id)).length === 0 ? (
                                             <p className="p-3 text-xs text-gray-500">No status history available.</p>
@@ -1489,7 +1489,7 @@ export default function MyBookings({
                                     {isEditing ? (
                                         <button type="button" onClick={handleCancelEdit} disabled={processing} className="rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 disabled:opacity-50">Discard Changes</button>
                                     ) : isPending && (
-                                        <button type="button" onClick={handleStartEditing} className="inline-flex items-center rounded-md border border-[#EEDFE6] bg-white px-3 py-2 text-xs font-semibold text-[#A94B75] hover:bg-[#F8EAF0]"><Edit3 className="mr-1.5 h-4 w-4" /> Edit Details</button>
+                                        <button type="button" onClick={handleStartEditing} className="inline-flex items-center rounded-md border border-[#E8E1E7] bg-white px-3 py-2 text-xs font-semibold text-[#A94B75] hover:bg-[#F8EDF2]"><Edit3 className="mr-1.5 h-4 w-4" /> Edit Details</button>
                                     )}
                                 </div>
                                 <div className="flex gap-2">
@@ -1507,7 +1507,7 @@ export default function MyBookings({
                             <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                                 <button type="button" aria-label="Close save confirmation" className="absolute inset-0 bg-gray-900/60" onClick={() => { if (!processing) setShowSaveConfirm(false); }} disabled={processing} />
                                 <div role="dialog" aria-modal="true" aria-labelledby="save-confirm-title" className="relative z-10 w-full max-w-sm rounded-xl bg-white p-5 shadow-2xl">
-                                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#F8EAF0]"><Save className="h-5 w-5 text-[#263348]" /></div>
+                                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#F8EDF2]"><Save className="h-5 w-5 text-[#493344]" /></div>
                                     <h3 id="save-confirm-title" className="text-base font-bold text-gray-900">Save booking changes?</h3>
                                     <p className="mt-2 text-sm text-gray-600">Your updated reservation details, including the TDEVS manpower request, will be submitted.</p>
                                     <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm">
