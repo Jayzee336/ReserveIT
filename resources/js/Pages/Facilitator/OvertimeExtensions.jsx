@@ -71,7 +71,7 @@ export default function OvertimeExtensions({ extensionRequests }) {
         <AuthenticatedLayout
             header={
                 <div className="flex items-center gap-2">
-                    <Clock3 className="h-5 w-5 text-[#263348]" />
+                    <Clock3 className="h-5 w-5 text-[#493344]" />
                     <h2 className="text-lg font-semibold text-gray-800">Overtime Extension Requests</h2>
                 </div>
             }
@@ -126,7 +126,7 @@ export default function OvertimeExtensions({ extensionRequests }) {
                                         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Current booking time</p>
                                         <p className="mt-1 text-sm font-bold text-slate-800">{formatTime(booking.start_time)} – {formatTime(item.original_end_time)}</p>
                                     </div>
-                                    <div className="rounded-lg bg-[#F8EAF0] p-3">
+                                    <div className="rounded-lg bg-[#F8EDF2] p-3">
                                         <p className="text-[10px] font-semibold uppercase tracking-wide text-[#C65B8A]">Requested new end time</p>
                                         <p className="mt-1 text-sm font-bold text-[#A94B75]">{formatTime(item.requested_end_time)} <span className="text-xs font-semibold">(+{item.requested_minutes} min)</span></p>
                                     </div>
