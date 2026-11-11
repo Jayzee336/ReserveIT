@@ -65,7 +65,7 @@ export default function DashboardDrilldownModal({ title, description, items = []
             >
                 <header className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4 sm:px-6">
                     <div>
-                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#C65B8A]">Dashboard details</p>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#B96B8D]">Dashboard details</p>
                         <h2 className="mt-1 text-lg font-bold text-[#493344]">{title}</h2>
                         {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
                     </div>
@@ -133,7 +133,7 @@ export default function DashboardDrilldownModal({ title, description, items = []
                 </div>
                 <footer className="flex items-center justify-between border-t border-stone-200 px-5 py-3">
                     <span className="text-xs text-slate-500">{records.length} {records.length === 1 ? 'record' : 'records'}</span>
-                    <button type="button" onClick={onClose} className="rounded-xl bg-[#C65B8A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#604457]">Close</button>
+                    <button type="button" onClick={onClose} className="rounded-xl bg-[#B96B8D] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#604457]">Close</button>
                 </footer>
             </section>
         </div>
