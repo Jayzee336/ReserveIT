@@ -310,7 +310,31 @@ Migrations create the schema in your own local database. They do not copy the ho
 
 > **Data safety:** Do not run `php artisan migrate:fresh` on a database containing data you want to keep. It drops all tables before rebuilding them.
 
-### 6. Start the application
+### 6. Create the local demo accounts (optional)
+
+For a fresh local development database, run:
+
+```bat
+php artisan db:seed
+```
+
+This seeds the sample facilities and the following local-only accounts. The password for each account is `password`.
+
+| Role | Email |
+|---|---|
+| Super Admin | `admin@uic.edu.ph` |
+| Facility Admin 1 | `facility1@uic.edu.ph` |
+| Facility Admin 2 | `facility2@uic.edu.ph` |
+| Facility Admin 3 | `facility3@uic.edu.ph` |
+| Regular User 1 | `user1@uic.edu.ph` |
+| Regular User 2 | `user2@uic.edu.ph` |
+| Regular User 3 | `user3@uic.edu.ph` |
+
+Facility Admin 1 is assigned AVR1 and AVR2. Facility Admin 2 is assigned Lobby, Main Auditorium, Quadrangle or Field, Sky Gym, and View Deck. Facility Admin 3 is assigned ITRC, IoT Lab, and Open Lab.
+
+**Important:** These are demonstration login identities, not provisioned UIC mailboxes. The shared demo password is for local testing only. Do not run the demo seeder against the hosted production database or use these credentials for real accounts.
+
+### 7. Start the application
 
 Open **two Command Prompt windows** in the ReserveIT project directory.
 
@@ -332,7 +356,7 @@ http://127.0.0.1:8000
 
 Keep both terminal windows running while developing.
 
-### 7. Build frontend assets for a production-style check
+### 8. Build frontend assets for a production-style check
 
 Stop the Vite development server if needed, then run:
 
