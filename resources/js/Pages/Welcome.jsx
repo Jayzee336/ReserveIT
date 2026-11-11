@@ -136,7 +136,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
 
                 <div>
                     {/* 1. STICKY FULL-WIDTH NAVIGATION BAR */}
-                    <header className="sticky top-0 z-50 w-full border-b border-[#EEDFE6] bg-[#FAF8F9]/85 backdrop-blur-md transition-all">
+                    <header className="sticky top-0 z-50 w-full border-b border-[#E8E1E7] bg-[#FAF8F9]/85 backdrop-blur-md transition-all">
                         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
                             
                             {/* Logo */}
@@ -201,7 +201,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
 
                         {/* Mobile Drawer */}
                         {mobileMenuOpen && (
-                            <div className="border-t border-[#EEDFE6] bg-[#FFFCFD] px-6 py-5 md:hidden space-y-4">
+                            <div className="border-t border-[#E8E1E7] bg-[#FCFAFB] px-6 py-5 md:hidden space-y-4">
                                 <div className="flex flex-col gap-3 text-sm font-medium text-slate-800">
                                     <Link href="#" className="text-[#C65B8A] font-semibold">Home</Link>
                                     <Link href={route('facilities.index')}>Facilities</Link>
@@ -214,7 +214,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                         📖 System Manual & Guide
                                     </button>
                                 </div>
-                                <hr className="border-[#EEDFE6]" />
+                                <hr className="border-[#E8E1E7]" />
                                 <div>
                                     {auth.user ? (
                                         <Link
@@ -227,7 +227,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                         <div className="grid grid-cols-2 gap-2">
                                             <Link
                                                 href={route('login')}
-                                                className="block w-full text-center rounded-xl border border-[#EEDFE6] bg-white py-2.5 text-sm font-semibold text-slate-800"
+                                                className="block w-full text-center rounded-xl border border-[#E8E1E7] bg-white py-2.5 text-sm font-semibold text-slate-800"
                                             >
                                                 Log in
                                             </Link>
@@ -270,7 +270,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                 </Link>
                                 <button
                                     onClick={() => { setIsTourOpen(true); setCurrentTourStep(0); }}
-                                    className="inline-flex items-center gap-2 rounded-full border border-[#EEDFE6] bg-white px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-[#FFFCFD]"
+                                    className="inline-flex items-center gap-2 rounded-full border border-[#E8E1E7] bg-white px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-[#FCFAFB]"
                                 >
                                     <GuideIcon className="h-4 w-4 text-[#C65B8A]" />
                                     Take 1-Min System Tour
@@ -307,7 +307,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                             onMouseEnter={() => setActiveFacilityId(facilityId)}
                                             layout
                                             transition={{ duration: 0.45, ease: 'easeOut' }}
-                                            className={`relative cursor-pointer overflow-hidden rounded-3xl border border-[#EEDFE6] transition-all duration-500 ${
+                                            className={`relative cursor-pointer overflow-hidden rounded-3xl border border-[#E8E1E7] transition-all duration-500 ${
                                                 isActive 
                                                     ? 'md:flex-[3.5] flex-1 shadow-2xl ring-2 ring-[#C65B8A]' 
                                                     : 'md:flex-1 flex-none h-20 md:h-auto opacity-80 hover:opacity-100'
@@ -399,7 +399,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                         </section>
 
                         {/* 4. REAL DATABASE TODAY'S SCHEDULE (Target #schedule) */}
-                        <section id="schedule" className="mt-20 scroll-mt-24 rounded-[2rem] border border-[#EEDFE6] bg-white p-8 shadow-sm lg:p-10">
+                        <section id="schedule" className="mt-20 scroll-mt-24 rounded-[2rem] border border-[#E8E1E7] bg-white p-8 shadow-sm lg:p-10">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
                                 <div>
                                     <div className="inline-flex items-center gap-2 rounded-full bg-[#C65B8A]/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-[#C65B8A]">
@@ -407,7 +407,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                     </div>
                                     <h2 className="text-2xl font-bold text-slate-900 mt-2">Today's Venue Reservations</h2>
                                 </div>
-                                <span className="text-xs font-semibold text-slate-500 bg-[#FFFCFD] px-3 py-1.5 rounded-full border border-[#EEDFE6]">
+                                <span className="text-xs font-semibold text-slate-500 bg-[#FCFAFB] px-3 py-1.5 rounded-full border border-[#E8E1E7]">
                                     Synced with Master Database
                                 </span>
                             </div>
@@ -437,7 +437,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="text-center py-8 bg-[#FFFBF6] rounded-2xl border border-dashed border-[#EEDFE6]">
+                                    <div className="text-center py-8 bg-[#FFFBF6] rounded-2xl border border-dashed border-[#E8E1E7]">
                                         <CalendarIcon className="h-8 w-8 mx-auto text-[#C65B8A] opacity-40 mb-2" />
                                         <p className="text-sm font-bold text-slate-800">No Reservations Logged for Today</p>
                                         <p className="text-xs text-slate-500 mt-1">All spaces are currently open for requests.</p>
@@ -447,7 +447,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                         </section>
 
                         {/* 5. WORKFLOW SECTION (Target #workflow) */}
-                        <section id="workflow" className="mt-16 scroll-mt-24 rounded-[2rem] border border-[#EEDFE6] bg-white/90 p-8 shadow-sm lg:p-10">
+                        <section id="workflow" className="mt-16 scroll-mt-24 rounded-[2rem] border border-[#E8E1E7] bg-white/90 p-8 shadow-sm lg:p-10">
                             <div className="space-y-6">
                                 <div className="inline-flex items-center gap-2 rounded-full bg-[#C65B8A]/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-[#C65B8A]">
                                     Approval Pipeline
@@ -484,7 +484,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white p-6 md:p-8 shadow-2xl border border-[#EEDFE6]"
+                                className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white p-6 md:p-8 shadow-2xl border border-[#E8E1E7]"
                             >
                                 {/* Close Button */}
                                 <button
@@ -500,7 +500,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                         <div
                                             key={idx}
                                             className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                                                idx === currentTourStep ? 'bg-[#C65B8A]' : 'bg-[#EEDFE6]'
+                                                idx === currentTourStep ? 'bg-[#C65B8A]' : 'bg-[#E8E1E7]'
                                             }`}
                                         />
                                     ))}
@@ -524,7 +524,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                         </p>
                                     </div>
 
-                                    <p className="text-xs leading-relaxed text-slate-600 bg-[#FFFBF6] p-4 rounded-xl border border-[#EEDFE6]">
+                                    <p className="text-xs leading-relaxed text-slate-600 bg-[#FFFBF6] p-4 rounded-xl border border-[#E8E1E7]">
                                         {TOUR_STEPS[currentTourStep].description}
                                     </p>
 
@@ -561,9 +561,9 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                 </AnimatePresence>
 
                 {/* 7. MULTI-COLUMN FOOTER */}
-                <footer id="support" className="mt-20 border-t border-[#EEDFE6] bg-[#FFFCFD] pt-14 pb-8 text-slate-700">
+                <footer id="support" className="mt-20 border-t border-[#E8E1E7] bg-[#FCFAFB] pt-14 pb-8 text-slate-700">
                     <div className="mx-auto max-w-7xl px-6 lg:px-10">
-                        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 pb-12 border-b border-[#EEDFE6]">
+                        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 pb-12 border-b border-[#E8E1E7]">
                             
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2.5">
