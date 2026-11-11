@@ -74,6 +74,15 @@ class UserSeeder extends Seeder
                 'uic_member_type' => 'teacher',
             ],
             [
+                'username' => 'facility4',
+                'name' => 'ReserveIT Facility Admin 4',
+                'email' => 'facility4@uic.edu.ph',
+                'legacy_email' => 'facility4@test.com',
+                'password' => 'password',
+                'role' => 'facility_admin',
+                'uic_member_type' => 'teacher',
+            ],
+            [
                 'username' => 'admin',
                 'name' => 'ReserveIT Super Admin',
                 'email' => 'admin@uic.edu.ph',
@@ -127,14 +136,13 @@ class UserSeeder extends Seeder
 
         /*
          * Assign each local facility-admin demo account only to its agreed
-         * group. sync() removes stale assignments from these three accounts.
-         * Other accounts, including the deactivated facility4 account, are
-         * deliberately left untouched.
+         * group. sync() removes stale assignments from these four accounts.
          */
         $facilityGroups = [
             'facility1@uic.edu.ph' => ['avr', 'avr2'],
             'facility2@uic.edu.ph' => ['lobby', 'f3', 'field', 'sky_gym', 'view_deck'],
             'facility3@uic.edu.ph' => ['itrc', 'iot', 'open_lab'],
+            'facility4@uic.edu.ph' => ['itdif'],
         ];
 
         foreach ($facilityGroups as $email => $facilityIds) {
