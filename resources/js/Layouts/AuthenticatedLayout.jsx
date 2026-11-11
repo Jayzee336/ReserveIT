@@ -70,8 +70,8 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
                 collapsed ? 'justify-center px-0 py-3' : 'px-4 py-3'
             } ${
                 active
-                    ? 'bg-[#C65B8A] text-white shadow-[0_4px_14px_rgba(198,91,138,0.24)]'
-                    : 'text-white/90 hover:bg-[#604457] hover:text-white'
+                    ? 'bg-[#A44773] text-white shadow-[0_4px_14px_rgba(73,51,68,0.18)]'
+                    : 'text-white/95 hover:bg-[#A44773] hover:text-white'
             }`}
         >
             <Icon
@@ -468,14 +468,14 @@ export default function AuthenticatedLayout({ header, action, children }) {
 
             {/* Sidebar Navigation */}
             <aside
-                className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col justify-between bg-[#493344] text-white shadow-xl transition-all duration-300 md:z-20 md:translate-x-0 ${
+                className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col justify-between bg-[#C65B8A] text-white shadow-xl transition-all duration-300 md:z-20 md:translate-x-0 ${
                     mobileNavOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 } ${collapsed ? 'md:w-16' : 'md:w-64'}`}
             >
                 <div>
                     {/* App title and sidebar collapse button */}
                     <div
-                        className={`flex items-center border-b border-[#604457] bg-[#C65B8A]/10 transition-all duration-300 ${
+                        className={`flex items-center border-b border-[#A44773] bg-[#A44773]/20 transition-all duration-300 ${
                             collapsed
                                 ? 'flex-col justify-center gap-3 px-2 py-4'
                                 : 'justify-between p-5'
@@ -493,7 +493,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             onClick={() => setCollapsed((current) => !current)}
                             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                            className="hidden rounded-lg p-1.5 text-white/90 transition-colors hover:bg-[#A94B75] hover:text-white md:inline-flex"
+                            className="hidden rounded-lg p-1.5 text-white/90 transition-colors hover:bg-[#A44773] hover:text-white md:inline-flex"
                         >
                             {collapsed ? (
                                 <PanelLeftOpen className="h-5 w-5 shrink-0" />
@@ -709,10 +709,10 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 </div>
 
                 {/* Sidebar footer actions */}
-                <div className="border-t border-[#604457] bg-[#362536] p-4">
+                <div className="border-t border-[#A44773] bg-[#A44773] p-4">
                     {/* User profile badge */}
                     <div
-                        className={`mb-3 flex items-center rounded-xl border border-[#604457]/60 bg-[#604457]/55 p-2.5 ${
+                        className={`mb-3 flex items-center rounded-xl border border-white/20 bg-[#A44773]/55 p-2.5 ${
                             collapsed ? 'justify-center' : 'gap-3'
                         }`}
                         title={collapsed ? user?.name ?? 'User' : undefined}
@@ -736,7 +736,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     <Link
                         href={route('profile.edit')}
                         title={collapsed ? 'Settings' : undefined}
-                        className={`mb-1 flex w-full items-center rounded-xl text-sm font-medium text-white/90 transition-colors hover:bg-[#604457] hover:text-white ${
+                        className={`mb-1 flex w-full items-center rounded-xl text-sm font-medium text-white/90 transition-colors hover:bg-[#A44773] hover:text-white ${
                             collapsed
                                 ? 'justify-center px-0 py-2.5'
                                 : 'gap-3 px-4 py-2.5'
