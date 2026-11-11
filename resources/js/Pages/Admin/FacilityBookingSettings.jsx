@@ -133,7 +133,7 @@ export default function FacilityBookingSettings({
             <div className="mx-auto w-full max-w-4xl min-w-0 space-y-5 px-3 py-5 sm:px-6 sm:py-7">
                 <Link
                     href={backHref}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#263348]"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-[#493344]"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Back to Managed Facilities
@@ -148,7 +148,7 @@ export default function FacilityBookingSettings({
                                 Configure the times when this facility accepts bookings. Closed days cannot be reserved. These hours apply to all new bookings and activity sessions for this facility.
                             </p>
                         </div>
-                        <span className="rounded-full bg-[#F8EAF0] px-3 py-1 text-xs font-semibold text-[#A94B75]">
+                        <span className="rounded-full bg-[#F8EDF2] px-3 py-1 text-xs font-semibold text-[#A94B75]">
                             {auth?.user?.role === 'super_admin' ? 'Super Admin controls' : 'Assigned facility'}
                         </span>
                     </div>
@@ -188,7 +188,7 @@ export default function FacilityBookingSettings({
                                         type="checkbox"
                                         checked={item.is_closed}
                                         onChange={(event) => updateDay(item.day_of_week, 'is_closed', event.target.checked)}
-                                        className="h-4 w-4 rounded border-slate-300 text-[#263348] focus:ring-[#B96D91]"
+                                        className="h-4 w-4 rounded border-slate-300 text-[#493344] focus:ring-[#647D91]"
                                     />
                                     Closed
                                 </label>
@@ -196,7 +196,7 @@ export default function FacilityBookingSettings({
                         ))}
 
                         {canConfigureOvertimeFee && (
-                        <div className="rounded-xl border border-[#EEDFE6] bg-[#FFFCFD] p-4">
+                        <div className="rounded-xl border border-[#E8E1E7] bg-[#FCFAFB] p-4">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div className="min-w-0">
                                     <h3 className="text-sm font-bold text-slate-900">Overtime fee settings</h3>
@@ -209,7 +209,7 @@ export default function FacilityBookingSettings({
                                         type="checkbox"
                                         checked={overtimeFeeEnabled}
                                         onChange={(event) => setOvertimeFeeEnabled(event.target.checked)}
-                                        className="h-4 w-4 rounded border-slate-300 text-[#263348] focus:ring-[#B96D91]"
+                                        className="h-4 w-4 rounded border-slate-300 text-[#493344] focus:ring-[#647D91]"
                                     />
                                     Enable overtime fee
                                 </label>
