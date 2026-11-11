@@ -155,7 +155,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                         key={option.value}
                                         type="button"
                                         onClick={() => applyFilters({ status: option.value })}
-                                        className={`rounded-full px-4 py-2 text-xs font-semibold transition ${(filters.status ?? 'all') === option.value ? 'bg-[#263348] text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
+                                        className={`rounded-full px-4 py-2 text-xs font-semibold transition ${(filters.status ?? 'all') === option.value ? 'bg-[#C65B8A] text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
                                     >
                                         {option.label}
                                     </button>
@@ -291,7 +291,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                         key={index}
                                         href={link.url ?? '#'}
                                         preserveScroll
-                                        className={`rounded-lg px-3 py-2 text-xs font-semibold ${link.active ? 'bg-[#263348] text-white' : link.url ? 'bg-stone-100 text-stone-600 hover:bg-stone-200' : 'cursor-not-allowed text-stone-300'}`}
+                                        className={`rounded-lg px-3 py-2 text-xs font-semibold ${link.active ? 'bg-[#C65B8A] text-white' : link.url ? 'bg-stone-100 text-stone-600 hover:bg-stone-200' : 'cursor-not-allowed text-stone-300'}`}
                                         aria-disabled={!link.url}
                                     >
                                         <span dangerouslySetInnerHTML={{ __html: link.label }} />
