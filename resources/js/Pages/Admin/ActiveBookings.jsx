@@ -164,7 +164,7 @@ export default function ActiveBookings() {
                     <div>
                         <Link
                             href={route('dashboard')}
-                            className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-[#263348] transition hover:text-[#8F3F63]"
+                            className="mb-3 inline-flex items-center gap-2 text-sm font-semibold text-[#493344] transition hover:text-[#A44773]"
                         >
                             <ArrowLeft className="h-4 w-4" />
                             Back to Dashboard
@@ -489,7 +489,7 @@ export default function ActiveBookings() {
                             onClick={(event) => event.stopPropagation()}
                         >
                             <div className="border-b border-stone-100 bg-[#FFFAF7] px-6 py-5">
-                                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F8EAF0] text-[#263348]">
+                                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F8EDF2] text-[#493344]">
                                     <CreditCard className="h-5 w-5" />
                                 </div>
                                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#C65B8A]">Overtime billing</p>
@@ -508,7 +508,7 @@ export default function ActiveBookings() {
                                     </div>
                                     <div className="mt-3 flex justify-between gap-4 border-t border-stone-200 pt-3 text-sm">
                                         <span className="font-semibold text-slate-600">Amount received</span>
-                                        <span className="text-lg font-bold text-[#263348]">{formatCurrency(paymentBooking.overtime_fee_amount)}</span>
+                                        <span className="text-lg font-bold text-[#493344]">{formatCurrency(paymentBooking.overtime_fee_amount)}</span>
                                     </div>
                                 </div>
                                 <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs leading-5 text-amber-800">
@@ -528,7 +528,7 @@ export default function ActiveBookings() {
                                         type="button"
                                         onClick={() => handleRecordPayment(paymentBooking)}
                                         disabled={processingId === paymentBooking.id}
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F3F63] disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         <CheckCircle className="h-4 w-4" />
                                         {processingId === paymentBooking.id ? 'Recording…' : 'Confirm payment received'}
