@@ -55,6 +55,8 @@ export default function Index({ plans, facilities = [] }) {
     const initialQuery = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const queryFacilityId = initialQuery?.get('facility_id');
     const queryDate = initialQuery?.get('date');
+    const returnTo = initialQuery?.get('return_to');
+    const returnFacilityId = initialQuery?.get('facility_id');
     const validQueryFacility = facilities.some((facility) => String(facility.id) === String(queryFacilityId));
     const initialStartDate = queryDate && /^\d{4}-\d{2}-\d{2}$/.test(queryDate) ? queryDate : today;
     const form = useForm({
@@ -293,9 +295,15 @@ export default function Index({ plans, facilities = [] }) {
             <div className="mx-auto w-full max-w-[1500px] space-y-6 px-3 py-5 sm:px-5 sm:py-7 lg:px-8">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <Link href={route('schedule.index')} className="inline-flex items-center gap-1 text-xs font-semibold text-[#745D67] hover:underline">
-                            <ArrowLeft className="h-3.5 w-3.5" /> Back to calendar
-                        </Link>
+                        {returnTo === 'schedule' ? (
+                            <Link href={route('schedule.index', queryDate ? { date: queryDate } : {})} className="inline-flex items-center gap-1 text-xs font-semibold text-[#745D67] hover:underline">
+                                <ArrowLeft className="h-3.5 w-3.5" /> Back to schedule grid
+                            </Link>
+                        ) : returnTo === 'facility' && returnFacilityId ? (
+                            <Link href={route('facility.show', returnFacilityId)} className="inline-flex items-center gap-1 text-xs font-semibold text-[#745D67] hover:underline">
+                                <ArrowLeft className="h-3.5 w-3.5" /> Back to facility
+                            </Link>
+                        ) : null}
                         <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Recurring activity plans</h1>
                         <p className="mt-1 max-w-3xl text-sm text-slate-500">
                             Schedule repeated facility sessions across selected weekdays. Each date becomes its own booking and can be reviewed separately.
