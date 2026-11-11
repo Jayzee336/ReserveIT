@@ -155,7 +155,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                         key={option.value}
                                         type="button"
                                         onClick={() => applyFilters({ status: option.value })}
-                                        className={`rounded-full px-4 py-2 text-xs font-semibold transition ${(filters.status ?? 'all') === option.value ? 'bg-[#C65B8A] text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
+                                        className={`rounded-full px-4 py-2 text-xs font-semibold transition ${(filters.status ?? 'all') === option.value ? 'bg-[#B96B8D] text-white shadow-sm' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
                                     >
                                         {option.label}
                                     </button>
@@ -186,10 +186,10 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
                                     placeholder="Search event title, facility, details, booking ID, or ticket ID…"
-                                    className="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#C65B8A] focus:bg-white focus:ring-2 focus:ring-[#EADDE1]"
+                                    className="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#B96B8D] focus:bg-white focus:ring-2 focus:ring-[#EADDE1]"
                                 />
                             </div>
-                            <button type="submit" className="rounded-xl bg-[#C65B8A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#A44773]">
+                            <button type="submit" className="rounded-xl bg-[#B96B8D] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#96516F]">
                                 Search
                             </button>
                         </form>
@@ -255,7 +255,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                                     <button
                                                         type="button"
                                                         onClick={() => openNotification(notification)}
-                                                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#C65B8A] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#A44773]"
+                                                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#B96B8D] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#96516F]"
                                                     >
                                                         {notification.ticket_id ? 'View ticket' : 'View booking'} <ArrowUpRight className="h-3.5 w-3.5" />
                                                     </button>
@@ -291,7 +291,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                         key={index}
                                         href={link.url ?? '#'}
                                         preserveScroll
-                                        className={`rounded-lg px-3 py-2 text-xs font-semibold ${link.active ? 'bg-[#C65B8A] text-white' : link.url ? 'bg-stone-100 text-stone-600 hover:bg-stone-200' : 'cursor-not-allowed text-stone-300'}`}
+                                        className={`rounded-lg px-3 py-2 text-xs font-semibold ${link.active ? 'bg-[#B96B8D] text-white' : link.url ? 'bg-stone-100 text-stone-600 hover:bg-stone-200' : 'cursor-not-allowed text-stone-300'}`}
                                         aria-disabled={!link.url}
                                     >
                                         <span dangerouslySetInnerHTML={{ __html: link.label }} />
