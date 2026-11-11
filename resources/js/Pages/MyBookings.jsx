@@ -78,6 +78,18 @@ const suggestExtendedEndTime = (currentEnd) => {
     return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 };
 
+const minimumExtendedEndTime = (currentEnd) => {
+    const normalized = String(currentEnd || '').slice(0, 5);
+    const currentMinutes = normalized === '00:00' ? 1440 : toMinutes(normalized);
+    const minimumMinutes = currentMinutes + 15;
+
+    if (currentMinutes <= 0 || minimumMinutes >= 1440) return '';
+
+    const hour = Math.floor(minimumMinutes / 60);
+    const minute = minimumMinutes % 60;
+    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+};
+
 const getLocalDateString = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -1319,7 +1331,7 @@ export default function MyBookings({
                                                                 <input
                                                                     type="time"
                                                                     step="900"
-                                                                    min={suggestExtendedEndTime(selectedDetailBooking.end_time)}
+                                                                    min={minimumExtendedEndTime(selectedDetailBooking.end_time)}
                                                                     value={extensionEndTime}
                                                                     onChange={(event) => setExtensionEndTime(event.target.value)}
                                                                     required
@@ -1339,6 +1351,9 @@ export default function MyBookings({
                                                                 placeholder="Explain why additional time is needed."
                                                                 className="mt-1 w-full rounded-lg border-gray-200 text-sm focus:border-[#A98C97] focus:ring-[#A98C97]"
                                                             />
+                                                            <p className="mt-1 text-[11px] font-normal text-gray-500">
+                                                                You may submit before the original end time. The requested end time must be at least 15 minutes later, and the reason must contain at least 5 characters.
+                                                            </p>
                                                         </label>
                                                         <div className="flex flex-wrap justify-end gap-2">
                                                             <button type="button" onClick={() => setShowExtensionForm(false)} disabled={isExtensionSubmitting} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600">Cancel</button>
