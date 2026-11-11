@@ -616,7 +616,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                                                     concern,
                                                                 )
                                                             }
-                                                            className="inline-flex items-center justify-center rounded-xl bg-[#263348] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F3F63] focus:outline-none focus:ring-2 focus:ring-[#263348]/30"
+                                                            className="inline-flex items-center justify-center rounded-xl bg-[#C65B8A] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8F3F63] focus:outline-none focus:ring-2 focus:ring-[#263348]/30"
                                                         >
                                                             Mark resolved
                                                         </button>
@@ -754,7 +754,7 @@ export default function Concerns({ concerns, filters = {} }) {
                                 disabled={!link.url || link.active}
                                 className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                                     link.active
-                                        ? 'bg-[#263348] text-white'
+                                        ? 'bg-[#C65B8A] text-white'
                                         : link.url
                                           ? 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-100'
                                           : 'cursor-not-allowed bg-slate-50 text-slate-300'
