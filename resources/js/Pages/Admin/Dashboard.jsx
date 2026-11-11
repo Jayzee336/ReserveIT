@@ -682,7 +682,7 @@ export default function AdminDashboard({
                         </h2>
                         <Link
                             href={route('admin.concerns.index')}
-                            className="text-sm font-semibold text-[#493344] transition-colors duration-150 hover:text-[#A94B75] hover:underline hover:underline-offset-4"
+                            className="text-sm font-semibold text-[#493344] transition-colors duration-150 hover:text-[#A44773] hover:underline hover:underline-offset-4"
                         >
                             View all
                         </Link>
