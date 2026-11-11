@@ -55,7 +55,7 @@ export default function CalendarDashboard({
         <AuthenticatedLayout
             header={
                 <div className="flex items-center gap-2">
-                    <CalendarDays className="h-5 w-5 text-[#6A535C]" />
+                    <CalendarDays className="h-5 w-5 text-[#263348]" />
                     <h2 className="text-lg font-semibold text-gray-800">
                         Facility Calendar
                     </h2>
@@ -69,8 +69,8 @@ export default function CalendarDashboard({
                     {/* Page heading */}
                     <div className="mb-5">
                         <div className="mb-1 flex items-center gap-2">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F7F0F3]">
-                                <CalendarDays className="h-5 w-5 text-[#6A535C]" />
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F8EAF0]">
+                                <CalendarDays className="h-5 w-5 text-[#263348]" />
                             </div>
                             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                                 Facility Schedule
@@ -96,7 +96,7 @@ export default function CalendarDashboard({
                                     type="button"
                                     onClick={() => handleScheduleViewChange('assigned')}
                                     aria-pressed={scheduleView === 'assigned'}
-                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'assigned' ? 'bg-white text-[#543F48] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'assigned' ? 'bg-white text-[#A94B75] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                                 >
                                     My Assigned Facilities
                                 </button>
@@ -104,7 +104,7 @@ export default function CalendarDashboard({
                                     type="button"
                                     onClick={() => handleScheduleViewChange('all')}
                                     aria-pressed={scheduleView === 'all'}
-                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'all' ? 'bg-white text-[#543F48] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
+                                    className={`rounded-md px-3 py-2 text-xs font-semibold transition ${scheduleView === 'all' ? 'bg-white text-[#A94B75] shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}
                                 >
                                     All Facilities
                                 </button>
@@ -125,7 +125,7 @@ export default function CalendarDashboard({
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-2 rounded-lg bg-[#F7F0F3] px-3 py-2 text-xs font-medium text-[#543F48]">
+                            <div className="flex items-center gap-2 rounded-lg bg-[#F8EAF0] px-3 py-2 text-xs font-medium text-[#A94B75]">
                                 <CalendarDays className="h-4 w-4" />
                                 {serverFacilities.length}{' '}
                                 {serverFacilities.length === 1
