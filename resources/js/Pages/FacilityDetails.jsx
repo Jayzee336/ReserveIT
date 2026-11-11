@@ -315,7 +315,7 @@ export default function FacilityDetails({
                                         {isFacilityAvailable ? 'Book this facility' : 'Temporarily unavailable'}
                                     </button>
                                     <Link
-                                        href={route('activity-plans.index', { facility_id: facility.id })}
+                                        href={route('activity-plans.index', { facility_id: facility.id, return_to: 'facility' })}
                                         aria-disabled={!isFacilityAvailable}
                                         onClick={(event) => {
                                             if (!isFacilityAvailable) event.preventDefault();
