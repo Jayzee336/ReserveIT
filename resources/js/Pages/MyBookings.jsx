@@ -1438,6 +1438,24 @@ export default function MyBookings({
                                     </div>
                                 </section>
 
+                                {(selectedDetailBooking.activity_plan_file_path || selectedDetailBooking.sir_rene_signature_path) && (
+                                    <section className="rounded-lg border border-blue-100 bg-blue-50/60 p-3">
+                                        <h3 className="mb-2 text-sm font-bold text-blue-950">Uploaded Booking Documents</h3>
+                                        <div className="flex flex-col items-start gap-2 text-sm">
+                                            {selectedDetailBooking.activity_plan_file_path && (
+                                                <a href={`/bookings/${selectedDetailBooking.id}/attachments/activity-plan`} className="font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900">
+                                                    Download Activity Plan · {selectedDetailBooking.activity_plan_file_name || 'Attached document'}
+                                                </a>
+                                            )}
+                                            {selectedDetailBooking.sir_rene_signature_path && (
+                                                <a href={`/bookings/${selectedDetailBooking.id}/attachments/sir-rene-signature`} className="font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900">
+                                                    Download Sir Rene's Signed Document · {selectedDetailBooking.sir_rene_signature_name || 'Attached document'}
+                                                </a>
+                                            )}
+                                        </div>
+                                    </section>
+                                )}
+
                                 <section>
                                     <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-800"><History className="h-4 w-4 text-[#6A535C]" /> Status History</h3>
                                     <div className="rounded-lg border border-gray-100">
