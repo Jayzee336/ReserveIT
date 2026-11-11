@@ -258,7 +258,7 @@ export function CalendarView({
                             }
 
                             return (
-                                <div key={day.key} className={`ri-calendar-cell group relative min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F8EDF2]' : 'bg-white'}`}>
+                                <div key={day.key} className={`ri-calendar-cell group relative min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F4E4EB]' : 'bg-white'}`}>
                                     <button type="button" onClick={() => selectDate(day.key)} aria-pressed={day.isSelected} aria-label={`Select ${formatLongDate(day.key)}`} className="absolute inset-0 z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#B96B8D]" />
                                     <div className="pointer-events-none relative z-10 flex items-center justify-between gap-1">
                                         <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#B96B8D] text-white' : day.isToday ? 'border border-[#B96B8D] text-[#493344]' : 'text-slate-700'}`}>{day.dayNumber}</span>
@@ -304,7 +304,7 @@ export function CalendarView({
                             </button>
                             <Link
                                 href={route('activity-plans.index', { date: selectedDate, return_to: 'schedule' })}
-                                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#D9C8D4] bg-white px-3 py-2 text-xs font-semibold text-[#96516F] transition hover:bg-[#F8EDF2]"
+                                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#D9C8D4] bg-white px-3 py-2 text-xs font-semibold text-[#96516F] transition hover:bg-[#F4E4EB]"
                             >
                                 <CalendarDays className="h-3.5 w-3.5" /> Recurring Activity Plans
                             </Link>
@@ -338,7 +338,7 @@ export function CalendarView({
                             </div>
                         ) : (
                             visibleDailyBookings.map((booking) => (
-                                <button key={booking.id} type="button" onClick={() => setViewingBooking(booking)} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-[#647D91] hover:bg-[#F8EDF2]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B96B8D]">
+                                <button key={booking.id} type="button" onClick={() => setViewingBooking(booking)} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-[#647D91] hover:bg-[#F4E4EB]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B96B8D]">
                                     <div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0">
                                         <h4 className="break-words text-sm font-bold text-slate-800">{booking.can_view_details ? (booking.facility?.name || booking.facility_name || 'Facility') : 'Reserved'}</h4>
                                         {booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date || booking.booking_date).slice(0, 10) && <p className="mt-1 break-words text-[10px] text-slate-500">{formatLongDate(booking.date || booking.booking_date)} – {formatLongDate(booking.end_date)}</p>}
@@ -371,7 +371,7 @@ export function CalendarView({
                             const Field = ({ label, value, wide = false }) => <div className={`rounded-xl border border-slate-100 bg-slate-50/80 p-3 ${wide ? 'sm:col-span-2' : ''}`}><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</p><p className="mt-1 break-words text-sm font-medium text-slate-800">{value || 'Not provided'}</p></div>;
                             return <>
                                 <header className="sticky top-0 z-10 border-b border-slate-100 bg-white px-4 py-4 sm:px-6"><div className="flex items-start justify-between gap-3"><div className="min-w-0">
-                                    <div className="mb-2 flex flex-wrap items-center gap-2">{canView && viewingBooking.facility?.type && <span className="rounded-full bg-[#F8EDF2] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#96516F]">{viewingBooking.facility.type}</span>}<span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${statusStyles[status] || 'border-slate-200 bg-slate-50 text-slate-700'}`}>{status}</span></div>
+                                    <div className="mb-2 flex flex-wrap items-center gap-2">{canView && viewingBooking.facility?.type && <span className="rounded-full bg-[#F4E4EB] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#96516F]">{viewingBooking.facility.type}</span>}<span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${statusStyles[status] || 'border-slate-200 bg-slate-50 text-slate-700'}`}>{status}</span></div>
                                     <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#B96B8D]">{canView ? 'Booking details' : 'Reservation details'}</p>
                                     <h2 id="calendar-booking-details-title" className="mt-1 break-words text-lg font-bold text-slate-900">{canView ? (viewingBooking.facility?.name || viewingBooking.facility_name || 'Facility booking') : 'Reserved time slot'}</h2>
                                     {canView && <p className="mt-1 break-all text-[10px] text-slate-400">Booking ID: {viewingBooking.id}</p>}<p className="mt-1 text-xs text-slate-500">{formatLongDate(startDate)}</p>
@@ -416,7 +416,7 @@ export function CalendarView({
                         </div>
                         <div className="max-h-[60vh] space-y-2 overflow-y-auto p-4">
                             {serverFacilities.map((facility) => (
-                                <button key={facility.id} type="button" disabled={facility.is_available === false} onClick={() => { setCreate({ facility }); setFacilityPickerOpen(false); }} className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-[#647D91] hover:bg-[#F8EDF2] disabled:cursor-not-allowed disabled:opacity-50">
+                                <button key={facility.id} type="button" disabled={facility.is_available === false} onClick={() => { setCreate({ facility }); setFacilityPickerOpen(false); }} className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-[#647D91] hover:bg-[#F4E4EB] disabled:cursor-not-allowed disabled:opacity-50">
                                     <span className="min-w-0">
                                         <span className="block truncate text-sm font-semibold text-slate-800">{facility.name}</span>
                                         <span className="block truncate text-xs text-slate-500">{facility.location || 'Location not specified'}</span>
