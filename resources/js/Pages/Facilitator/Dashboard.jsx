@@ -32,8 +32,8 @@ function formatTime(value) {
 }
 
 function Stat({ label, value, onClick }) {
-    const content = <><span className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-slate-500">{label}</span>{onClick && <span className="text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>}</span><p className="mt-2 text-3xl font-bold tracking-tight text-[#493344]">{value}</p></>;
-    const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#D9C8D4] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2";
+    const content = <><span className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-slate-500">{label}</span>{onClick && <span className="text-[10px] font-bold uppercase tracking-wide text-[#B96B8D] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>}</span><p className="mt-2 text-3xl font-bold tracking-tight text-[#493344]">{value}</p></>;
+    const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#D9C8D4] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#B96B8D] focus:ring-offset-2";
     return onClick ? <button type="button" onClick={onClick} className={`group w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
 }
 
@@ -42,11 +42,11 @@ function AnalyticsStat({ label, value, hint, onClick }) {
         <button
             type="button"
             onClick={onClick}
-            className="group min-w-0 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#C65B8A] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2"
+            className="group min-w-0 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#B96B8D] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#B96B8D] focus:ring-offset-2"
         >
             <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600">
                 <span>{label}</span>
-                <span className="text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                <span className="text-[10px] font-bold uppercase tracking-wide text-[#B96B8D] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
             </span>
             <span className="mt-2 block break-words text-xl font-bold text-[#493344]">{value}</span>
             <span className="mt-1 block text-[11px] leading-4 text-slate-500">{hint}</span>
@@ -203,7 +203,7 @@ function BookingDetailModal({ booking, onClose }) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773]"
+                        className="rounded-xl bg-[#B96B8D] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#96516F]"
                     >
                         Close
                     </button>
@@ -392,7 +392,7 @@ export default function FacilitatorDashboard({
 
             <div className="ri-page-shell space-y-7">
                 <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#493344] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
-                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#C65B8A]/25 blur-3xl" />
+                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#B96B8D]/25 blur-3xl" />
                     <div className="pointer-events-none absolute -bottom-32 right-1/3 -z-10 h-64 w-64 rounded-full bg-[#647D91]/10 blur-3xl" />
                     <div className="flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
                         <div className="max-w-2xl">
@@ -410,7 +410,7 @@ export default function FacilitatorDashboard({
                         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
                             <Link
                                 href={route('facilities.index')}
-                                className="ri-btn-primary !min-h-12 !border-[#C65B8A] !bg-[#C65B8A] !px-5 !text-white hover:!border-[#A44773] hover:!bg-[#A44773]"
+                                className="ri-btn-primary !min-h-12 !border-[#B96B8D] !bg-[#B96B8D] !px-5 !text-white hover:!border-[#96516F] hover:!bg-[#96516F]"
                             >
                                 <Plus className="h-4 w-4" />
                                 Book a Facility
@@ -547,12 +547,12 @@ export default function FacilitatorDashboard({
                                                     key={booking.id}
                                                     type="button"
                                                     onClick={() => setViewBooking(booking)}
-                                                    className="group flex w-full min-w-0 flex-col gap-1 rounded-xl border border-[var(--ri-border)] bg-white/80 p-3 text-left transition hover:border-[#D9C8D4] hover:bg-white hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C65B8A]"
+                                                    className="group flex w-full min-w-0 flex-col gap-1 rounded-xl border border-[var(--ri-border)] bg-white/80 p-3 text-left transition hover:border-[#D9C8D4] hover:bg-white hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#B96B8D]"
                                                 >
                                                     <p className="text-sm font-semibold text-[#493344]">
                                                         {booking.facility?.name ?? 'Facility'}
                                                     </p>
-                                                    <span className="text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                                    <span className="text-[10px] font-bold uppercase tracking-wide text-[#B96B8D] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                                     <p className="text-xs text-slate-500">
                                                         {formatTime(booking.start_time)} – {formatTime(booking.end_time)}
                                                     </p>
@@ -607,7 +607,7 @@ export default function FacilitatorDashboard({
                                 <option value="month">Monthly</option>
                             </select>
                         </label>
-                        <button type="submit" className="rounded-lg bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#A44773]">Apply</button>
+                        <button type="submit" className="rounded-lg bg-[#B96B8D] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#96516F]">Apply</button>
                         <button type="button" onClick={() => { setAnalyticsFrom(''); setAnalyticsTo(''); setAnalyticsGroupBy('month'); setAnalyticsFacility(''); router.get(route('facilitator.dashboard'), {}, { preserveState: true, preserveScroll: true, replace: true }); }} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-stone-100">Reset</button>
                     </form>
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -637,8 +637,8 @@ export default function FacilitatorDashboard({
                                     return (
                                         <div key={item.label} className="flex min-w-0 flex-col items-center gap-2">
                                             <span className="text-xs font-semibold text-slate-700">{item.bookings}</span>
-                                            <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`} aria-label={`View facilities booked in ${item.label}`} className={`flex min-h-0 w-full flex-1 items-end rounded-t-lg bg-[#F8EDF2] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#C65B8A] focus:ring-2 focus:ring-[#C65B8A] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#493344]' : ''}`}>
-                                                <span className="block w-full rounded-t-lg bg-[#C65B8A]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / maxValue * 100)}%` : '3px' }} />
+                                            <button type="button" onClick={() => setSelectedTrendLabel(item.label)} title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`} aria-label={`View facilities booked in ${item.label}`} className={`flex min-h-0 w-full flex-1 items-end rounded-t-lg bg-[#F8EDF2] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#B96B8D] focus:ring-2 focus:ring-[#B96B8D] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#493344]' : ''}`}>
+                                                <span className="block w-full rounded-t-lg bg-[#B96B8D]" style={{ height: item.bookings ? `${Math.max(8, item.bookings / maxValue * 100)}%` : '3px' }} />
                                             </button>
                                             <span title={item.label} className="w-full truncate text-center text-[10px] text-slate-500">{item.label}</span>
                                         </div>
@@ -660,10 +660,10 @@ export default function FacilitatorDashboard({
                             <div className="mt-5 space-y-4">
                                 {displayedStatusBreakdown.map((item) => {
                                     const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
-                                    return <button key={item.status} type="button" onClick={() => setSelectedAnalyticsDetail({title:`${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`,description:`Assigned-facility ${item.status} bookings in the selected period.`,items:statusDetails[item.status] ?? [],mode:'bookings'})} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]">
+                                    return <button key={item.status} type="button" onClick={() => setSelectedAnalyticsDetail({title:`${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`,description:`Assigned-facility ${item.status} bookings in the selected period.`,items:statusDetails[item.status] ?? [],mode:'bookings'})} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]">
                                         <div className="mb-1 flex justify-between text-xs"><span className="font-semibold capitalize text-slate-700">{item.status}</span><span className="text-slate-500">{item.count} · {item.percentage.toFixed(1)}%</span></div>
                                         <div className="h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
-                                         <span className="mt-1 block text-right text-[10px] font-semibold text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                         <span className="mt-1 block text-right text-[10px] font-semibold text-[#B96B8D] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                     </button>;
                                 })}
                                 {statusBreakdown.length === 0 && <p className="text-sm text-slate-500">No booking data in this period.</p>}
@@ -698,11 +698,11 @@ export default function FacilitatorDashboard({
                                             mode: 'bookings',
                                         });
                                     }}
-                                    className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#E8E1E7] bg-[var(--ri-surface-subtle)] px-3 py-2 text-left text-sm transition hover:border-[#D9C8D4] hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]"
+                                    className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#E8E1E7] bg-[var(--ri-surface-subtle)] px-3 py-2 text-left text-sm transition hover:border-[#D9C8D4] hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]"
                                 >
                                     <span className="min-w-0 text-left">
                                         <span className="block truncate text-slate-700">{facility.name}</span>
-                                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                        <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#B96B8D] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                     </span>
                                     <span className="shrink-0 font-semibold text-[#493344]">{facility.bookings} bookings</span>
                                 </button>
