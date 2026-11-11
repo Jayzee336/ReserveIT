@@ -24,9 +24,9 @@ class AuthenticationTest extends TestCase
         $this->seed(DatabaseSeeder::class);
 
         $accounts = [
-            ['username' => 'user', 'email' => 'user@test.com', 'role' => 'user'],
-            ['username' => 'facility', 'email' => 'facility@test.com', 'role' => 'facility_admin'],
-            ['username' => 'admin', 'email' => 'admin@test.com', 'role' => 'super_admin'],
+            ['username' => 'user1', 'email' => 'user1@uic.edu.ph', 'role' => 'user'],
+            ['username' => 'facility1', 'email' => 'facility1@uic.edu.ph', 'role' => 'facility_admin'],
+            ['username' => 'admin', 'email' => 'admin@uic.edu.ph', 'role' => 'super_admin'],
         ];
 
         foreach ($accounts as $account) {
