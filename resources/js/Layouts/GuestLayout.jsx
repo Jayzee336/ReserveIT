@@ -10,7 +10,7 @@ export default function GuestLayout({ children }) {
             <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-[#C65B8A]/15 blur-3xl" />
 
             {/* THE OPEN RESERVATION BOOK CONTAINER */}
-            <div className="relative z-10 w-full max-w-5xl rounded-[2.5rem] bg-[#263348] p-3 sm:p-4 shadow-2xl shadow-[#263348]/30 ring-1 ring-[#C65B8A]">
+            <div className="relative z-10 w-full max-w-5xl rounded-[2.5rem] bg-[#493344] p-3 sm:p-4 shadow-2xl shadow-[#493344]/30 ring-1 ring-[#C65B8A]">
                 
                 {/* Book Cover Edge Border */}
                 <div className="relative overflow-hidden rounded-[2rem] bg-[#FFFBF6] grid md:grid-cols-2 min-h-[580px] shadow-inner">
@@ -26,7 +26,7 @@ export default function GuestLayout({ children }) {
                     <div className="pointer-events-none absolute inset-y-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-black/10 via-black/5 to-black/10 z-20 hidden md:block" />
 
                     {/* LEFT PAGE: Ledger Cover & Facility Info */}
-                    <div className="relative p-8 sm:p-10 bg-[#FFFCFD] flex flex-col justify-between border-b md:border-b-0 md:border-r border-[#EEDFE6]">
+                    <div className="relative p-8 sm:p-10 bg-[#FCFAFB] flex flex-col justify-between border-b md:border-b-0 md:border-r border-[#E8E1E7]">
                         
                         {/* Top Page Header */}
                         <div>
@@ -38,7 +38,7 @@ export default function GuestLayout({ children }) {
                                     <span className="text-xl font-bold tracking-tight text-slate-900">ReserveIT</span>
                                 </div>
                                 
-                                <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400 bg-white px-2.5 py-1 rounded-md border border-[#EEDFE6]">
+                                <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400 bg-white px-2.5 py-1 rounded-md border border-[#E8E1E7]">
                                     VOL. 2026
                                 </span>
                             </div>
@@ -68,7 +68,7 @@ export default function GuestLayout({ children }) {
                         </div>
 
                         {/* Page Footer / Ledger Details */}
-                        <div className="mt-8 pt-6 border-t border-[#EEDFE6] space-y-2.5 text-xs text-slate-600 font-sans">
+                        <div className="mt-8 pt-6 border-t border-[#E8E1E7] space-y-2.5 text-xs text-slate-600 font-sans">
                             <div className="flex items-center gap-2">
                                 <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                                 <span>Real-time availability log for all UIC units</span>
