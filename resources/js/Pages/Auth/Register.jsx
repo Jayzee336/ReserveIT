@@ -112,7 +112,7 @@ export default function Register() {
                             <InputLabel htmlFor="password" value="Password" className="text-xs font-bold text-slate-700" />
                             <button
                                 type="button"
-                                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C65B8A] transition hover:text-[#A94B75]"
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C65B8A] transition hover:text-[#A44773]"
                                 onClick={() => setShowPassword((value) => !value)}
                                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                             >
@@ -167,7 +167,7 @@ export default function Register() {
                         <button
                             type="submit"
                             disabled={processing}
-                            className="flex w-full items-center justify-center rounded-2xl bg-[#C65B8A] py-3 text-xs font-bold text-white shadow-md transition duration-200 hover:bg-[#A94B75] focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2 active:scale-[0.99] disabled:opacity-50"
+                            className="flex w-full items-center justify-center rounded-2xl bg-[#C65B8A] py-3 text-xs font-bold text-white shadow-md transition duration-200 hover:bg-[#A44773] focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2 active:scale-[0.99] disabled:opacity-50"
                         >
                             {processing ? 'Creating Account...' : 'Register'}
                         </button>
@@ -179,7 +179,7 @@ export default function Register() {
                     <span>Already registered?</span>{' '}
                     <Link
                         href={route('login')}
-                        className="font-bold text-[#C65B8A] transition hover:text-[#A94B75] hover:underline"
+                        className="font-bold text-[#C65B8A] transition hover:text-[#A44773] hover:underline"
                     >
                         Sign in
                     </Link>
