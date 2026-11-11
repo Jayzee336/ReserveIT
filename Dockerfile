@@ -32,8 +32,7 @@ WORKDIR /var/www/html
 COPY --chown=www-data:www-data . .
 COPY --from=vendor --chown=www-data:www-data /var/www/html/vendor ./vendor
 COPY --from=frontend --chown=www-data:www-data /app/public/build ./public/build
-COPY --chown=root:root docker/entrypoint.d/ /etc/entrypoint.d/
-RUN chmod 755 /etc/entrypoint.d/65-reserveit-uic-account-provisioner.sh
+COPY --chmod=755 --chown=root:root docker/entrypoint.d/ /etc/entrypoint.d/
 
 # Render routes HTTP traffic to the port configured here.
 ENV NGINX_HTTP_PORT=10000
