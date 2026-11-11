@@ -211,7 +211,7 @@ export function CalendarView({
                 <section className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-3 py-3 sm:px-5">
                         <div className="flex min-w-0 items-center gap-2">
-                            <CalendarDays className="h-5 w-5 shrink-0 text-[#263348]" />
+                            <CalendarDays className="h-5 w-5 shrink-0 text-[#493344]" />
                             <h2 className="truncate text-base font-bold text-slate-800">{monthLabel}</h2>
                         </div>
 
@@ -230,7 +230,7 @@ export function CalendarView({
                                 type="date"
                                 value={selectedDate}
                                 onChange={(event) => selectDate(event.target.value)}
-                                className="w-[145px] rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-medium text-slate-700 focus:border-[#B96D91] focus:outline-none focus:ring-2 focus:ring-[#EEDFE6]"
+                                className="w-[145px] rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs font-medium text-slate-700 focus:border-[#647D91] focus:outline-none focus:ring-2 focus:ring-[#E8E1E7]"
                             />
                             <button
                                 type="button"
@@ -258,10 +258,10 @@ export function CalendarView({
                             }
 
                             return (
-                                <div key={day.key} className={`ri-calendar-cell group relative min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F8EAF0]' : 'bg-white'}`}>
+                                <div key={day.key} className={`ri-calendar-cell group relative min-w-0 min-h-[70px] border-b border-r border-slate-100 p-1 sm:min-h-[112px] sm:p-2 ${day.isSelected ? 'bg-[#F8EDF2]' : 'bg-white'}`}>
                                     <button type="button" onClick={() => selectDate(day.key)} aria-pressed={day.isSelected} aria-label={`Select ${formatLongDate(day.key)}`} className="absolute inset-0 z-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#C65B8A]" />
                                     <div className="pointer-events-none relative z-10 flex items-center justify-between gap-1">
-                                        <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#263348] text-white' : day.isToday ? 'border border-[#C65B8A] text-[#263348]' : 'text-slate-700'}`}>{day.dayNumber}</span>
+                                        <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-semibold sm:h-7 sm:w-7 sm:text-xs ${day.isSelected ? 'bg-[#493344] text-white' : day.isToday ? 'border border-[#C65B8A] text-[#493344]' : 'text-slate-700'}`}>{day.dayNumber}</span>
                                         {(day.bookings.length > 0 || day.closures.length > 0) && <span className="flex items-center gap-1">{day.bookings.length > 0 && <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-600 sm:text-[10px]">{day.bookings.length}</span>}{day.closures.length > 0 && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[8px] font-bold text-amber-800 sm:text-[9px]">C</span>}</span>}
                                     </div>
                                     <div className="relative z-10 mt-1 space-y-1">
@@ -304,7 +304,7 @@ export function CalendarView({
                             </button>
                             <Link
                                 href={route('activity-plans.index', { date: selectedDate, return_to: 'schedule' })}
-                                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#D9C8CF] bg-white px-3 py-2 text-xs font-semibold text-[#A94B75] transition hover:bg-[#F8EAF0]"
+                                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#D9C8CF] bg-white px-3 py-2 text-xs font-semibold text-[#A94B75] transition hover:bg-[#F8EDF2]"
                             >
                                 <CalendarDays className="h-3.5 w-3.5" /> Recurring Activity Plans
                             </Link>
@@ -338,7 +338,7 @@ export function CalendarView({
                             </div>
                         ) : (
                             visibleDailyBookings.map((booking) => (
-                                <button key={booking.id} type="button" onClick={() => setViewingBooking(booking)} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-[#B96D91] hover:bg-[#F8EAF0]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C65B8A]">
+                                <button key={booking.id} type="button" onClick={() => setViewingBooking(booking)} className="w-full rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-[#647D91] hover:bg-[#F8EDF2]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C65B8A]">
                                     <div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0">
                                         <h4 className="break-words text-sm font-bold text-slate-800">{booking.can_view_details ? (booking.facility?.name || booking.facility_name || 'Facility') : 'Reserved'}</h4>
                                         {booking.end_date && String(booking.end_date).slice(0, 10) !== String(booking.date || booking.booking_date).slice(0, 10) && <p className="mt-1 break-words text-[10px] text-slate-500">{formatLongDate(booking.date || booking.booking_date)} – {formatLongDate(booking.end_date)}</p>}
@@ -371,7 +371,7 @@ export function CalendarView({
                             const Field = ({ label, value, wide = false }) => <div className={`rounded-xl border border-slate-100 bg-slate-50/80 p-3 ${wide ? 'sm:col-span-2' : ''}`}><p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</p><p className="mt-1 break-words text-sm font-medium text-slate-800">{value || 'Not provided'}</p></div>;
                             return <>
                                 <header className="sticky top-0 z-10 border-b border-slate-100 bg-white px-4 py-4 sm:px-6"><div className="flex items-start justify-between gap-3"><div className="min-w-0">
-                                    <div className="mb-2 flex flex-wrap items-center gap-2">{canView && viewingBooking.facility?.type && <span className="rounded-full bg-[#F8EAF0] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#A94B75]">{viewingBooking.facility.type}</span>}<span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${statusStyles[status] || 'border-slate-200 bg-slate-50 text-slate-700'}`}>{status}</span></div>
+                                    <div className="mb-2 flex flex-wrap items-center gap-2">{canView && viewingBooking.facility?.type && <span className="rounded-full bg-[#F8EDF2] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#A94B75]">{viewingBooking.facility.type}</span>}<span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${statusStyles[status] || 'border-slate-200 bg-slate-50 text-slate-700'}`}>{status}</span></div>
                                     <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#C65B8A]">{canView ? 'Booking details' : 'Reservation details'}</p>
                                     <h2 id="calendar-booking-details-title" className="mt-1 break-words text-lg font-bold text-slate-900">{canView ? (viewingBooking.facility?.name || viewingBooking.facility_name || 'Facility booking') : 'Reserved time slot'}</h2>
                                     {canView && <p className="mt-1 break-all text-[10px] text-slate-400">Booking ID: {viewingBooking.id}</p>}<p className="mt-1 text-xs text-slate-500">{formatLongDate(startDate)}</p>
@@ -416,13 +416,13 @@ export function CalendarView({
                         </div>
                         <div className="max-h-[60vh] space-y-2 overflow-y-auto p-4">
                             {serverFacilities.map((facility) => (
-                                <button key={facility.id} type="button" disabled={facility.is_available === false} onClick={() => { setCreate({ facility }); setFacilityPickerOpen(false); }} className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-[#B96D91] hover:bg-[#F8EAF0] disabled:cursor-not-allowed disabled:opacity-50">
+                                <button key={facility.id} type="button" disabled={facility.is_available === false} onClick={() => { setCreate({ facility }); setFacilityPickerOpen(false); }} className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 text-left transition hover:border-[#647D91] hover:bg-[#F8EDF2] disabled:cursor-not-allowed disabled:opacity-50">
                                     <span className="min-w-0">
                                         <span className="block truncate text-sm font-semibold text-slate-800">{facility.name}</span>
                                         <span className="block truncate text-xs text-slate-500">{facility.location || 'Location not specified'}</span>
                                         {facility.is_available === false && <span className="mt-1 block text-xs text-rose-600">{facility.unavailable_reason || 'Temporarily unavailable'}</span>}
                                     </span>
-                                    <span className="shrink-0 text-xs font-semibold text-[#263348]">{facility.is_available === false ? 'Unavailable' : 'Select'}</span>
+                                    <span className="shrink-0 text-xs font-semibold text-[#493344]">{facility.is_available === false ? 'Unavailable' : 'Select'}</span>
                                 </button>
                             ))}
                             {serverFacilities.length === 0 && <p className="py-6 text-center text-sm text-slate-500">No facilities are available to book.</p>}
