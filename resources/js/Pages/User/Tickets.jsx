@@ -25,7 +25,7 @@ const CATEGORIES = [
 
 const CATEGORY_COLORS = {
     Facility: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-    'UI Improvements': 'bg-[#F7F0F3] text-[#543F48] ring-[#6A535C]/20',
+    'UI Improvements': 'bg-[#F8EAF0] text-[#A94B75] ring-[#263348]/20',
     Account: 'bg-amber-50 text-amber-700 ring-amber-600/20',
     Bug: 'bg-red-50 text-red-700 ring-red-600/20',
     Others: 'bg-gray-50 text-gray-700 ring-gray-600/20',
