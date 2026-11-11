@@ -27,6 +27,8 @@ class SystemSettingsController extends Controller
             'max_advance_days' => ['nullable', 'integer', 'min:1'],
             'require_consent_letter' => ['nullable', 'boolean'],
             'auto_purge_unapproved_days' => ['nullable', 'integer', 'min:0', 'max:30'],
+            'pending_booking_expiry_hours' => ['required', 'integer', 'min:1', 'max:720'],
+            'pending_booking_reminder_hours' => ['required', 'integer', 'min:0', 'max:168'],
             'opening_time' => ['sometimes', 'required', 'date_format:H:i'],
             'closing_time' => ['sometimes', 'required', 'date_format:H:i'],
             'early_check_in_minutes' => ['sometimes', 'required', 'integer', 'min:0', 'max:180'],
@@ -39,6 +41,15 @@ class SystemSettingsController extends Controller
 
         if ($openingTime === $closingTime) {
             return back()->withErrors(['closing_time' => 'Opening and closing times cannot be identical.']);
+        }
+
+        $expiryHours = (int) ($data['pending_booking_expiry_hours'] ?? $current->pending_booking_expiry_hours ?? 72);
+        $reminderHours = (int) ($data['pending_booking_reminder_hours'] ?? $current->pending_booking_reminder_hours ?? 24);
+
+        if ($reminderHours >= $expiryHours && $reminderHours !== 0) {
+            return back()->withErrors([
+                'pending_booking_reminder_hours' => 'The reminder must be scheduled before the expiration time.',
+            ]);
         }
 
         SystemSetting::current()->update($data);
