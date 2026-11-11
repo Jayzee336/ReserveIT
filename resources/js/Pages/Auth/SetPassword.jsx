@@ -92,7 +92,7 @@ export default function SetPassword() {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="w-full rounded-xl bg-[#C65B8A] px-5 py-3 font-semibold text-white transition hover:bg-[#A94B75] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="w-full rounded-xl bg-[#C65B8A] px-5 py-3 font-semibold text-white transition hover:bg-[#A44773] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {processing
                                     ? 'Saving Password...'
