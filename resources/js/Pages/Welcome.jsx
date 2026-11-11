@@ -129,7 +129,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
         <>
             <Head title="ReserveIT - UIC Campus Facility Management" />
 
-            <div className="relative min-h-screen bg-[#F7F8FA] text-slate-900 selection:bg-[#C65B8A] selection:text-white flex flex-col justify-between">
+            <div className="relative min-h-screen bg-[#F7F8FA] text-slate-900 selection:bg-[#B96B8D] selection:text-white flex flex-col justify-between">
                 
                 {/* Background Glow */}
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(122,74,87,0.12),transparent_45%),radial-gradient(circle_at_bottom_right,_rgba(122,74,87,0.08),transparent_35%)]" />
@@ -141,7 +141,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                             
                             {/* Logo */}
                             <Link href="/" className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#C65B8A] text-white shadow-md">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#B96B8D] text-white shadow-md">
                                     <Building2 className="h-5 w-5" />
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -151,13 +151,13 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
 
                             {/* Nav Links */}
                             <nav className="hidden items-center gap-8 text-sm font-medium text-slate-700 md:flex">
-                                <Link href="#" className="text-[#C65B8A] font-semibold transition">Home</Link>
-                                <Link href={route('facilities.index')} className="transition hover:text-[#C65B8A]">Facilities</Link>
-                                <a href="#schedule" className="transition hover:text-[#C65B8A]">Schedule</a>
-                                <a href="#workflow" className="transition hover:text-[#C65B8A]">Workflow</a>
+                                <Link href="#" className="text-[#B96B8D] font-semibold transition">Home</Link>
+                                <Link href={route('facilities.index')} className="transition hover:text-[#B96B8D]">Facilities</Link>
+                                <a href="#schedule" className="transition hover:text-[#B96B8D]">Schedule</a>
+                                <a href="#workflow" className="transition hover:text-[#B96B8D]">Workflow</a>
                                 <button 
                                     onClick={() => { setIsTourOpen(true); setCurrentTourStep(0); }}
-                                    className="flex items-center gap-1.5 text-[#C65B8A] font-semibold transition hover:opacity-80"
+                                    className="flex items-center gap-1.5 text-[#B96B8D] font-semibold transition hover:opacity-80"
                                 >
                                     <GuideIcon className="h-4 w-4" /> User Manual
                                 </button>
@@ -168,7 +168,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                 {auth.user ? (
                                     <Link
                                         href={route('dashboard')}
-                                        className="inline-flex items-center justify-center rounded-full bg-[#C65B8A] px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#A44773]"
+                                        className="inline-flex items-center justify-center rounded-full bg-[#B96B8D] px-6 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#96516F]"
                                     >
                                         Go to Dashboard
                                     </Link>
@@ -176,13 +176,13 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                     <>
                                         <Link
                                             href={route('login')}
-                                            className="px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-[#C65B8A]"
+                                            className="px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-[#B96B8D]"
                                         >
                                             Log in
                                         </Link>
                                         <Link
                                             href={route('register')}
-                                            className="inline-flex items-center justify-center rounded-full bg-[#C65B8A] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#A44773]"
+                                            className="inline-flex items-center justify-center rounded-full bg-[#B96B8D] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#96516F]"
                                         >
                                             Sign up
                                         </Link>
@@ -193,7 +193,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                             {/* Mobile Toggle */}
                             <button
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                className="p-2 text-slate-700 md:hidden hover:text-[#C65B8A]"
+                                className="p-2 text-slate-700 md:hidden hover:text-[#B96B8D]"
                             >
                                 {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                             </button>
@@ -203,13 +203,13 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                         {mobileMenuOpen && (
                             <div className="border-t border-[#E8E1E7] bg-[#FCFAFB] px-6 py-5 md:hidden space-y-4">
                                 <div className="flex flex-col gap-3 text-sm font-medium text-slate-800">
-                                    <Link href="#" className="text-[#C65B8A] font-semibold">Home</Link>
+                                    <Link href="#" className="text-[#B96B8D] font-semibold">Home</Link>
                                     <Link href={route('facilities.index')}>Facilities</Link>
                                     <a href="#schedule" onClick={() => setMobileMenuOpen(false)}>Schedule</a>
                                     <a href="#workflow" onClick={() => setMobileMenuOpen(false)}>Workflow</a>
                                     <button 
                                         onClick={() => { setMobileMenuOpen(false); setIsTourOpen(true); }}
-                                        className="text-left font-semibold text-[#C65B8A]"
+                                        className="text-left font-semibold text-[#B96B8D]"
                                     >
                                         📖 System Manual & Guide
                                     </button>
@@ -219,7 +219,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                     {auth.user ? (
                                         <Link
                                             href={route('dashboard')}
-                                            className="block w-full text-center rounded-xl bg-[#C65B8A] py-2.5 text-sm font-semibold text-white"
+                                            className="block w-full text-center rounded-xl bg-[#B96B8D] py-2.5 text-sm font-semibold text-white"
                                         >
                                             Dashboard
                                         </Link>
@@ -233,7 +233,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                             </Link>
                                             <Link
                                                 href={route('register')}
-                                                className="block w-full text-center rounded-xl bg-[#C65B8A] py-2.5 text-sm font-semibold text-white"
+                                                className="block w-full text-center rounded-xl bg-[#B96B8D] py-2.5 text-sm font-semibold text-white"
                                             >
                                                 Sign up
                                             </Link>
@@ -247,7 +247,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                     {/* 2. HERO SECTION */}
                     <div className="relative mx-auto max-w-7xl px-6 py-10 lg:px-10">
                         <div className="text-center max-w-3xl mx-auto space-y-5">
-                            <div className="inline-flex items-center gap-2 rounded-full bg-[#C65B8A]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#C65B8A]">
+                            <div className="inline-flex items-center gap-2 rounded-full bg-[#B96B8D]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-[#B96B8D]">
                                 <Sparkles className="h-3.5 w-3.5" />
                                 Official UIC-MAIN Reservation System
                             </div>
@@ -263,7 +263,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                                 <Link
                                     href={route('facilities.index')}
-                                    className="inline-flex items-center gap-2 rounded-full bg-[#C65B8A] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#A44773]"
+                                    className="inline-flex items-center gap-2 rounded-full bg-[#B96B8D] px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#96516F]"
                                 >
                                     Explore Campus Venues
                                     <ArrowRight className="h-4 w-4" />
@@ -272,7 +272,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                     onClick={() => { setIsTourOpen(true); setCurrentTourStep(0); }}
                                     className="inline-flex items-center gap-2 rounded-full border border-[#E8E1E7] bg-white px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-[#FCFAFB]"
                                 >
-                                    <GuideIcon className="h-4 w-4 text-[#C65B8A]" />
+                                    <GuideIcon className="h-4 w-4 text-[#B96B8D]" />
                                     Take 1-Min System Tour
                                 </button>
                             </div>
@@ -289,7 +289,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                 </div>
                                 <Link 
                                     href={route('facilities.index')}
-                                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#C65B8A] hover:underline"
+                                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#B96B8D] hover:underline"
                                 >
                                     Browse all spaces <ChevronRight className="h-3.5 w-3.5" />
                                 </Link>
@@ -309,7 +309,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                             transition={{ duration: 0.45, ease: 'easeOut' }}
                                             className={`relative cursor-pointer overflow-hidden rounded-3xl border border-[#E8E1E7] transition-all duration-500 ${
                                                 isActive 
-                                                    ? 'md:flex-[3.5] flex-1 shadow-2xl ring-2 ring-[#C65B8A]' 
+                                                    ? 'md:flex-[3.5] flex-1 shadow-2xl ring-2 ring-[#B96B8D]' 
                                                     : 'md:flex-1 flex-none h-20 md:h-auto opacity-80 hover:opacity-100'
                                             }`}
                                         >
@@ -334,7 +334,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                             {!isActive && (
                                                 <div className="absolute inset-0 flex items-end md:items-center justify-between md:justify-center p-4 md:p-0">
                                                     <div className="md:-rotate-90 md:whitespace-nowrap font-bold text-white text-sm md:text-base tracking-wide flex items-center gap-2">
-                                                        <span className="rounded-full bg-[#C65B8A] px-2 py-0.5 text-[10px] uppercase text-white">
+                                                        <span className="rounded-full bg-[#B96B8D] px-2 py-0.5 text-[10px] uppercase text-white">
                                                             {facility.badge || 'UIC'}
                                                         </span>
                                                         {facility.name || facility.title}
@@ -352,7 +352,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                                         className="absolute inset-0 flex flex-col justify-between p-6 text-white"
                                                     >
                                                         <div className="flex flex-wrap items-center justify-between gap-2">
-                                                            <span className="rounded-full bg-[#C65B8A] px-3 py-1 text-xs font-semibold tracking-wide text-white shadow-sm">
+                                                            <span className="rounded-full bg-[#B96B8D] px-3 py-1 text-xs font-semibold tracking-wide text-white shadow-sm">
                                                                 {facility.department || 'UIC Facility'}
                                                             </span>
                                                             <span className="rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
@@ -402,7 +402,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                         <section id="schedule" className="mt-20 scroll-mt-24 rounded-[2rem] border border-[#E8E1E7] bg-white p-8 shadow-sm lg:p-10">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
                                 <div>
-                                    <div className="inline-flex items-center gap-2 rounded-full bg-[#C65B8A]/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-[#C65B8A]">
+                                    <div className="inline-flex items-center gap-2 rounded-full bg-[#B96B8D]/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-[#B96B8D]">
                                         <CalendarIcon className="h-3.5 w-3.5" /> Live Campus Schedule
                                     </div>
                                     <h2 className="text-2xl font-bold text-slate-900 mt-2">Today's Venue Reservations</h2>
@@ -417,7 +417,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                     dbSchedules.map((item, i) => (
                                         <div key={item.id || i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-[#D9C8D4] bg-[#FCFAFB]">
                                             <div className="flex items-center gap-3">
-                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#C65B8A] text-white text-xs font-bold">
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#B96B8D] text-white text-xs font-bold">
                                                     {i + 1}
                                                 </div>
                                                 <div>
@@ -438,7 +438,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                     ))
                                 ) : (
                                     <div className="text-center py-8 bg-[#FCFAFB] rounded-2xl border border-dashed border-[#E8E1E7]">
-                                        <CalendarIcon className="h-8 w-8 mx-auto text-[#C65B8A] opacity-40 mb-2" />
+                                        <CalendarIcon className="h-8 w-8 mx-auto text-[#B96B8D] opacity-40 mb-2" />
                                         <p className="text-sm font-bold text-slate-800">No Reservations Logged for Today</p>
                                         <p className="text-xs text-slate-500 mt-1">All spaces are currently open for requests.</p>
                                     </div>
@@ -449,7 +449,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                         {/* 5. WORKFLOW SECTION (Target #workflow) */}
                         <section id="workflow" className="mt-16 scroll-mt-24 rounded-[2rem] border border-[#E8E1E7] bg-white/90 p-8 shadow-sm lg:p-10">
                             <div className="space-y-6">
-                                <div className="inline-flex items-center gap-2 rounded-full bg-[#C65B8A]/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-[#C65B8A]">
+                                <div className="inline-flex items-center gap-2 rounded-full bg-[#B96B8D]/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-[#B96B8D]">
                                     Approval Pipeline
                                 </div>
                                 <h2 className="text-2xl font-bold text-slate-900">How ReserveIT Processes Your Request</h2>
@@ -458,11 +458,11 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                     {TOUR_STEPS.map((item) => {
                                         const IconComponent = item.icon;
                                         return (
-                                            <div key={item.step} className="relative rounded-2xl border border-[#D9C8D4] bg-[#FCFAFB] p-5 transition hover:border-[#C65B8A]/40">
-                                                <span className="absolute top-4 right-4 text-xs font-extrabold text-[#C65B8A]/30">
+                                            <div key={item.step} className="relative rounded-2xl border border-[#D9C8D4] bg-[#FCFAFB] p-5 transition hover:border-[#B96B8D]/40">
+                                                <span className="absolute top-4 right-4 text-xs font-extrabold text-[#B96B8D]/30">
                                                     0{item.step}
                                                 </span>
-                                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#C65B8A]/10 text-[#C65B8A]">
+                                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#B96B8D]/10 text-[#B96B8D]">
                                                     <IconComponent className="h-5 w-5" />
                                                 </div>
                                                 <h3 className="text-sm font-bold text-slate-900">{item.title}</h3>
@@ -500,7 +500,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                         <div
                                             key={idx}
                                             className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                                                idx === currentTourStep ? 'bg-[#C65B8A]' : 'bg-[#E8E1E7]'
+                                                idx === currentTourStep ? 'bg-[#B96B8D]' : 'bg-[#E8E1E7]'
                                             }`}
                                         />
                                     ))}
@@ -508,12 +508,12 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
 
                                 {/* Step Content */}
                                 <div className="space-y-4">
-                                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#C65B8A]/10 text-[#C65B8A]">
+                                    <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#B96B8D]/10 text-[#B96B8D]">
                                         {React.createElement(TOUR_STEPS[currentTourStep].icon, { className: "h-6 w-6" })}
                                     </div>
 
                                     <div>
-                                        <span className="text-xs font-bold uppercase tracking-wider text-[#C65B8A]">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-[#B96B8D]">
                                             Step {currentTourStep + 1} of {TOUR_STEPS.length}
                                         </span>
                                         <h3 className="text-xl font-bold text-slate-900 mt-1">
@@ -528,7 +528,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                         {TOUR_STEPS[currentTourStep].description}
                                     </p>
 
-                                    <blockquote className="text-[11px] font-medium text-[#C65B8A] bg-[#C65B8A]/5 p-3 rounded-xl border-l-2 border-[#C65B8A]">
+                                    <blockquote className="text-[11px] font-medium text-[#B96B8D] bg-[#B96B8D]/5 p-3 rounded-xl border-l-2 border-[#B96B8D]">
                                         💡 <b>Pro Tip:</b> {TOUR_STEPS[currentTourStep].tip}
                                     </blockquote>
                                 </div>
@@ -549,7 +549,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
 
                                     <button
                                         onClick={nextTourStep}
-                                        className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#C65B8A] px-5 py-2.5 rounded-xl transition hover:bg-[#A44773] shadow-sm"
+                                        className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#B96B8D] px-5 py-2.5 rounded-xl transition hover:bg-[#96516F] shadow-sm"
                                     >
                                         {currentTourStep === TOUR_STEPS.length - 1 ? 'Got It, Let\'s Start!' : 'Next Step'}
                                         <ChevronRight className="h-4 w-4" />
@@ -567,7 +567,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                             
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2.5">
-                                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#C65B8A] text-white">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B96B8D] text-white">
                                         <Building2 className="h-4 w-4" />
                                     </div>
                                     <span className="text-lg font-bold text-slate-900">ReserveIT</span>
@@ -579,7 +579,7 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
 
                             <div className="space-y-3">
                                 <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                                    <FileText className="h-4 w-4 text-[#C65B8A]" /> Policy & Rules
+                                    <FileText className="h-4 w-4 text-[#B96B8D]" /> Policy & Rules
                                 </h4>
                                 <ul className="space-y-2 text-xs text-slate-600">
                                     <li>• Minimum 48-hour prior request notice</li>
@@ -591,16 +591,16 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
 
                             <div className="space-y-3">
                                 <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                                    <HelpCircle className="h-4 w-4 text-[#C65B8A]" /> System Manual
+                                    <HelpCircle className="h-4 w-4 text-[#B96B8D]" /> System Manual
                                 </h4>
                                 <ul className="space-y-2 text-xs text-slate-600">
                                     <li>
-                                        <button onClick={() => { setIsTourOpen(true); setCurrentTourStep(0); }} className="hover:text-[#C65B8A]">
+                                        <button onClick={() => { setIsTourOpen(true); setCurrentTourStep(0); }} className="hover:text-[#B96B8D]">
                                             Open Interactive User Guide
                                         </button>
                                     </li>
-                                    <li><Link href="#" className="hover:text-[#C65B8A]">Facility Admin Directory</Link></li>
-                                    <li><Link href="#" className="hover:text-[#C65B8A]">Report Equipment Issue</Link></li>
+                                    <li><Link href="#" className="hover:text-[#B96B8D]">Facility Admin Directory</Link></li>
+                                    <li><Link href="#" className="hover:text-[#B96B8D]">Report Equipment Issue</Link></li>
                                 </ul>
                             </div>
 
@@ -610,11 +610,11 @@ export default function Welcome({ auth, dbFacilities = [], dbSchedules = [] }) {
                                 </h4>
                                 <div className="space-y-2.5 text-xs text-slate-600">
                                     <div className="flex items-start gap-2.5">
-                                        <MapPin className="h-4 w-4 text-[#C65B8A] shrink-0 mt-0.5" />
+                                        <MapPin className="h-4 w-4 text-[#B96B8D] shrink-0 mt-0.5" />
                                         <span>UIC Main Campus, MIS Office</span>
                                     </div>
                                     <div className="flex items-center gap-2.5">
-                                        <Mail className="h-4 w-4 text-[#C65B8A] shrink-0" />
+                                        <Mail className="h-4 w-4 text-[#B96B8D] shrink-0" />
                                         <span>mis.support@uic.edu.ph</span>
                                     </div>
                                 </div>
