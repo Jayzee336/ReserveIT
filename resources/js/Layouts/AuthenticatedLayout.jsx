@@ -70,7 +70,7 @@ function NavLink({ href, active, icon: Icon, children, collapsed = false }) {
                 collapsed ? 'justify-center px-0 py-3' : 'px-4 py-3'
             } ${
                 active
-                    ? 'bg-[#C65B8A] text-white shadow-inner'
+                    ? 'bg-[#C65B8A] text-white shadow-[0_4px_14px_rgba(198,91,138,0.24)]'
                     : 'text-white/90 hover:bg-[#604457] hover:text-white'
             }`}
         >
@@ -475,7 +475,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                 <div>
                     {/* App title and sidebar collapse button */}
                     <div
-                        className={`flex items-center border-b border-[#604457] transition-all duration-300 ${
+                        className={`flex items-center border-b border-[#604457] bg-[#C65B8A]/10 transition-all duration-300 ${
                             collapsed
                                 ? 'flex-col justify-center gap-3 px-2 py-4'
                                 : 'justify-between p-5'
