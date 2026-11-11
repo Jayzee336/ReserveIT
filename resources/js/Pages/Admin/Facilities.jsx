@@ -191,14 +191,14 @@ function FacilityDetailsModal({
                 <div className="p-6 overflow-y-auto space-y-5">
                     <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 border-b border-gray-100 pb-4">
                         <div className="flex items-center gap-1.5">
-                            <MapPin className="h-4 w-4 text-[#263348]" />
+                            <MapPin className="h-4 w-4 text-[#493344]" />
                             <span className="font-medium text-gray-900">
                                 {facility.location}
                             </span>
                         </div>
 
                         <div className="flex items-center gap-1.5">
-                            <Users className="h-4 w-4 text-[#263348]" />
+                            <Users className="h-4 w-4 text-[#493344]" />
                             <span>
                                 Capacity:{' '}
                                 <strong className="text-gray-900">
@@ -225,7 +225,7 @@ function FacilityDetailsModal({
                         <div className="text-xs text-gray-600 flex items-center gap-2">
                             <Check className={`h-4 w-4 ${
                                 facility.requiresWeekendConsent
-                                    ? 'text-[#263348]'
+                                    ? 'text-[#493344]'
                                     : 'text-gray-300'
                             }`} />
                             Weekend Consent Letter Required:{' '}
@@ -237,7 +237,7 @@ function FacilityDetailsModal({
                         <div className="text-xs text-gray-600 flex items-center gap-2">
                             <Check className={`h-4 w-4 ${
                                 facility.allowTdevsManpower
-                                    ? 'text-[#263348]'
+                                    ? 'text-[#493344]'
                                     : 'text-gray-300'
                             }`} />
                             TDEVS Manpower Support Allowed:{' '}
@@ -260,7 +260,7 @@ function FacilityDetailsModal({
                         <div className="flex shrink-0 flex-wrap items-center gap-2">
                             <Link
                                 href={route('admin.facilities.booking-settings', facility.id)}
-                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-[#BDA8B0] hover:bg-[#F8EAF0]"
+                                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-[#D9C8D4] hover:bg-[#F8EDF2]"
                             >
                                 Configure hours
                             </Link>
@@ -284,7 +284,7 @@ function FacilityDetailsModal({
                                 {facility.facility_admins.map((admin) => (
                                     <span
                                         key={admin.id}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F8EAF0] text-[#A94B75] text-xs font-semibold"
+                                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F8EDF2] text-[#A94B75] text-xs font-semibold"
                                     >
                                         <Users className="h-3.5 w-3.5" />
                                         {admin.name} ({admin.email})
@@ -518,7 +518,7 @@ function FacilityFormModal({
         `block w-full rounded-xl p-2.5 text-sm focus:ring-2 ${
             errors[field]
                 ? 'border-red-400 focus:ring-red-300'
-                : 'border-gray-200 focus:ring-[#B96D91]'
+                : 'border-gray-200 focus:ring-[#647D91]'
         }`;
 
     return (
@@ -531,7 +531,7 @@ function FacilityFormModal({
             />
 
             <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[92vh]">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-[#F8EAF0] to-white">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-[#F8EDF2] to-white">
                     <h2 className="font-bold text-gray-900">
                         {isEditing ? 'Edit Facility' : 'Add Facility'}
                     </h2>
@@ -671,7 +671,7 @@ function FacilityFormModal({
                                         updateField('imageUrl', '');
                                     }
                                 }}
-                                className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-full file:border-0 file:bg-[#F8EAF0] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[#A94B75]"
+                                className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-full file:border-0 file:bg-[#F8EDF2] file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-[#A94B75]"
                             />
 
                             <input
@@ -684,7 +684,7 @@ function FacilityFormModal({
                                         updateField('imageFile', null);
                                     }
                                 }}
-                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#B96D91]"
+                                className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
                                 placeholder="/storage/facilities/example.jpg"
                             />
                         </div>
@@ -759,7 +759,7 @@ function FacilityFormModal({
                                     onChange={(e) =>
                                         updateField('requiresWeekendConsent', e.target.checked)
                                     }
-                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#263348] focus:ring-[#B96D91]"
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#493344] focus:ring-[#647D91]"
                                 />
                                 <span>
                                     Requires consent letter for weekend bookings
@@ -776,7 +776,7 @@ function FacilityFormModal({
                                     onChange={(e) =>
                                         updateField('allowTdevsManpower', e.target.checked)
                                     }
-                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#263348] focus:ring-[#B96D91]"
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#493344] focus:ring-[#647D91]"
                                 />
                                 <span>
                                     Allow requesting TDEVS manpower
@@ -798,7 +798,7 @@ function FacilityFormModal({
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search admins by name or email"
-                                    className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#B96D91]"
+                                    className="block w-full border border-gray-200 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-[#647D91]"
                                 />
 
                                 <div className="mt-3 max-h-48 overflow-y-auto border border-gray-200 rounded-2xl bg-white">
@@ -823,7 +823,7 @@ function FacilityFormModal({
                                                     onClick={() => toggleAssignedAdmin(admin.id)}
                                                     className={`w-full text-left px-4 py-3 transition ${
                                                         selected
-                                                            ? 'bg-[#F8EAF0] text-[#3F3037]'
+                                                            ? 'bg-[#F8EDF2] text-[#3F3037]'
                                                             : 'hover:bg-gray-50 text-gray-700'
                                                     }`}
                                                 >
@@ -869,7 +869,7 @@ function FacilityFormModal({
                                             .map((admin) => (
                                                 <span
                                                     key={admin.id}
-                                                    className="inline-flex items-center gap-2 rounded-full bg-[#F8EAF0] px-3 py-1.5 text-xs font-semibold text-[#A94B75]"
+                                                    className="inline-flex items-center gap-2 rounded-full bg-[#F8EDF2] px-3 py-1.5 text-xs font-semibold text-[#A94B75]"
                                                 >
                                                     {admin.name}
                                                 </span>
@@ -888,7 +888,7 @@ function FacilityFormModal({
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-3 bg-[#C65B8A] hover:bg-[#A94B75] text-white rounded-xl text-sm font-semibold disabled:bg-[#DFC5D1]"
+                            className="w-full py-3 bg-[#C65B8A] hover:bg-[#A94B75] text-white rounded-xl text-sm font-semibold disabled:bg-[#D9C8D4]"
                         >
                             {isSubmitting
                                 ? 'Saving…'
@@ -1094,7 +1094,7 @@ export default function Facilities({
                             <input
                                 type="text"
                                 placeholder="Search facilities..."
-                                className="w-full pl-10 pr-6 py-2.5 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-[#B96D91] focus:border-[#B96D91] text-sm bg-white"
+                                className="w-full pl-10 pr-6 py-2.5 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-[#647D91] focus:border-[#647D91] text-sm bg-white"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -1102,7 +1102,7 @@ export default function Facilities({
 
                         <div className="flex flex-wrap items-center gap-2">
                             {filterType !== 'All' && (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#F8EAF0] text-[#A94B75] border border-[#EEDFE6]">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#F8EDF2] text-[#A94B75] border border-[#E8E1E7]">
                                     {filterType}
                                     <button
                                         type="button"
@@ -1135,7 +1135,7 @@ export default function Facilities({
                             onClick={openFilterModal}
                             className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
                                 activeFilterCount > 0
-                                    ? 'bg-[#F8EAF0] border-[#DFC5D1] text-[#A94B75] hover:bg-[#EEDFE6]'
+                                    ? 'bg-[#F8EDF2] border-[#D9C8D4] text-[#A94B75] hover:bg-[#E8E1E7]'
                                     : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm'
                             }`}
                         >
@@ -1153,7 +1153,7 @@ export default function Facilities({
                         {filteredFacilities.map((facility) => (
                             <div
                                 key={facility.id}
-                                className="ri-facility-card group relative flex flex-col overflow-hidden rounded-2xl border border-[#E8E1E3] bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#D8CDD1] hover:shadow-lg"
+                                className="ri-facility-card group relative flex flex-col overflow-hidden rounded-2xl border border-[#E8E1E7] bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#D9C8D4] hover:shadow-lg"
                             >
                                 <div
                                     className="relative h-56 w-full overflow-hidden bg-gray-100 cursor-pointer"
@@ -1193,7 +1193,7 @@ export default function Facilities({
                                                     e.stopPropagation();
                                                     setFormModalState(facility);
                                                 }}
-                                                className="p-1.5 rounded-full bg-white/90 text-gray-700 hover:text-[#263348] hover:bg-white backdrop-blur-sm shadow-sm transition-colors"
+                                                className="p-1.5 rounded-full bg-white/90 text-gray-700 hover:text-[#493344] hover:bg-white backdrop-blur-sm shadow-sm transition-colors"
                                                 title="Edit Facility"
                                                 aria-label={`Edit ${facility.name}`}
                                             >
@@ -1222,7 +1222,7 @@ export default function Facilities({
                                 <div className="flex flex-grow flex-col p-6">
                                     <h3
                                         onClick={() => setViewingFacility(facility)}
-                                        className="mb-1 min-h-12 cursor-pointer line-clamp-2 text-lg font-bold text-gray-900 transition-colors group-hover:text-[#263348]"
+                                        className="mb-1 min-h-12 cursor-pointer line-clamp-2 text-lg font-bold text-gray-900 transition-colors group-hover:text-[#493344]"
                                     >
                                         {facility.name}
                                     </h3>
@@ -1247,7 +1247,7 @@ export default function Facilities({
                                         <button
                                             type="button"
                                             onClick={() => setViewingFacility(facility)}
-                                            className="text-[#263348] font-semibold flex items-center gap-1 hover:text-[#4E3A43] transition-colors"
+                                            className="text-[#493344] font-semibold flex items-center gap-1 hover:text-[#4E3A43] transition-colors"
                                         >
                                             <Eye className="h-3.5 w-3.5" />
                                             Manage &amp; Details
@@ -1282,7 +1282,7 @@ export default function Facilities({
                     <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
                             <div className="flex items-center gap-2">
-                                <Filter className="h-4 w-4 text-[#263348]" />
+                                <Filter className="h-4 w-4 text-[#493344]" />
                                 <h3 className="font-bold text-gray-900">
                                     Filter &amp; Sort
                                 </h3>
@@ -1316,7 +1316,7 @@ export default function Facilities({
                                             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
                                                 pendingType === type
                                                     ? 'bg-[#C65B8A] text-white border-[#C65B8A] shadow-sm'
-                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#DFC5D1] hover:text-[#263348]'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#D9C8D4] hover:text-[#493344]'
                                             }`}
                                         >
                                             {pendingType === type && (
@@ -1344,7 +1344,7 @@ export default function Facilities({
                                             onClick={() => setPendingSort(value)}
                                             className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm font-medium transition-all text-left ${
                                                 pendingSort === value
-                                                    ? 'bg-[#F8EAF0] text-[#A94B75] border-[#DFC5D1]'
+                                                    ? 'bg-[#F8EDF2] text-[#A94B75] border-[#D9C8D4]'
                                                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                                             }`}
                                         >
@@ -1420,7 +1420,7 @@ export default function Facilities({
                                 value={unavailabilityReason}
                                 onChange={(event) => setUnavailabilityReason(event.target.value)}
                                 placeholder="Example: Electrical maintenance"
-                                className="mt-1 block w-full rounded-xl border border-slate-200 p-3 text-sm font-normal focus:border-[#B96D91] focus:ring-2 focus:ring-[#EEDFE6]"
+                                className="mt-1 block w-full rounded-xl border border-slate-200 p-3 text-sm font-normal focus:border-[#647D91] focus:ring-2 focus:ring-[#E8E1E7]"
                             />
                         </label>
                         <p className="text-xs text-slate-500">Users with affected pending or approved bookings will be notified. Existing bookings will not be cancelled automatically.</p>
