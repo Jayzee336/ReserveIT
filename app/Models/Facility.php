@@ -17,6 +17,8 @@ class Facility extends Model
         'capacity' => 'integer',
         'booking_lead_time_days' => 'integer',
         'max_booking_hours' => 'integer',
+        'overtime_fee_enabled' => 'boolean',
+        'overtime_fee_per_hour' => 'decimal:2',
         'is_available' => 'boolean',
     ];
 
