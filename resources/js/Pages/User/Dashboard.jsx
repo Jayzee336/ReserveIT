@@ -450,7 +450,7 @@ export default function Dashboard({
                                     </p>
                                     <Link
                                         href={route('facilities.index')}
-                                        className="ri-btn-primary mt-5 !border-[#C65B8A] !bg-[#C65B8A] hover:!border-[#604457] hover:!bg-[#A94B75]"
+                                        className="ri-btn-primary mt-5 !border-[#C65B8A] !bg-[#C65B8A] hover:!border-[#604457] hover:!bg-[#A44773]"
                                     >
                                         Explore facilities
                                         <ArrowRight className="h-4 w-4" />
