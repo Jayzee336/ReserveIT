@@ -455,7 +455,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
     };
 
     return (
-        <div className="flex min-h-screen min-w-0 bg-[#FFFCFD]">
+        <div className="flex min-h-screen min-w-0 bg-[#FCFAFB]">
             {/* Mobile navigation backdrop */}
             {mobileNavOpen && (
                 <button
@@ -504,7 +504,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                     </div>
 
                     <nav className="mt-6 space-y-1 px-3">
-                        {!collapsed && <div className="px-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-purple-200">My Workspace</div>}
+                        {!collapsed && <div className="px-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-[#D9C8D4]">My Workspace</div>}
                         <NavLink
                             href={route('dashboard')}
                             active={route().current('dashboard')}
@@ -604,7 +604,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 </NavLink>
 
                                 {!collapsed && (
-                                    <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-purple-200">
+                                    <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-[#D9C8D4]">
                                         Facility Administration
                                     </div>
                                 )}
@@ -645,7 +645,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                         {isSuperAdmin && (
                             <>
                                 {!collapsed && (
-                                    <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-purple-200">
+                                    <div className="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-[#D9C8D4]">
                                         Super Administration
                                     </div>
                                 )}
@@ -726,7 +726,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                 <p className="truncate text-sm font-semibold leading-tight text-white">
                                     {user?.name ?? 'User'}
                                 </p>
-                                <p className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.15em] text-purple-200/70">
+                                <p className="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.15em] text-[#D9C8D4]/80">
                                     {ROLE_LABELS[role] ?? role ?? 'Guest'}
                                 </p>
                             </div>
@@ -778,7 +778,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                             onClick={() => setMobileNavOpen(true)}
                             aria-label="Open navigation menu"
                             aria-expanded={mobileNavOpen}
-                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#EEDFE6] bg-white text-[#C65B8A] shadow-sm transition hover:bg-[#F8EAF0] md:hidden"
+                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E8E1E7] bg-white text-[#C65B8A] shadow-sm transition hover:bg-[#F8EDF2] md:hidden"
                         >
                             <Menu className="h-5 w-5" />
                         </button>
@@ -830,7 +830,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                     aria-label={notificationSoundEnabled ? 'Turn notification sounds off' : 'Turn notification sounds on'}
                                                     aria-pressed={notificationSoundEnabled}
                                                     title={notificationSoundEnabled ? 'Notification sound on' : 'Notification sound off'}
-                                                    className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${notificationSoundEnabled ? 'border-[#DFC5D1] bg-[#F8EAF0] text-[#C65B8A]' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                                                    className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${notificationSoundEnabled ? 'border-[#D9C8D4] bg-[#F8EDF2] text-[#C65B8A]' : 'border-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
                                                 >
                                                     {notificationSoundEnabled ? (
                                                         <Volume2 className="h-3.5 w-3.5" />
@@ -840,7 +840,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                     Sound {notificationSoundEnabled ? 'On' : 'Off'}
                                                 </button>
 
-                                                <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-[#F8EAF0] px-3 py-1.5 text-[11px] font-bold text-[#C65B8A]">
+                                                <span className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-[#F8EDF2] px-3 py-1.5 text-[11px] font-bold text-[#C65B8A]">
                                                     <span className="h-1.5 w-1.5 rounded-full bg-[#C65B8A]" />
                                                     {unreadCount} New
                                                 </span>
@@ -850,7 +850,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                         type="button"
                                                         onClick={clearAllNotifications}
                                                         disabled={isClearingNotifications || isLoggingOut}
-                                                        className="ml-auto inline-flex min-h-8 items-center justify-center rounded-full border border-[#EEDFE6] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#C65B8A] transition hover:bg-[#FFFCFD] disabled:cursor-not-allowed disabled:opacity-50"
+                                                        className="ml-auto inline-flex min-h-8 items-center justify-center rounded-full border border-[#E8E1E7] bg-white px-3 py-1.5 text-[11px] font-semibold text-[#C65B8A] transition hover:bg-[#FCFAFB] disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
                                                         {isClearingNotifications ? 'Updating…' : 'Mark all as read'}
                                                     </button>
@@ -902,7 +902,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                                         className={`w-full rounded-xl p-2.5 text-left text-xs transition hover:bg-gray-50 ${
                                                             notification.read
                                                                 ? 'text-gray-500'
-                                                                : 'bg-[#F8EAF0]/70 text-gray-600'
+                                                                : 'bg-[#F8EDF2]/70 text-gray-600'
                                                         }`}
                                                     >
                                                         <div className="flex flex-wrap items-center gap-2">
@@ -936,7 +936,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                             <Link
                                                 href={route('notifications.index')}
                                                 onClick={() => setNotificationsOpen(false)}
-                                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F8EAF0] px-3 py-2.5 text-xs font-bold text-[#C65B8A] transition hover:bg-[#F8EAF0]"
+                                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F8EDF2] px-3 py-2.5 text-xs font-bold text-[#C65B8A] transition hover:bg-[#F8EDF2]"
                                             >
                                                 View notification history
                                                 <ArrowUpRight className="h-3.5 w-3.5" />
@@ -1104,7 +1104,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                         setTicketCategory(event.target.value);
                                         setTicketFormError('');
                                     }}
-                                    className="block w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                    className="block w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-[#C65B8A] focus:ring-2 focus:ring-[#F8EDF2]"
                                 >
                                     <option value="">Select a category…</option>
                                     <option value="Facility">Facility</option>
@@ -1138,7 +1138,7 @@ export default function AuthenticatedLayout({ header, action, children }) {
                                     maxLength={TICKET_DESCRIPTION_MAX_LENGTH}
                                     aria-describedby="ticket-description-counter ticket-description-error"
                                     aria-invalid={Boolean(ticketFormError)}
-                                    className="block w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                    className="block w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-700 outline-none focus:border-[#C65B8A] focus:ring-2 focus:ring-[#F8EDF2]"
                                     placeholder="Describe the issue or feedback in detail…"
                                     required
                                 />
