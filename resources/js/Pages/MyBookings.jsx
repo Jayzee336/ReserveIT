@@ -279,7 +279,7 @@ const isBookingCompleted = (booking) => {
         booking?.end_date || booking?.date || booking?.booking_date || ''
     ).slice(0, 10);
     const endTime = String(booking?.end_time || '').slice(0, 5);
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(bookingEndDate) || !/^\\d{2}:\\d{2}$/.test(endTime)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(bookingEndDate) || !/^\d{2}:\d{2}$/.test(endTime)) {
         return false;
     }
 
