@@ -237,11 +237,11 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
     };
 
     return (
-        <div className="min-h-screen bg-[#F8EAF0] text-slate-900">
+        <div className="min-h-screen bg-[#F8EDF2] text-slate-900">
             <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-xl">
                 <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#263348] to-[#A94B75] text-white shadow-lg shadow-[#3F3037]/15">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#493344] to-[#A94B75] text-white shadow-lg shadow-[#3F3037]/15">
                             <FileText className="h-5 w-5" />
                         </span>
                         <div className="min-w-0">
@@ -271,7 +271,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
                             type="button"
                             onClick={handleDownload}
                             disabled={isDownloading}
-                            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#A94B75] px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-[#3F3037]/10 transition hover:bg-[#4E3A43] focus:outline-none focus:ring-2 focus:ring-[#F8EAF0]0 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
+                            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#A94B75] px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-[#3F3037]/10 transition hover:bg-[#4E3A43] focus:outline-none focus:ring-2 focus:ring-[#F8EDF2]0 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
                         >
                             {isDownloading
                                 ? <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -369,7 +369,7 @@ export default function ConsentPreview({ fileName, fileExtension, pdfDataBase64,
 
                 <section
                     ref={previewContainerRef}
-                    className="max-h-[calc(100vh-210px)] min-h-[58vh] overflow-auto rounded-2xl border border-slate-200 bg-[#EEDFE6] p-3 shadow-inner sm:p-6"
+                    className="max-h-[calc(100vh-210px)] min-h-[58vh] overflow-auto rounded-2xl border border-slate-200 bg-[#E8E1E7] p-3 shadow-inner sm:p-6"
                 >
                     {isLoading && (
                         <div className="flex min-h-[55vh] flex-col items-center justify-center gap-3 text-center">
