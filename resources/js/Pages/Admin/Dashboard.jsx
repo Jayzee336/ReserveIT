@@ -37,8 +37,8 @@ function formatTime(value) {
 }
 
 function Stat({ label, value, onClick }) {
-    const content = <><span className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-slate-500">{label}</span>{onClick && <span className="text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>}</span><p className="mt-2 text-3xl font-bold tracking-tight text-[#493344]">{value ?? 0}</p></>;
-    const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#D9C8D4] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2";
+    const content = <><span className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-slate-500">{label}</span>{onClick && <span className="text-[10px] font-bold uppercase tracking-wide text-[#B96B8D] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>}</span><p className="mt-2 text-3xl font-bold tracking-tight text-[#493344]">{value ?? 0}</p></>;
+    const classes = "ri-panel min-w-0 p-5 text-left transition hover:-translate-y-0.5 hover:border-[#D9C8D4] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#B96B8D] focus:ring-offset-2";
     return onClick ? <button type="button" onClick={onClick} className={`group w-full ${classes}`}>{content}</button> : <div className={classes}>{content}</div>;
 }
 
@@ -185,7 +185,7 @@ function BookingDetailModal({ booking, onClose }) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-xl bg-[#C65B8A] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773]"
+                        className="rounded-xl bg-[#B96B8D] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#96516F]"
                     >
                         Close
                     </button>
@@ -512,7 +512,7 @@ export default function AdminDashboard({
 
             <div className="ri-page-shell space-y-7">
                 <section className="relative isolate overflow-hidden rounded-[1.75rem] bg-[#493344] px-6 py-8 text-white shadow-[var(--ri-shadow-md)] sm:px-8 sm:py-10">
-                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#C65B8A]/25 blur-3xl" />
+                    <div className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-[#B96B8D]/25 blur-3xl" />
                     <div className="pointer-events-none absolute -bottom-32 right-1/3 -z-10 h-64 w-64 rounded-full bg-[#647D91]/10 blur-3xl" />
                     <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
                         <div className="max-w-2xl">
@@ -528,7 +528,7 @@ export default function AdminDashboard({
                         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
                             <Link
                                 href={route('facilities.index')}
-                                className="ri-btn-primary !min-h-12 !border-[#C65B8A] !bg-[#C65B8A] !px-5 !text-white hover:!border-[#A44773] hover:!bg-[#A44773]"
+                                className="ri-btn-primary !min-h-12 !border-[#B96B8D] !bg-[#B96B8D] !px-5 !text-white hover:!border-[#96516F] hover:!bg-[#96516F]"
                             >
                                 Book a Facility
                                 <ArrowRight className="h-4 w-4" />
@@ -582,7 +582,7 @@ export default function AdminDashboard({
                             <input
                                 type="text"
                                 placeholder="Search by facility, user or guest name..."
-                                className="w-full rounded-lg border border-stone-200 bg-white py-2 pl-9 pr-4 text-sm text-stone-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20"
+                                className="w-full rounded-lg border border-stone-200 bg-white py-2 pl-9 pr-4 text-sm text-stone-700 focus:border-[#B96B8D] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]/20"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -595,7 +595,7 @@ export default function AdminDashboard({
                             </div>
 
                             <select
-                                className="w-full rounded-lg border border-stone-200 bg-white py-1.5 pl-3 pr-8 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#C65B8A] sm:w-auto"
+                                className="w-full rounded-lg border border-stone-200 bg-white py-1.5 pl-3 pr-8 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#B96B8D] sm:w-auto"
                                 value={sortOrder}
                                 onChange={(e) => setSortOrder(e.target.value)}
                             >
@@ -604,7 +604,7 @@ export default function AdminDashboard({
                             </select>
 
                             <select
-                                className="w-full rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#C65B8A] sm:w-auto"
+                                className="w-full rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#B96B8D] sm:w-auto"
                                 value={timeFilter}
                                 onChange={(e) => setTimeFilter(e.target.value)}
                             >
@@ -682,7 +682,7 @@ export default function AdminDashboard({
                         </h2>
                         <Link
                             href={route('admin.concerns.index')}
-                            className="text-sm font-semibold text-[#493344] transition-colors duration-150 hover:text-[#A44773] hover:underline hover:underline-offset-4"
+                            className="text-sm font-semibold text-[#493344] transition-colors duration-150 hover:text-[#96516F] hover:underline hover:underline-offset-4"
                         >
                             View all
                         </Link>
@@ -711,28 +711,28 @@ export default function AdminDashboard({
                     <form onSubmit={applyAnalyticsFilters} className="mb-4 grid gap-3 rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-3 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_0.8fr_auto_auto] lg:items-end">
                         <label className="block text-xs font-semibold text-slate-600">
                             Facility scope
-                            <select value={analyticsFacility} onChange={(event) => setAnalyticsFacility(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20">
+                            <select value={analyticsFacility} onChange={(event) => setAnalyticsFacility(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#B96B8D] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]/20">
                                 <option value="">All facilities</option>
                                 {analyticsFacilities.map((facility) => <option key={facility.id} value={facility.id}>{facility.name}</option>)}
                             </select>
                         </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             From
-                            <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20" />
+                            <input type="date" value={analyticsFrom} onChange={(event) => setAnalyticsFrom(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#B96B8D] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]/20" />
                         </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             To
-                            <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20" />
+                            <input type="date" min={analyticsFrom || undefined} value={analyticsTo} onChange={(event) => setAnalyticsTo(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#B96B8D] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]/20" />
                         </label>
                         <label className="block text-xs font-semibold text-slate-600">
                             Trend interval
-                            <select value={analyticsGroupBy} onChange={(event) => setAnalyticsGroupBy(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#C65B8A] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]/20">
+                            <select value={analyticsGroupBy} onChange={(event) => setAnalyticsGroupBy(event.target.value)} className="mt-1 block w-full rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 focus:border-[#B96B8D] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]/20">
                                 <option value="day">Daily</option>
                                 <option value="week">Weekly</option>
                                 <option value="month">Monthly</option>
                             </select>
                         </label>
-                        <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#C65B8A] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A44773]">
+                        <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#B96B8D] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#96516F]">
                             <SlidersHorizontal className="h-4 w-4" /> Apply
                         </button>
                         <button type="button" onClick={resetAnalyticsFilters} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-stone-100">
@@ -750,8 +750,8 @@ export default function AdminDashboard({
                             ['overtime', 'Overtime minutes', `${operationalAnalytics.overtimeMinutes ?? 0} min`, `${operationalAnalytics.overtimeBookings ?? 0} bookings with recorded overtime`],
                             ['overtime', 'Overtime fees', `₱${Number(operationalAnalytics.overtimeFees ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Recorded overtime charges in the period'],
                         ].map(([key, label, value, hint], index) => (
-                            <button key={`${key}-${index}`} type="button" onClick={() => setAnalyticsDetailKey(key)} className="group rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#C65B8A] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2">
-                                <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600"><span>{label}</span><span className="text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span></span>
+                            <button key={`${key}-${index}`} type="button" onClick={() => setAnalyticsDetailKey(key)} className="group rounded-xl border border-[var(--ri-border)] bg-[var(--ri-surface-subtle)] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#B96B8D] hover:bg-white hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#B96B8D] focus:ring-offset-2">
+                                <span className="flex items-center justify-between gap-2 text-xs font-semibold text-slate-600"><span>{label}</span><span className="text-[10px] font-bold uppercase tracking-wide text-[#B96B8D] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span></span>
                                 <span className="mt-2 block text-xl font-bold text-[#493344]">{value}</span><span className="mt-1 block text-[11px] leading-4 text-slate-500">{hint}</span>
                             </button>
                         ))}
@@ -785,9 +785,9 @@ export default function AdminDashboard({
                                                 onClick={() => setSelectedTrendLabel(item.label)}
                                                 title={`${item.label}: ${item.bookings} bookings. ${facilityHint || 'No facility details'}`}
                                                 aria-label={`View facilities booked in ${item.label}`}
-                                                className={`flex w-full flex-1 items-end rounded-t-lg bg-[#F8EDF2] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#C65B8A] focus:ring-2 focus:ring-[#C65B8A] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#493344]' : ''}`}
+                                                className={`flex w-full flex-1 items-end rounded-t-lg bg-[#F8EDF2] outline-none ring-offset-2 transition hover:ring-2 hover:ring-[#B96B8D] focus:ring-2 focus:ring-[#B96B8D] ${selectedTrendLabel === item.label ? 'ring-2 ring-[#493344]' : ''}`}
                                             >
-                                                <span className="block w-full rounded-t-lg bg-[#C65B8A]" style={{ height: `${(item.bookings / maximum) * 100}%`, minHeight: item.bookings ? '8px' : '2px' }}/>
+                                                <span className="block w-full rounded-t-lg bg-[#B96B8D]" style={{ height: `${(item.bookings / maximum) * 100}%`, minHeight: item.bookings ? '8px' : '2px' }}/>
                                             </button>
                                             <span title={item.label} className="w-full truncate text-center text-[10px] text-slate-500">{item.label}</span>
                                         </div>
@@ -813,10 +813,10 @@ export default function AdminDashboard({
                         <div className="mb-3 flex min-w-0 flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#493344]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
                         <div className="min-w-0 space-y-3">{displayedStatusBreakdown.map((item) => {
                             const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
-                            return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]">
+                            return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]">
                                 <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage.toFixed(1)}%</span></span></div>
                                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
-                                <span className="mt-1 block text-right text-[10px] font-semibold text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                <span className="mt-1 block text-right text-[10px] font-semibold text-[#B96B8D] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                             </button>;
                         })}</div>
                     </div>
@@ -857,11 +857,11 @@ export default function AdminDashboard({
                                                 items: facilityBookings,
                                             });
                                         }}
-                                        className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#E8E1E7] bg-[var(--ri-surface-subtle)] px-3 py-2 text-left text-sm transition hover:border-[#D9C8D4] hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#C65B8A]"
+                                        className="group flex w-full items-center justify-between gap-3 rounded-xl border border-[#E8E1E7] bg-[var(--ri-surface-subtle)] px-3 py-2 text-left text-sm transition hover:border-[#D9C8D4] hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]"
                                     >
                                         <span className="min-w-0 text-left">
                                             <span className="block truncate text-slate-700">{facility.name}</span>
-                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#C65B8A] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
+                                            <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-[#B96B8D] opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">View details</span>
                                         </span>
                                         <span className="shrink-0 font-semibold text-[#493344]">
                                             {facility.bookings} bookings
