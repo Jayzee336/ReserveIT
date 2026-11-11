@@ -321,7 +321,7 @@ function FacilityDetailsModal({
                                     onClose();
                                     onEdit(facility);
                                 }}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#263348] hover:bg-[#A94B75] text-white text-sm font-semibold transition"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C65B8A] hover:bg-[#A94B75] text-white text-sm font-semibold transition"
                             >
                                 <Pencil className="h-4 w-4" />
                                 Edit Settings
@@ -840,7 +840,7 @@ function FacilityFormModal({
                                                         <span
                                                             className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                                                                 selected
-                                                                    ? 'bg-[#263348] text-white'
+                                                                    ? 'bg-[#C65B8A] text-white'
                                                                     : 'bg-gray-100 text-gray-600'
                                                             }`}
                                                         >
@@ -888,7 +888,7 @@ function FacilityFormModal({
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-3 bg-[#263348] hover:bg-[#A94B75] text-white rounded-xl text-sm font-semibold disabled:bg-[#DFC5D1]"
+                            className="w-full py-3 bg-[#C65B8A] hover:bg-[#A94B75] text-white rounded-xl text-sm font-semibold disabled:bg-[#DFC5D1]"
                         >
                             {isSubmitting
                                 ? 'Saving…'
@@ -1080,7 +1080,7 @@ export default function Facilities({
                             <button
                                 type="button"
                                 onClick={() => setFormModalState('create')}
-                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#263348] hover:bg-[#A94B75] text-white text-sm font-semibold shadow-sm transition-colors self-start sm:self-auto"
+                                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#C65B8A] hover:bg-[#A94B75] text-white text-sm font-semibold shadow-sm transition-colors self-start sm:self-auto"
                             >
                                 <Plus className="h-4 w-4" />
                                 Add Facility
@@ -1142,7 +1142,7 @@ export default function Facilities({
                             <Filter className="h-4 w-4" />
                             <span>Filters</span>
                             {activeFilterCount > 0 && (
-                                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#263348] text-white text-[10px] font-bold">
+                                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-[#C65B8A] text-white text-[10px] font-bold">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -1315,7 +1315,7 @@ export default function Facilities({
                                             onClick={() => setPendingType(type)}
                                             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
                                                 pendingType === type
-                                                    ? 'bg-[#263348] text-white border-[#263348] shadow-sm'
+                                                    ? 'bg-[#C65B8A] text-white border-[#C65B8A] shadow-sm'
                                                     : 'bg-white text-gray-600 border-gray-200 hover:border-[#DFC5D1] hover:text-[#263348]'
                                             }`}
                                         >
@@ -1350,7 +1350,7 @@ export default function Facilities({
                                         >
                                             <span>{label}</span>
                                             {pendingSort === value && (
-                                                <span className="w-4 h-4 rounded-full bg-[#263348] flex items-center justify-center flex-shrink-0">
+                                                <span className="w-4 h-4 rounded-full bg-[#C65B8A] flex items-center justify-center flex-shrink-0">
                                                     <Check className="h-2.5 w-2.5 text-white" />
                                                 </span>
                                             )}
@@ -1372,7 +1372,7 @@ export default function Facilities({
                             <button
                                 type="button"
                                 onClick={applyFilters}
-                                className="flex-1 py-2.5 px-4 rounded-xl bg-[#263348] text-white text-sm font-semibold hover:bg-[#A94B75] transition-colors shadow-sm"
+                                className="flex-1 py-2.5 px-4 rounded-xl bg-[#C65B8A] text-white text-sm font-semibold hover:bg-[#A94B75] transition-colors shadow-sm"
                             >
                                 Apply Filters
                             </button>
@@ -1426,7 +1426,7 @@ export default function Facilities({
                         <p className="text-xs text-slate-500">Users with affected pending or approved bookings will be notified. Existing bookings will not be cancelled automatically.</p>
                         <div className="flex gap-2">
                             <button type="button" disabled={availabilitySubmitting} onClick={() => setAvailabilityDialog(null)} className="flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold text-slate-700 disabled:opacity-50">Cancel</button>
-                            <button type="submit" disabled={availabilitySubmitting || !unavailabilityReason.trim()} className="flex-1 rounded-xl bg-[#263348] px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{availabilitySubmitting ? 'Saving…' : 'Confirm unavailable'}</button>
+                            <button type="submit" disabled={availabilitySubmitting || !unavailabilityReason.trim()} className="flex-1 rounded-xl bg-[#C65B8A] px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-50">{availabilitySubmitting ? 'Saving…' : 'Confirm unavailable'}</button>
                         </div>
                     </form>
                 </div>
