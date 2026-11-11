@@ -181,7 +181,7 @@ export default function Login({ status, canResetPassword }) {
 
                             <button
                                 type="button"
-                                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C65B8A] transition hover:text-[#A94B75]"
+                                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C65B8A] transition hover:text-[#A44773]"
                                 onClick={() =>
                                     setShowPassword((value) => !value)
                                 }
@@ -246,7 +246,7 @@ export default function Login({ status, canResetPassword }) {
                         {canResetPassword && (
                             <Link
                                 href={route('password.request')}
-                                className="text-xs font-bold text-[#C65B8A] transition hover:text-[#A94B75] hover:underline"
+                                className="text-xs font-bold text-[#C65B8A] transition hover:text-[#A44773] hover:underline"
                             >
                                 Forgot password?
                             </Link>
@@ -258,7 +258,7 @@ export default function Login({ status, canResetPassword }) {
                         <button
                             type="submit"
                             disabled={processing}
-                            className="flex w-full items-center justify-center rounded-2xl bg-[#C65B8A] py-3 text-xs font-bold text-white shadow-md transition duration-200 hover:bg-[#A94B75] focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2 active:scale-[0.99] disabled:opacity-50"
+                            className="flex w-full items-center justify-center rounded-2xl bg-[#C65B8A] py-3 text-xs font-bold text-white shadow-md transition duration-200 hover:bg-[#A44773] focus:outline-none focus:ring-2 focus:ring-[#C65B8A] focus:ring-offset-2 active:scale-[0.99] disabled:opacity-50"
                         >
                             {processing ? 'Signing in...' : 'Sign In'}
                         </button>
@@ -270,7 +270,7 @@ export default function Login({ status, canResetPassword }) {
                     <span>Don&apos;t have an account?</span>{' '}
                     <Link
                         href={route('register')}
-                        className="font-bold text-[#C65B8A] transition hover:text-[#A94B75] hover:underline"
+                        className="font-bold text-[#C65B8A] transition hover:text-[#A44773] hover:underline"
                     >
                         Create an account
                     </Link>
