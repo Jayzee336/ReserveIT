@@ -23,6 +23,7 @@ const STATUS_STYLES = {
     approved: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
     declined: 'bg-red-50 text-red-700 ring-red-600/20',
     cancelled: 'bg-gray-100 text-gray-600 ring-gray-500/20',
+    expired: 'bg-slate-100 text-slate-700 ring-slate-500/20',
 };
 
 function StatusBadge({ status }) {
@@ -34,7 +35,7 @@ function StatusBadge({ status }) {
                 STATUS_STYLES[normalized] ?? STATUS_STYLES.pending
             }`}
         >
-            {normalized === 'pending' ? 'PENDING · SLOT HELD' : normalized === 'approved' ? 'APPROVED · CONFIRMED' : String(status || '').toUpperCase()}
+            {normalized === 'pending' ? 'PENDING · SLOT HELD' : normalized === 'approved' ? 'APPROVED · CONFIRMED' : normalized === 'expired' ? 'EXPIRED · SLOT RELEASED' : String(status || '').toUpperCase()}
         </span>
     );
 }
@@ -170,6 +171,14 @@ function CheckInOutActions({
     );
 }
 
+function getRequesterTypeLabel(booking) {
+    const email = String(booking?.user?.email ?? booking?.guest_email ?? '').trim().toLowerCase();
+
+    if (booking?.user?.account_type_label) return booking.user.account_type_label;
+    if (email.endsWith('@uic.edu.ph')) return 'UIC Member — classification needed';
+    return email ? 'Outsider' : 'Not classified';
+}
+
 function PendingBookingCard({
     booking,
     onView,
@@ -196,7 +205,7 @@ function PendingBookingCard({
                     </p>
 
                     <p className="mt-1 text-[11px] font-semibold text-[#6A535C]">
-                        {booking.user?.account_type_label ?? (booking.guest_email?.toLowerCase().endsWith('@uic.edu.ph') ? 'UIC Student / Teacher' : 'Outsider')}
+                        {getRequesterTypeLabel(booking)}
                     </p>
 
                     <p className="mt-1 flex min-w-0 items-start gap-1.5 break-words text-sm text-gray-500">
@@ -320,11 +329,9 @@ function BookingDetailModal({
                                 {booking.user?.email ?? booking.guest_email}
                             </p>
                         )}
-                        {booking.user?.account_type_label && (
-                            <p className="mt-1 text-xs font-semibold text-slate-600">
-                                Requester type: {booking.user.account_type_label}
-                            </p>
-                        )}
+                        <p className="mt-1 text-xs font-semibold text-slate-600">
+                            Requester type: {getRequesterTypeLabel(booking)}
+                        </p>
                     </div>
 
                     <div className="rounded-xl bg-stone-50 p-4">
