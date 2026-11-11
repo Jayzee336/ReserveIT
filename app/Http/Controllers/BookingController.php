@@ -351,6 +351,7 @@ class BookingController extends Controller
                     'approved',
                     'declined',
                     'cancelled',
+                    'expired',
                 ]),
             ],
             'booking' => ['nullable', 'string', 'max:255'],
