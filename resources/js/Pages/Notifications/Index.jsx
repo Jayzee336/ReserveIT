@@ -186,7 +186,7 @@ export default function NotificationIndex({ notificationHistory, unreadCount = 0
                                     value={search}
                                     onChange={(event) => setSearch(event.target.value)}
                                     placeholder="Search event title, facility, details, booking ID, or ticket ID…"
-                                    className="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#647D91] focus:bg-white focus:ring-2 focus:ring-[#EADDE1]"
+                                    className="w-full rounded-xl border border-stone-200 bg-stone-50 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#C65B8A] focus:bg-white focus:ring-2 focus:ring-[#EADDE1]"
                                 />
                             </div>
                             <button type="submit" className="rounded-xl bg-[#C65B8A] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#A44773]">
