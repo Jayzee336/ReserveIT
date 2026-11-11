@@ -10,7 +10,7 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
             <Head title="Profile" />
 
             <div className="space-y-6">
-                <section className="rounded-[2rem] border border-[#EEDFE6] bg-white p-8 shadow-[0_32px_90px_rgba(0,0,0,0.08)]">
+                <section className="rounded-[2rem] border border-[#E8E1E7] bg-white p-8 shadow-[0_32px_90px_rgba(0,0,0,0.08)]">
                     <div className="mb-6">
                         <p className="text-sm uppercase tracking-[0.27em] text-[#C65B8A]">
                             Profile management
@@ -27,7 +27,7 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
                     </div>
 
                     <div className="space-y-8">
-                        <div className="rounded-3xl bg-[#FFFCFD] p-6">
+                        <div className="rounded-3xl bg-[#FCFAFB] p-6">
                             <UpdateProfileInformationForm
                                 mustVerifyEmail={mustVerifyEmail}
                                 status={status}
@@ -35,7 +35,7 @@ export default function Edit({ mustVerifyEmail, status, isSsoUser }) {
                             />
                         </div>
 
-                        <div className="rounded-3xl bg-[#FFFCFD] p-6">
+                        <div className="rounded-3xl bg-[#FCFAFB] p-6">
                             {isSsoUser ? (
                                 <div className="max-w-2xl">
                                     <h2 className="text-lg font-medium text-slate-900">
