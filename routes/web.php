@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\BookingAttachmentController;
 use App\Http\Controllers\ActivityPlanController;
 use App\Http\Controllers\BookingExtensionController;
 use App\Http\Controllers\FacilityAvailabilityController;
@@ -741,6 +742,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return redirect()->back();
     })->name('notifications.read');
+
+    Route::get('/bookings/{booking}/attachments/{type}', [BookingAttachmentController::class, 'download'])
+        ->whereIn('type', ['activity-plan', 'sir-rene-signature'])
+        ->name('bookings.attachments.download');
 
     // Serve Consent Files
     Route::get('/bookings/{booking}/consent', function (Booking $booking) {
