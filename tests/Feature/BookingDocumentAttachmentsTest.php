@@ -96,6 +96,63 @@ class BookingDocumentAttachmentsTest extends TestCase
         $this->assertDatabaseCount('bookings', 0);
     }
 
+    public function test_lobby_regular_hours_uic_member_does_not_need_sister_signature(): void
+    {
+        $user = $this->createUser();
+        $user->update(['email' => 'member@uic.edu.ph']);
+        $facility = $this->createFacility('documents-lobby-uic-regular', 'Lobby');
+
+        $payload = array_merge($this->bookingPayload($facility), [
+            'consent_letter' => UploadedFile::fake()->create('consent-letter.pdf', 100, 'application/pdf'),
+            'activity_plan_file' => UploadedFile::fake()->create('activity-plan.pdf', 100, 'application/pdf'),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('bookings.store'), $payload)
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('bookings', [
+            'facility_id' => $facility->id,
+            'status' => 'pending',
+            'sister_signature_path' => null,
+        ]);
+    }
+
+    public function test_lobby_after_hours_uic_member_requires_sister_signature(): void
+    {
+        $user = $this->createUser();
+        $user->update(['email' => 'member@uic.edu.ph']);
+        $facility = $this->createFacility('documents-lobby-uic-after-hours', 'Lobby');
+        $payload = array_merge($this->bookingPayload($facility), [
+            'start_time' => '17:00',
+            'end_time' => '18:00',
+            'consent_letter' => UploadedFile::fake()->create('consent-letter.pdf', 100, 'application/pdf'),
+            'activity_plan_file' => UploadedFile::fake()->create('activity-plan.pdf', 100, 'application/pdf'),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('bookings.store'), $payload)
+            ->assertSessionHasErrors('sister_signature');
+
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
+    public function test_outsider_regular_hours_booking_requires_sister_signature(): void
+    {
+        $user = $this->createUser();
+        $facility = $this->createFacility('documents-lobby-outsider', 'Lobby');
+        $payload = array_merge($this->bookingPayload($facility), [
+            'consent_letter' => UploadedFile::fake()->create('consent-letter.pdf', 100, 'application/pdf'),
+            'activity_plan_file' => UploadedFile::fake()->create('activity-plan.pdf', 100, 'application/pdf'),
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('bookings.store'), $payload)
+            ->assertSessionHasErrors('sister_signature');
+
+        $this->assertDatabaseCount('bookings', 0);
+    }
+
     public function test_sky_gym_requires_both_activity_plan_and_sir_rene_signed_document(): void
     {
         $user = $this->createUser();
