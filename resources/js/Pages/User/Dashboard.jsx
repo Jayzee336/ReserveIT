@@ -17,7 +17,7 @@ import {
     TrendingUp,
 } from 'lucide-react';
 
-const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled'];
+const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled', 'expired'];
 
 const STATUS_STYLES = {
     pending: 'border-amber-200 bg-amber-50 text-amber-800',
@@ -25,6 +25,7 @@ const STATUS_STYLES = {
     declined: 'border-rose-200 bg-rose-50 text-rose-800',
     completed: 'border-sky-200 bg-sky-50 text-sky-800',
     cancelled: 'border-slate-200 bg-slate-100 text-slate-600',
+    expired: 'border-violet-200 bg-violet-50 text-violet-800',
 };
 
 const STATUS_LABELS = {
@@ -122,6 +123,7 @@ export default function Dashboard({
         completedBookings: 0,
         declinedBookings: 0,
         cancelledBookings: 0,
+        expiredBookings: 0,
     };
     const trendMaximum = Math.max(...bookingTrends.map((item) => item.bookings), 1);
     const firstName = auth?.user?.name?.trim()?.split(/\s+/)[0] || 'there';
