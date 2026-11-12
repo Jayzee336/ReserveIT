@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 final class BookingDashboardAnalytics
 {
-    public const STATUSES = ['pending', 'approved', 'completed', 'declined', 'cancelled'];
+    public const STATUSES = ['pending', 'approved', 'completed', 'declined', 'cancelled', 'expired'];
 
     public static function isCompleted(Booking $booking, ?Carbon $asOf = null): bool
     {
