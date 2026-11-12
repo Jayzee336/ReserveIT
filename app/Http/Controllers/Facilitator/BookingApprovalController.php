@@ -14,6 +14,7 @@ use App\Support\FacilityScheduleAvailability;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -29,6 +30,9 @@ class BookingApprovalController extends Controller
      */
     public function index(Request $request): Response
     {
+        // Expire overdue requests before building the review queues.
+        Artisan::call('bookings:expire-pending');
+
         $search = $request->input('search');
         $status = $request->input('status');
 
@@ -180,6 +184,9 @@ class BookingApprovalController extends Controller
      */
     public function approve(Booking $booking)
     {
+        // Prevent a stale review screen from approving a request after its start time.
+        Artisan::call('bookings:expire-pending');
+        $booking->refresh();
         $user = Auth::user();
 
         $result = DB::transaction(function () use ($booking, $user) {
@@ -342,6 +349,10 @@ class BookingApprovalController extends Controller
      */
     public function decline(Request $request, Booking $booking)
     {
+        // Prevent a stale review screen from declining a request after its start time.
+        Artisan::call('bookings:expire-pending');
+        $booking->refresh();
+
         $validated = $request->validate([
             'rejection_reason' => ['required', 'string', 'min:1'],
         ]);
