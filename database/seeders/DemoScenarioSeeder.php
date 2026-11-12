@@ -165,18 +165,9 @@ class DemoScenarioSeeder extends Seeder
             $users[$key] = $user;
         }
 
-        $assignments = [
-            'facility' => ['itdif', 'itrc'],
-            'facility2' => ['avr', 'avr2', 'view_deck'],
-            'facility3' => ['iot', 'sky_gym'],
-            'facility4' => ['field', 'lobby', 'ndhrm_hall', 'f3'],
-        ];
-
-        foreach ($assignments as $accountKey => $facilityIds) {
-            $users[$accountKey]->managedFacilities()->syncWithoutDetaching(
-                Facility::whereIn('id', $facilityIds)->pluck('id')->all()
-            );
-        }
+        // Facility-admin access is managed centrally by UserSeeder and the
+        // facility-assignment screen. This scenario seeder must not attach
+        // legacy demo accounts to facilities or reintroduce stale assignments.
 
         return $users;
     }
