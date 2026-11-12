@@ -1431,7 +1431,7 @@ export default function MyBookings({
                                     </div>
                                 </section>
 
-                                {(selectedDetailBooking.activity_plan_file_path || selectedDetailBooking.sir_rene_signature_path) && (
+                                {(selectedDetailBooking.activity_plan_file_path || selectedDetailBooking.sir_rene_signature_path || selectedDetailBooking.sister_signature_path) && (
                                     <section className="rounded-lg border border-blue-100 bg-blue-50/60 p-3">
                                         <h3 className="mb-2 text-sm font-bold text-blue-950">Uploaded Booking Documents</h3>
                                         <div className="flex flex-col items-start gap-2 text-sm">
@@ -1445,7 +1445,20 @@ export default function MyBookings({
                                                     Download Sir Rene's Signed Document · {selectedDetailBooking.sir_rene_signature_name || 'Attached document'}
                                                 </a>
                                             )}
+                                            {selectedDetailBooking.sister_signature_path && (
+                                                <a href={`/bookings/${selectedDetailBooking.id}/attachments/sister-signature`} className="font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900">
+                                                    Download Sister's Signed Document · {selectedDetailBooking.sister_signature_name || 'Attached document'}
+                                                </a>
+                                            )}
                                         </div>
+                                    </section>
+                                )}
+
+                                {Number(selectedDetailBooking.scheduled_fee_amount ?? 0) > 0 && (
+                                    <section className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                                        <h3 className="text-sm font-bold text-amber-950">Scheduled Booking Fee</h3>
+                                        <p className="mt-1 text-lg font-bold text-amber-950">₱{Number(selectedDetailBooking.scheduled_fee_amount).toFixed(2)}</p>
+                                        <p className="mt-1 text-xs text-amber-800">{selectedDetailBooking.scheduled_fee_minutes ?? 0} billable minutes at ₱{Number(selectedDetailBooking.scheduled_fee_rate ?? 0).toFixed(2)} per hour · {selectedDetailBooking.scheduled_fee_payment_status ?? 'unpaid'}</p>
                                     </section>
                                 )}
 
