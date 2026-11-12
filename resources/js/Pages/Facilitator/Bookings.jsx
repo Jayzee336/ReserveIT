@@ -447,7 +447,7 @@ function BookingDetailModal({
                         </div>
                     )}
 
-                    {(booking.activity_plan_file_path || booking.sir_rene_signature_path) && (
+                    {(booking.activity_plan_file_path || booking.sir_rene_signature_path || booking.sister_signature_path) && (
                         <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
                             <p className="mb-2 text-xs font-bold uppercase tracking-wide text-blue-900">Booking Documents</p>
                             <div className="flex flex-wrap gap-3 text-sm">
@@ -461,7 +461,20 @@ function BookingDetailModal({
                                         View Sir Rene's Signed Document · {booking.sir_rene_signature_name || 'Attached document'}
                                     </a>
                                 )}
+                                {booking.sister_signature_path && (
+                                    <a href={`/bookings/${booking.id}/attachments/sister-signature`} className="font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900">
+                                        View Sister's Signed Document · {booking.sister_signature_name || 'Attached document'}
+                                    </a>
+                                )}
                             </div>
+                        </div>
+                    )}
+
+                    {Number(booking.scheduled_fee_amount ?? 0) > 0 && (
+                        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                            <p className="text-xs font-bold uppercase tracking-wide text-amber-900">Scheduled Booking Fee</p>
+                            <p className="mt-1 text-lg font-bold text-amber-900">₱{Number(booking.scheduled_fee_amount).toFixed(2)}</p>
+                            <p className="mt-1 text-xs text-amber-800">{booking.scheduled_fee_minutes ?? 0} billable minutes at ₱{Number(booking.scheduled_fee_rate ?? 0).toFixed(2)} per hour · {booking.scheduled_fee_payment_status ?? 'unpaid'}</p>
                         </div>
                     )}
 
