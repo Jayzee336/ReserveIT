@@ -116,9 +116,9 @@ export default function BookingModal({
         for (let minutes = toMins(OPENING_TIME); minutes < closingMinutes; minutes += SLOT_INTERVAL_MINUTES) {
             slots.push(`${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`);
         }
-        slots.push(CLOSING_TIME);
+        if (!isSpecialFacilityBooking) slots.push(CLOSING_TIME);
         return slots;
-    }, [OPENING_TIME, CLOSING_TIME, closingMinutes, isFacilityClosed]);
+    }, [OPENING_TIME, CLOSING_TIME, closingMinutes, isFacilityClosed, isSpecialFacilityBooking]);
 
     // Read the cleanup buffer shared by HandleInertiaRequests.php.
     const configuredBuffer = Number(
