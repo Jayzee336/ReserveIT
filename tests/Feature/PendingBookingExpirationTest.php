@@ -1,14 +1,14 @@
 <?php
 
-namespace Tests\\Feature;
+namespace Tests\Feature;
 
-use App\\Models\\Booking;
-use App\\Models\\Facility;
-use App\\Models\\SystemSetting;
-use App\\Models\\User;
-use Illuminate\\Foundation\\Testing\\RefreshDatabase;
-use Illuminate\\Support\\Carbon;
-use Tests\\TestCase;
+use App\Models\Booking;
+use App\Models\Facility;
+use App\Models\SystemSetting;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Tests\TestCase;
 
 class PendingBookingExpirationTest extends TestCase
 {
