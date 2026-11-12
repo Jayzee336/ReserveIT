@@ -34,6 +34,11 @@ class BookingAttachmentController extends Controller
                 $booking->sir_rene_signature_name,
                 'booking-signatures/',
             ],
+            'sister-signature' => [
+                $booking->sister_signature_path,
+                $booking->sister_signature_name,
+                'booking-sister-signatures/',
+            ],
             default => abort(404),
         };
 
