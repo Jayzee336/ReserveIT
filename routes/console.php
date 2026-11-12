@@ -11,5 +11,6 @@ Artisan::command('inspire', function () {
 // Run overtime check every 5 minutes to detect overstaying bookings
 Schedule::command('bookings:check-overtime')->everyFiveMinutes();
 
-// Send pending-approval reminders and expire unresolved bookings without deleting history.
-Schedule::command('bookings:expire-pending')->everyFifteenMinutes();
+// Check pending requests every minute so a request expires as soon as its scheduled start passes.
+// My Bookings and the Facility Admin review page also invoke this command on demand.
+Schedule::command('bookings:expire-pending')->everyMinute()->withoutOverlapping();
