@@ -172,9 +172,7 @@ export default function BookingModal({
         'sky gym',
         'view deck',
     ].includes(normalizedFacilityName);
-    const requiresSirReneSignature = isSpecialFacilityBooking
-        ? ['quadrangle or field', 'field', 'sky gym'].includes(normalizedFacilityName)
-        : ['quadrangle or field', 'field', 'sky gym'].includes(normalizedFacilityName);
+    const requiresSirReneSignature = ['quadrangle or field', 'field', 'sky gym'].includes(normalizedFacilityName);
 
     const requiresSisterSignature = isSpecialFacilityBooking && (
         !isAuthenticated
@@ -938,7 +936,7 @@ export default function BookingModal({
                                         {activityPlanFile?.name || 'Upload Activity Plan'}
                                         <span className="ml-1 text-red-600">*</span>
                                     </p>
-                                    <p className="text-xs text-gray-400">Required for single bookings at this facility · PDF, DOC, or DOCX · up to 10MB</p>
+                                    <p className="text-xs text-gray-400">Required for bookings at this facility · PDF, DOC, or DOCX · up to 10MB</p>
                                 </div>
                             </div>
                             <input
