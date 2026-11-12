@@ -541,7 +541,18 @@ class BookingController extends Controller
         $bookingEndDate = Carbon::createFromFormat('!Y-m-d', $validated['end_date']);
         $today = Carbon::today();
 
-        $consentRequired = (bool) $settings->require_consent_letter
+        $isSpecialFacility = SpecialFacilityBookingPolicy::appliesTo($facility);
+        $requiresSisterSignature = SpecialFacilityBookingPolicy::requiresSisterSignature(
+            $facility,
+            Auth::user(),
+            $validated['date'],
+            $validated['end_date'],
+            $validated['start_time'],
+            $validated['end_time']
+        );
+
+        $consentRequired = $isSpecialFacility
+            || (bool) $settings->require_consent_letter
             || $facility->requirement === 'CONSENT_REQUIRED'
             || (
                 (bool) $facility->requiresWeekendConsent
@@ -551,6 +562,24 @@ class BookingController extends Controller
         if ($consentRequired && ! $booking->consent_file_uploaded) {
             throw ValidationException::withMessages([
                 'consent_letter' => 'A consent letter is required for the selected date and facility. Please create a new booking and attach the required document.',
+            ]);
+        }
+
+        if ($isSpecialFacility && ! $booking->activity_plan_file_path) {
+            throw ValidationException::withMessages([
+                'activity_plan_file' => 'An Activity Plan is required. Please create a new booking and attach the required document.',
+            ]);
+        }
+
+        if (SpecialFacilityBookingPolicy::requiresSirReneSignature($facility) && ! $booking->sir_rene_signature_path) {
+            throw ValidationException::withMessages([
+                'sir_rene_signature' => "Sir Rene's signed document is required. Please create a new booking and attach it.",
+            ]);
+        }
+
+        if ($requiresSisterSignature && ! $booking->sister_signature_path) {
+            throw ValidationException::withMessages([
+                'sister_signature' => "Sister's signed document is required. Please create a new booking and attach it.",
             ]);
         }
 
