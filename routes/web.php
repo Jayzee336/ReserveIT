@@ -382,6 +382,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'completedBookings' => $allTimeStatusCounts['completed'],
                 'declinedBookings' => $allTimeStatusCounts['declined'],
                 'cancelledBookings' => $allTimeStatusCounts['cancelled'],
+                'expiredBookings' => $allTimeStatusCounts['expired'],
             ],
             'bookingTrends' => $bookingTrends,
             'analyticsFilters' => [
