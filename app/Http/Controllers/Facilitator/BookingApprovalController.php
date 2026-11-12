@@ -11,6 +11,7 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\BookingOperationsNotification;
 use App\Support\FacilityScheduleAvailability;
+use App\Support\SpecialFacilityBookingPolicy;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -230,8 +231,9 @@ class BookingApprovalController extends Controller
                 ? 1440
                 : ((int) $endTime->format('H') * 60) + (int) $endTime->format('i');
 
-            for ($day = $bookingStartDate->copy(); $day->lte($bookingEndDate); $day->addDay()) {
-                $facilityHours = FacilityOperatingHour::query()
+            if (! SpecialFacilityBookingPolicy::appliesTo($lockedFacility)) {
+                for ($day = $bookingStartDate->copy(); $day->lte($bookingEndDate); $day->addDay()) {
+                    $facilityHours = FacilityOperatingHour::query()
                     ->where('facility_id', $lockedFacility->getKey())
                     ->where('day_of_week', $day->dayOfWeek)
                     ->first();
@@ -257,12 +259,33 @@ class BookingApprovalController extends Controller
                     ? 1440
                     : ((int) substr($closingTime, 0, 2) * 60) + (int) substr($closingTime, 3, 2);
 
+                    if (
+                        $startMinutes < $openingMinutes
+                        || $startMinutes >= $closingMinutes
+                        || $endMinutes > $closingMinutes
+                    ) {
+                        return 'outside_hours';
+                    }
+                }
+            }
+
+            if (SpecialFacilityBookingPolicy::appliesTo($lockedFacility)) {
+                $requester = $lockedBooking->user;
+                $startDate = $bookingStartDate->toDateString();
+                $endDate = $bookingEndDate->toDateString();
+                $startClock = substr((string) $lockedBooking->start_time, 0, 5);
+                $endClock = substr((string) $lockedBooking->end_time, 0, 5);
+                $needsSisterSignature = SpecialFacilityBookingPolicy::requiresSisterSignature(
+                    $lockedFacility, $requester, $startDate, $endDate, $startClock, $endClock
+                );
+
                 if (
-                    $startMinutes < $openingMinutes
-                    || $startMinutes >= $closingMinutes
-                    || $endMinutes > $closingMinutes
+                    ! $lockedBooking->consent_file_uploaded
+                    || ! $lockedBooking->activity_plan_file_path
+                    || (SpecialFacilityBookingPolicy::requiresSirReneSignature($lockedFacility) && ! $lockedBooking->sir_rene_signature_path)
+                    || ($needsSisterSignature && ! $lockedBooking->sister_signature_path)
                 ) {
-                    return 'outside_hours';
+                    return 'missing_documents';
                 }
             }
 
@@ -282,11 +305,26 @@ class BookingApprovalController extends Controller
                 return 'conflict';
             }
 
-            $lockedBooking->update([
+            $approvalUpdates = [
                 'status' => 'approved',
                 'approved_by' => $user->name,
                 'approved_at' => now(),
-            ]);
+            ];
+
+            if (SpecialFacilityBookingPolicy::appliesTo($lockedFacility)) {
+                $approvalUpdates = array_merge(
+                    $approvalUpdates,
+                    SpecialFacilityBookingPolicy::feeSnapshot(
+                        $lockedFacility,
+                        $bookingStartDate->toDateString(),
+                        $bookingEndDate->toDateString(),
+                        substr((string) $lockedBooking->start_time, 0, 5),
+                        substr((string) $lockedBooking->end_time, 0, 5)
+                    )
+                );
+            }
+
+            $lockedBooking->update($approvalUpdates);
 
             return 'approved';
         });
@@ -309,6 +347,13 @@ class BookingApprovalController extends Controller
             return redirect()->back()->with('toast', [
                 'type' => 'error',
                 'message' => 'This booking overlaps a scheduled facility closure. Review the closure dates before approving it.',
+            ]);
+        }
+
+        if ($result === 'missing_documents') {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This booking is missing one or more required documents or signatures. Review the booking attachments before approving it.',
             ]);
         }
 
