@@ -1308,7 +1308,7 @@ export default function MyBookings({
                                                         Request extension
                                                     </button>
                                                 ) : (
-                                                    <form onSubmit={handleExtensionRequest} className="space-y-3 rounded-xl border border-[#E8E1E7] bg-white p-3">
+                                                    <div className="space-y-3 rounded-xl border border-[#E8E1E7] bg-white p-3">
                                                         <div className="grid gap-3 sm:grid-cols-2">
                                                             <label className="text-xs font-semibold text-gray-600">
                                                                 Current booking end
@@ -1347,11 +1347,16 @@ export default function MyBookings({
                                                         </label>
                                                         <div className="flex flex-wrap justify-end gap-2">
                                                             <button type="button" onClick={() => setShowExtensionForm(false)} disabled={isExtensionSubmitting} className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600">Cancel</button>
-                                                            <button type="submit" disabled={isExtensionSubmitting || !extensionEndTime || extensionReason.trim().length < 5} className="rounded-lg bg-[#B96B8D] px-3 py-2 text-xs font-semibold text-white hover:bg-[#96516F] disabled:cursor-not-allowed disabled:opacity-50">
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleExtensionRequest}
+                                                                disabled={isExtensionSubmitting || !extensionEndTime || extensionReason.trim().length < 5}
+                                                                className="rounded-lg bg-[#B96B8D] px-3 py-2 text-xs font-semibold text-white hover:bg-[#96516F] disabled:cursor-not-allowed disabled:opacity-50"
+                                                            >
                                                                 {isExtensionSubmitting ? 'Submitting…' : 'Submit for approval'}
                                                             </button>
                                                         </div>
-                                                    </form>
+                                                    </div>
                                                 )}
                                                 {!suggestExtendedEndTime(selectedDetailBooking.end_time) && (
                                                     <p className="mt-2 text-xs text-gray-500">The booking already ends at midnight. An extension beyond the current day is not supported.</p>
