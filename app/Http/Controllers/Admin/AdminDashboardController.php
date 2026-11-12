@@ -242,6 +242,7 @@ class AdminDashboardController extends Controller
             'completed' => $bookingDetailRows->where('display_status', 'completed')->values(),
             'declined' => $bookingDetailRows->where('display_status', 'declined')->values(),
             'cancelled' => $bookingDetailRows->where('display_status', 'cancelled')->values(),
+            'expired' => $bookingDetailRows->where('display_status', 'expired')->values(),
             'allBookings' => $bookingDetailRows,
         ];
 
