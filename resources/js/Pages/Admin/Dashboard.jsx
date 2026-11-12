@@ -199,7 +199,7 @@ function AnalyticsDetailModal({ detailKey, details, facilities = [], pendingBook
     if (!detailKey) return null;
     const definitions = {
         facilities: { title: 'Registered facilities', description: 'Facilities currently listed in ReserveIT.', items: facilities, type: 'facilities' },
-        allBookings: { title: 'Booking records', description: 'Booking records represented by the current date and facility analytics filters.', items: [...(details.pending ?? []), ...(details.approved ?? []), ...(details.completed ?? []), ...(details.declined ?? []), ...(details.cancelled ?? [])], type: 'bookings' },
+        allBookings: { title: 'Booking records', description: 'Booking records represented by the current date and facility analytics filters.', items: [...(details.pending ?? []), ...(details.approved ?? []), ...(details.completed ?? []), ...(details.declined ?? []), ...(details.cancelled ?? []), ...(details.expired ?? [])], type: 'bookings' },
         pendingConcerns: { title: 'Pending concerns', description: 'Recent concern records currently supplied to the dashboard.', items: recentConcerns.filter((item) => ['pending', 'open', 'submitted'].includes(String(item.status ?? 'pending').toLowerCase())), type: 'concerns' },
         clients: { title: 'Unique clients', description: 'Clients with at least one booking in the selected period.', items: details.clients ?? [], type: 'clients' },
         pending: { title: 'Pending bookings', description: 'Requests currently awaiting an administrator decision.', items: pendingBookings, type: 'bookings' },
