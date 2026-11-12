@@ -20,7 +20,7 @@ import {
     TrendingUp,
 } from 'lucide-react';
 
-const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled'];
+const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled', 'expired'];
 
 function formatTime(value) {
     if (!value) return '—';
@@ -659,7 +659,7 @@ export default function FacilitatorDashboard({
                             </div>
                             <div className="mt-5 space-y-4">
                                 {displayedStatusBreakdown.map((item) => {
-                                    const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
+                                    const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400', expired: 'bg-violet-500' };
                                     return <button key={item.status} type="button" onClick={() => setSelectedAnalyticsDetail({title:`${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`,description:`Assigned-facility ${item.status} bookings in the selected period.`,items:statusDetails[item.status] ?? [],mode:'bookings'})} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]">
                                         <div className="mb-1 flex justify-between text-xs"><span className="font-semibold capitalize text-slate-700">{item.status}</span><span className="text-slate-500">{item.count} · {item.percentage.toFixed(1)}%</span></div>
                                         <div className="h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
