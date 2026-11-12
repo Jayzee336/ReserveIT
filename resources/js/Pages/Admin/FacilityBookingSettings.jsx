@@ -199,9 +199,9 @@ export default function FacilityBookingSettings({
                         <div className="rounded-xl border border-[#E8E1E7] bg-[#FCFAFB] p-4">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div className="min-w-0">
-                                    <h3 className="text-sm font-bold text-slate-900">Overtime fee settings</h3>
+                                    <h3 className="text-sm font-bold text-slate-900">Overtime and after-hours fee settings</h3>
                                     <p className="mt-1 max-w-2xl text-xs leading-relaxed text-slate-500">
-                                        Configure the hourly overtime fee for this facility. Only the designated billable facilities can have this enabled. The rate is saved with each completed booking so later changes do not alter old charges.
+                                        Configure this facility's hourly rate. The same rate is used for after-hours and Sunday booking fees, calculated when a booking is approved, and for overtime at checkout. Approved booking fee amounts keep a rate snapshot.
                                     </p>
                                 </div>
                                 <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
@@ -211,11 +211,11 @@ export default function FacilityBookingSettings({
                                         onChange={(event) => setOvertimeFeeEnabled(event.target.checked)}
                                         className="h-4 w-4 rounded border-slate-300 text-[#493344] focus:ring-[#C65B8A]"
                                     />
-                                    Enable overtime fee
+                                    Enable hourly fees
                                 </label>
                             </div>
                             <label className="mt-4 block max-w-xs text-xs font-semibold text-slate-600">
-                                Overtime rate per hour (₱)
+                                Hourly rate (₱)
                                 <input
                                     type="number"
                                     min="0"
