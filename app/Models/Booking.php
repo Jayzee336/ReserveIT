@@ -39,6 +39,12 @@ class Booking extends Model
         'activity_plan_file_name',
         'sir_rene_signature_path',
         'sir_rene_signature_name',
+        'sister_signature_path',
+        'sister_signature_name',
+        'scheduled_fee_minutes',
+        'scheduled_fee_amount',
+        'scheduled_fee_rate',
+        'scheduled_fee_payment_status',
         'approved_by',
         'approved_at',
         'decline_reason',
@@ -78,6 +84,9 @@ class Booking extends Model
         'overtime_fee_amount' => 'decimal:2',
         'overtime_fee_rate' => 'decimal:2',
         'overtime_paid_at' => 'datetime',
+        'scheduled_fee_minutes' => 'integer',
+        'scheduled_fee_amount' => 'decimal:2',
+        'scheduled_fee_rate' => 'decimal:2',
     ];
 
     // A booking belongs to one facility.
