@@ -10,6 +10,7 @@ use App\Notifications\BookingOperationsNotification;
 use App\Support\FacilityScheduleAvailability;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -341,6 +342,10 @@ class BookingController extends Controller
      */
     public function index(Request $request)
     {
+        // Refresh overdue pending requests before showing My Bookings.
+        // This also protects the page if the host scheduler has not run yet.
+        Artisan::call('bookings:expire-pending');
+
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:255'],
             'status' => [
