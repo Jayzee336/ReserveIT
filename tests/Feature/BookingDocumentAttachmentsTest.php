@@ -113,8 +113,10 @@ class BookingDocumentAttachmentsTest extends TestCase
         $facility = $this->createFacility('documents-sky-gym-upload', 'Sky Gym');
 
         $payload = array_merge($this->bookingPayload($facility), [
+            'consent_letter' => UploadedFile::fake()->create('consent-letter.pdf', 100, 'application/pdf'),
             'activity_plan_file' => UploadedFile::fake()->create('activity-plan.pdf', 100, 'application/pdf'),
             'sir_rene_signature' => UploadedFile::fake()->create('sir-rene-signed.pdf', 100, 'application/pdf'),
+            'sister_signature' => UploadedFile::fake()->create('sister-signed.pdf', 100, 'application/pdf'),
         ]);
 
         $this->actingAs($user)
@@ -123,12 +125,18 @@ class BookingDocumentAttachmentsTest extends TestCase
 
         $booking = Booking::query()->where('facility_id', $facility->getKey())->firstOrFail();
 
+        $this->assertSame('consent-letter.pdf', $booking->consent_file_name);
         $this->assertSame('activity-plan.pdf', $booking->activity_plan_file_name);
         $this->assertSame('sir-rene-signed.pdf', $booking->sir_rene_signature_name);
+        $this->assertSame('sister-signed.pdf', $booking->sister_signature_name);
+        Storage::disk('tigris')->assertExists($booking->consent_file_path);
         Storage::disk('tigris')->assertExists($booking->activity_plan_file_path);
         Storage::disk('tigris')->assertExists($booking->sir_rene_signature_path);
+        Storage::disk('tigris')->assertExists($booking->sister_signature_path);
+        $this->assertStringStartsWith('consent-letters/', $booking->consent_file_path);
         $this->assertStringStartsWith('booking-activity-plans/', $booking->activity_plan_file_path);
         $this->assertStringStartsWith('booking-signatures/', $booking->sir_rene_signature_path);
+        $this->assertStringStartsWith('booking-sister-signatures/', $booking->sister_signature_path);
     }
 
     public function test_assigned_facility_admin_can_download_booking_documents_but_unassigned_admin_cannot(): void
@@ -142,8 +150,10 @@ class BookingDocumentAttachmentsTest extends TestCase
 
         $activityPath = 'booking-activity-plans/test-plan.pdf';
         $signaturePath = 'booking-signatures/test-signature.pdf';
+        $sisterPath = 'booking-sister-signatures/test-sister-signature.pdf';
         Storage::disk('tigris')->put($activityPath, 'plan');
         Storage::disk('tigris')->put($signaturePath, 'signature');
+        Storage::disk('tigris')->put($sisterPath, 'sister signature');
 
         $booking = Booking::create([
             'facility_id' => $facility->getKey(),
@@ -158,6 +168,8 @@ class BookingDocumentAttachmentsTest extends TestCase
             'activity_plan_file_name' => 'test-plan.pdf',
             'sir_rene_signature_path' => $signaturePath,
             'sir_rene_signature_name' => 'test-signature.pdf',
+            'sister_signature_path' => $sisterPath,
+            'sister_signature_name' => 'test-sister-signature.pdf',
         ]);
 
         $this->actingAs($assignedAdmin)
@@ -165,6 +177,9 @@ class BookingDocumentAttachmentsTest extends TestCase
             ->assertOk();
 
         $this->get(route('bookings.attachments.download', [$booking, 'sir-rene-signature']))
+            ->assertOk();
+
+        $this->get(route('bookings.attachments.download', [$booking, 'sister-signature']))
             ->assertOk();
 
         $this->actingAs($otherAdmin)
