@@ -58,16 +58,6 @@ const STATUS_PRIORITY = {
     expired: 6,
 };
 
-const STATUS_OPTIONS = [
-    { key: 'all', label: 'All Bookings' },
-    { key: 'pending', label: 'Pending' },
-    { key: 'approved', label: 'Approved' },
-    { key: 'completed', label: 'Completed' },
-    { key: 'declined', label: 'Declined' },
-    { key: 'cancelled', label: 'Cancelled' },
-    { key: 'expired', label: 'Expired' },
-];
-
 const suggestExtendedEndTime = (currentEnd) => {
     const normalized = String(currentEnd || '').slice(0, 5);
     const currentMinutes = normalized === '00:00' ? 1440 : toMinutes(normalized);
@@ -887,13 +877,14 @@ export default function MyBookings({
                         </span>
                     </div>
 
-                    <section aria-label="Booking status summary" className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+                    <section aria-label="Booking status summary" className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
                         <SummaryCard label="All Bookings" count={bookingCounts.all} active={statusFilter === 'all'} colorClass="border-[#E8E1E7] bg-[#F8EDF2] text-[#493344]" onClick={() => setStatusFilter('all')} />
                         <SummaryCard label="Pending" count={bookingCounts.pending} active={statusFilter === 'pending'} colorClass="border-amber-200 bg-amber-50 text-amber-800" onClick={() => setStatusFilter('pending')} />
                         <SummaryCard label="Approved" count={bookingCounts.approved} active={statusFilter === 'approved'} colorClass="border-green-200 bg-green-50 text-green-800" onClick={() => setStatusFilter('approved')} />
                         <SummaryCard label="Completed" count={bookingCounts.completed} active={statusFilter === 'completed'} colorClass="border-blue-200 bg-blue-50 text-blue-800" onClick={() => setStatusFilter('completed')} />
                         <SummaryCard label="Declined" count={bookingCounts.declined} active={statusFilter === 'declined'} colorClass="border-red-200 bg-red-50 text-red-800" onClick={() => setStatusFilter('declined')} />
                         <SummaryCard label="Cancelled" count={bookingCounts.cancelled} active={statusFilter === 'cancelled'} colorClass="border-gray-200 bg-gray-50 text-gray-700" onClick={() => setStatusFilter('cancelled')} />
+                        <SummaryCard label="Expired" count={bookingCounts.expired} active={statusFilter === 'expired'} colorClass="border-slate-200 bg-slate-50 text-slate-700" onClick={() => setStatusFilter('expired')} />
                     </section>
 
                     <section className="mb-5 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -920,22 +911,14 @@ export default function MyBookings({
                             </div>
                         </div>
 
-                        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 pt-3">
-                            <div className="flex flex-wrap gap-2">
-                                {STATUS_OPTIONS.map((option) => (
-                                    <button key={option.key} type="button" onClick={() => setStatusFilter(option.key)} aria-pressed={statusFilter === option.key} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${statusFilter === option.key ? 'border-[#493344] bg-[#493344] text-white shadow-sm' : 'border-gray-200 bg-white text-gray-600 hover:border-[#E8E1E7] hover:bg-[#F8EDF2] hover:text-[#96516F]'}`}>
-                                        {option.label}
-                                        {option.key !== 'all' && <span className="ml-1.5 opacity-75">{bookingCounts[option.key]}</span>}
-                                    </button>
-                                ))}
-                            </div>
-                            {hasActiveFilters && (
+                        {hasActiveFilters && (
+                            <div className="mt-4 flex justify-end border-t border-gray-100 pt-3">
                                 <button type="button" onClick={clearFilters} className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold text-[#96516F] hover:bg-[#F8EDF2]">
                                     <RotateCcw className="h-3.5 w-3.5" />
                                     Clear filters
                                 </button>
-                            )}
-                        </div>
+                            </div>
+                        )}
                         <p className="mt-3 text-xs text-gray-500">
                             Showing <strong>{filteredBookings.length}</strong> of <strong>{userBookings.length}</strong> bookings{hasActiveFilters ? ' matching your filters.' : '.'}
                         </p>
