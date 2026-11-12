@@ -745,7 +745,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('notifications.read');
 
     Route::get('/bookings/{booking}/attachments/{type}', [BookingAttachmentController::class, 'download'])
-        ->whereIn('type', ['activity-plan', 'sir-rene-signature'])
+        ->whereIn('type', ['activity-plan', 'sir-rene-signature', 'sister-signature'])
         ->name('bookings.attachments.download');
 
     // Serve Consent Files
