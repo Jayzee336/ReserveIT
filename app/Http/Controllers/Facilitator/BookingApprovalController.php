@@ -388,9 +388,13 @@ class BookingApprovalController extends Controller
             if ($bookingUser) {
                 $facilityName = $booking->facility?->name ?? 'A facility';
 
+                $feeNotice = (float) ($booking->scheduled_fee_amount ?? 0) > 0
+                    ? ' The scheduled after-hours/Sunday fee is ₱' . number_format((float) $booking->scheduled_fee_amount, 2) . ' and is currently unpaid.'
+                    : '';
+
                 $bookingUser->notify(
                     new BookingOperationsNotification(
-                        "Your booking at {$facilityName} on {$booking->date} ({$booking->start_time}–{$booking->end_time}) has been approved.",
+                        "Your booking at {$facilityName} on {$booking->date} ({$booking->start_time}–{$booking->end_time}) has been approved." . $feeNotice,
                         $booking->id
                     )
                 );
