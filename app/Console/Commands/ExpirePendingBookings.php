@@ -1,14 +1,14 @@
 <?php
 
-namespace App\\Console\\Commands;
+namespace App\Console\Commands;
 
-use App\\Models\\Booking;
-use App\\Models\\SystemSetting;
-use App\\Models\\User;
-use App\\Notifications\\BookingOperationsNotification;
-use Carbon\\Carbon;
-use Illuminate\\Console\\Command;
-use Illuminate\\Support\\Facades\\DB;
+use App\Models\Booking;
+use App\Models\SystemSetting;
+use App\Models\User;
+use App\Notifications\BookingOperationsNotification;
+use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class ExpirePendingBookings extends Command
 {
