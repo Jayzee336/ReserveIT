@@ -18,7 +18,7 @@ import {
     ArrowRight,
 } from 'lucide-react';
 
-const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled'];
+const DASHBOARD_STATUS_ORDER = ['pending', 'approved', 'completed', 'declined', 'cancelled', 'expired'];
 
 function displayText(value, fallback = '—') {
     if (value == null || value === '') return fallback;
@@ -207,6 +207,7 @@ function AnalyticsDetailModal({ detailKey, details, facilities = [], pendingBook
         completed: { title: 'Completed bookings', description: 'Approved reservations that have finished.', items: details.completed ?? [], type: 'bookings' },
         declined: { title: 'Declined bookings', description: 'Requests that were declined.', items: details.declined ?? [], type: 'bookings' },
         cancelled: { title: 'Cancelled bookings', description: 'Reservations cancelled by their requester or an administrator.', items: details.cancelled ?? [], type: 'bookings' },
+        expired: { title: 'Expired bookings', description: 'Pending requests whose scheduled start time or allowed waiting period has passed.', items: details.expired ?? [], type: 'bookings' },
         returningClients: { title: 'Returning clients', description: 'Clients with more than one booking in the selected period.', items: details.returningClients ?? [], type: 'clients' },
         approvalRate: { title: 'Approval rate details', description: 'Bookings included in the approved-versus-declined calculation.', items: details.approvalRate ?? [], type: 'bookings' },
         cancellationRate: { title: 'Cancellation details', description: 'Bookings counted in the cancellation rate.', items: details.cancellationRate ?? [], type: 'bookings' },
@@ -812,7 +813,7 @@ export default function AdminDashboard({
 <div className="min-w-0 rounded-xl border border-[var(--ri-border)] p-4">
                         <div className="mb-3 flex min-w-0 flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-semibold text-[#493344]">Status breakdown</h3><span className="text-xs text-slate-500">{statusBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0)} bookings in selected period</span></div>
                         <div className="min-w-0 space-y-3">{displayedStatusBreakdown.map((item) => {
-                            const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
+                            const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400', expired: 'bg-violet-500' };
                             return <button type="button" key={item.status} onClick={() => setAnalyticsDetailKey(item.status)} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]">
                                 <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold capitalize text-slate-700">{item.status}</span><span className="text-sm font-bold text-slate-900">{item.count} <span className="ml-1 text-[10px] font-normal text-slate-500">{item.percentage.toFixed(1)}%</span></span></div>
                                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-stone-200"><div className={`h-full rounded-full ${statusColors[item.status] ?? 'bg-slate-400'}`} style={{ width: `${Math.max(0, Math.min(100, item.percentage))}%` }}/></div>
@@ -843,6 +844,7 @@ export default function AdminDashboard({
                                                 ...(analyticsDetails.completed ?? []),
                                                 ...(analyticsDetails.declined ?? []),
                                                 ...(analyticsDetails.cancelled ?? []),
+                                                ...(analyticsDetails.expired ?? []),
                                             ];
                                             const facilityBookings = allBookings.filter((booking) => {
                                                 const bookingFacility = booking.facility?.name
