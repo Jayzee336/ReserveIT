@@ -207,6 +207,10 @@ class BookingApprovalController extends Controller
 
             $this->authorize('approve', $lockedBooking);
 
+            if ($lockedBooking->status === 'expired') {
+                return 'expired';
+            }
+
             if ($lockedBooking->status !== 'pending') {
                 return 'already_reviewed';
             }
@@ -287,6 +291,13 @@ class BookingApprovalController extends Controller
             return 'approved';
         });
 
+        if ($result === 'expired') {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This booking has expired because its scheduled start time has passed. It can no longer be approved.',
+            ]);
+        }
+
         if ($result === 'facility_unavailable') {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
@@ -352,6 +363,13 @@ class BookingApprovalController extends Controller
         // Prevent a stale review screen from declining a request after its start time.
         Artisan::call('bookings:expire-pending');
         $booking->refresh();
+
+        if ($booking->status === 'expired') {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This booking has expired because its scheduled start time has passed. It can no longer be declined.',
+            ]);
+        }
 
         $validated = $request->validate([
             'rejection_reason' => ['required', 'string', 'min:1'],
