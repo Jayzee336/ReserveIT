@@ -180,8 +180,8 @@ export default function BookingModal({
         !isAuthenticated
         || user?.account_type === 'outsider'
         || dateRangeWeekdays.includes(0)
-        || toMins(startTime) < 480
-        || (endTime && (endTime === '00:00' ? 1440 : toMins(endTime)) > 1020)
+        || (startTime && toMins(startTime) < 480)
+        || (startTime && endTime && (endTime === '00:00' ? 1440 : toMins(endTime)) > 1020)
     );
 
     const facilityConsentRequired =
