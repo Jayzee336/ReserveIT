@@ -8,6 +8,7 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\BookingOperationsNotification;
 use App\Support\FacilityScheduleAvailability;
+use App\Support\SpecialFacilityBookingPolicy;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -295,6 +296,11 @@ class BookingController extends Controller
         Facility $facility,
         $settings
     ): void {
+        if (SpecialFacilityBookingPolicy::appliesTo($facility)) {
+            $this->validateTimeIntervals($startTime, $endTime);
+            return;
+        }
+
         $cursor = Carbon::createFromFormat('!Y-m-d', $startDate);
         $lastDate = Carbon::createFromFormat('!Y-m-d', $endDate);
 
@@ -801,7 +807,8 @@ class BookingController extends Controller
         $facility = Facility::findOrFail($validated['facility_id']);
 
         $facilityName = mb_strtolower(trim((string) $facility->name));
-        $requiresActivityPlan = in_array($facilityName, [
+        $isSpecialFacility = SpecialFacilityBookingPolicy::appliesTo($facility);
+        $requiresActivityPlan = $isSpecialFacility || in_array($facilityName, [
             'lobby',
             'main auditorium',
             'quadrangle or field',
@@ -809,7 +816,7 @@ class BookingController extends Controller
             'sky gym',
             'view deck',
         ], true);
-        $requiresSirReneSignature = in_array($facilityName, [
+        $requiresSirReneSignature = SpecialFacilityBookingPolicy::requiresSirReneSignature($facility) || in_array($facilityName, [
             'quadrangle or field',
             'field',
             'sky gym',
@@ -824,8 +831,18 @@ class BookingController extends Controller
         $bookingDate = Carbon::createFromFormat('!Y-m-d', $validated['date']);
         $bookingEndDate = Carbon::createFromFormat('!Y-m-d', $validated['end_date']);
 
+        $requiresSisterSignature = SpecialFacilityBookingPolicy::requiresSisterSignature(
+            $facility,
+            Auth::user(),
+            $validated['date'],
+            $validated['end_date'],
+            $validated['start_time'],
+            $validated['end_time']
+        );
+
         $isConsentRequired =
-            (bool) $settings->require_consent_letter
+            $isSpecialFacility
+            || (bool) $settings->require_consent_letter
             || $facility->requirement === 'CONSENT_REQUIRED'
             || (
                 (bool) $facility->requiresWeekendConsent
@@ -850,6 +867,9 @@ class BookingController extends Controller
                 ? ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240']
                 : ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
             'sir_rene_signature' => $requiresSirReneSignature
+                ? ['required', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:5120']
+                : ['nullable', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:5120'],
+            'sister_signature' => $requiresSisterSignature
                 ? ['required', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:5120']
                 : ['nullable', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:5120'],
         ]);
@@ -909,6 +929,8 @@ class BookingController extends Controller
         $activityPlanName = null;
         $signaturePath = null;
         $signatureName = null;
+        $sisterSignaturePath = null;
+        $sisterSignatureName = null;
         $booking = null;
 
         try {
@@ -947,6 +969,17 @@ class BookingController extends Controller
                 $signatureName = basename($upload->getClientOriginalName());
             }
 
+            if ($request->hasFile('sister_signature')) {
+                $upload = $request->file('sister_signature');
+                $extension = strtolower($upload->getClientOriginalExtension());
+                $sisterSignaturePath = $upload->storeAs(
+                    'booking-sister-signatures',
+                    bin2hex(random_bytes(24)) . '.' . $extension,
+                    'tigris'
+                );
+                $sisterSignatureName = basename($upload->getClientOriginalName());
+            }
+
             $booking = DB::transaction(function () use (
                 $facility,
                 $validated,
@@ -958,6 +991,8 @@ class BookingController extends Controller
                 $activityPlanName,
                 $signaturePath,
                 $signatureName,
+                $sisterSignaturePath,
+                $sisterSignatureName,
                 $autoApprove,
                 $isSuperAdmin,
                 $buffer,
@@ -1032,6 +1067,17 @@ class BookingController extends Controller
                     'activity_plan_file_name' => $activityPlanName,
                     'sir_rene_signature_path' => $signaturePath,
                     'sir_rene_signature_name' => $signatureName,
+                    'sister_signature_path' => $sisterSignaturePath,
+                    'sister_signature_name' => $sisterSignatureName,
+                    ...($autoApprove && SpecialFacilityBookingPolicy::appliesTo($lockedFacility)
+                        ? SpecialFacilityBookingPolicy::feeSnapshot(
+                            $lockedFacility,
+                            $validated['date'],
+                            $validated['end_date'],
+                            $validated['start_time'],
+                            $validated['end_time']
+                        )
+                        : []),
                     'status' => $autoApprove ? 'approved' : 'pending',
                     'approved_at' => $autoApprove ? now() : null,
                     'approved_by' => $autoApprove
@@ -1048,6 +1094,7 @@ class BookingController extends Controller
                 $path,
                 $activityPlanPath,
                 $signaturePath,
+                $sisterSignaturePath,
             ] as $uploadedPath) {
                 if ($uploadedPath === null) {
                     continue;
