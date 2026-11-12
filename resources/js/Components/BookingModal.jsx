@@ -64,6 +64,10 @@ export default function BookingModal({
     const { auth } = page.props;
     const user = auth?.user;
     const isAuthenticated = !!user;
+    const normalizedFacilityName = String(facility?.name ?? '').trim().toLowerCase();
+    const isSpecialFacilityBooking = [
+        'lobby', 'main auditorium', 'quadrangle or field', 'field', 'sky gym', 'view deck',
+    ].includes(normalizedFacilityName);
     const [date, setDate] = useState(selectedDate || '');
     const [endDate, setEndDate] = useState(selectedDate || '');
     const dateRangeWeekdays = useMemo(() => {
@@ -85,7 +89,7 @@ export default function BookingModal({
     const rangeSchedules = dateRangeWeekdays.map((weekday) =>
         selectedFacilityHours.find((item) => Number(item.day_of_week) === weekday)
     );
-    const isFacilityClosed = rangeSchedules.some((schedule) => schedule?.is_closed);
+    const isFacilityClosed = !isSpecialFacilityBooking && rangeSchedules.some((schedule) => schedule?.is_closed);
     const openingCandidates = rangeSchedules.map((schedule) =>
         schedule && !schedule.is_closed
             ? toMins(String(schedule.opens_at ?? globalOpening).slice(0, 5))
@@ -95,10 +99,14 @@ export default function BookingModal({
         const closing = String(schedule?.closes_at ?? globalClosing).slice(0, 5);
         return closing === '00:00' ? 1440 : toMins(closing);
     });
-    const openingMinutes = openingCandidates.length ? Math.max(...openingCandidates) : toMins(globalOpening);
-    const closingMinutes = closingCandidates.length
-        ? Math.min(...closingCandidates)
-        : (globalClosing === '00:00' ? 1440 : toMins(globalClosing));
+    const openingMinutes = isSpecialFacilityBooking
+        ? 0
+        : (openingCandidates.length ? Math.max(...openingCandidates) : toMins(globalOpening));
+    const closingMinutes = isSpecialFacilityBooking
+        ? 1440
+        : (closingCandidates.length
+            ? Math.min(...closingCandidates)
+            : (globalClosing === '00:00' ? 1440 : toMins(globalClosing)));
     const OPENING_TIME = String(Math.floor(openingMinutes / 60)).padStart(2, '0') + ':' + String(openingMinutes % 60).padStart(2, '0');
     const CLOSING_TIME = closingMinutes === 1440 ? '00:00' : String(Math.floor(closingMinutes / 60)).padStart(2, '0') + ':' + String(closingMinutes % 60).padStart(2, '0');
     const TIME_SLOTS = useMemo(() => {
@@ -143,6 +151,7 @@ export default function BookingModal({
     const [file, setFile] = useState(null);
     const [activityPlanFile, setActivityPlanFile] = useState(null);
     const [signatureFile, setSignatureFile] = useState(null);
+    const [sisterSignatureFile, setSisterSignatureFile] = useState(null);
     const [needsManpower, setNeedsManpower] = useState(false);
     const [guestEmail, setGuestEmail] = useState('');
     const [guestName, setGuestName] = useState('');
@@ -155,8 +164,7 @@ export default function BookingModal({
     // Consent and lead-time rules
     const isWeekendBooking = dateRangeWeekdays.some((weekday) => weekday === 0 || weekday === 6);
     const isAlwaysConsent = facility?.requirement === 'CONSENT_REQUIRED';
-    const normalizedFacilityName = String(facility?.name ?? '').trim().toLowerCase();
-    const requiresActivityPlan = [
+    const requiresActivityPlan = isSpecialFacilityBooking || [
         'lobby',
         'main auditorium',
         'quadrangle or field',
@@ -164,14 +172,20 @@ export default function BookingModal({
         'sky gym',
         'view deck',
     ].includes(normalizedFacilityName);
-    const requiresSirReneSignature = [
-        'quadrangle or field',
-        'field',
-        'sky gym',
-    ].includes(normalizedFacilityName);
+    const requiresSirReneSignature = isSpecialFacilityBooking
+        ? ['quadrangle or field', 'field', 'sky gym'].includes(normalizedFacilityName)
+        : ['quadrangle or field', 'field', 'sky gym'].includes(normalizedFacilityName);
+
+    const requiresSisterSignature = isSpecialFacilityBooking && (
+        !isAuthenticated
+        || user?.account_type === 'outsider'
+        || dateRangeWeekdays.includes(0)
+        || toMins(startTime) < 480
+        || (endTime && (endTime === '00:00' ? 1440 : toMins(endTime)) > 1020)
+    );
 
     const facilityConsentRequired =
-        isAlwaysConsent ||
+        isSpecialFacilityBooking || isAlwaysConsent ||
         (Boolean(facility?.requiresWeekendConsent) && isWeekendBooking);
 
     const isConsentRequired =
@@ -356,8 +370,10 @@ export default function BookingModal({
         }
 
         if (
-            toMins(startTime) < toMins(OPENING_TIME) ||
-            toMins(endTime) > closingMinutes && endTime !== '00:00'
+            !isSpecialFacilityBooking && (
+                toMins(startTime) < toMins(OPENING_TIME) ||
+                toMins(endTime) > closingMinutes && endTime !== '00:00'
+            )
         ) {
             setConflictError(
                 `Bookings must be between ${formatTime(OPENING_TIME)} and ${CLOSING_TIME === '00:00' ? '12:00 AM (midnight)' : formatTime(CLOSING_TIME)}.`
@@ -421,6 +437,11 @@ export default function BookingModal({
             return;
         }
 
+        if (requiresSisterSignature && !sisterSignatureFile) {
+            setConflictError("Sister's signed consent document is required for this booking.");
+            return;
+        }
+
         if (activityPlanFile && activityPlanFile.size > 10 * 1024 * 1024) {
             setConflictError('The Activity Plan file must not exceed 10MB.');
             return;
@@ -428,6 +449,11 @@ export default function BookingModal({
 
         if (signatureFile && signatureFile.size > 5 * 1024 * 1024) {
             setConflictError("Sir Rene's signature file must not exceed 5MB.");
+            return;
+        }
+
+        if (sisterSignatureFile && sisterSignatureFile.size > 5 * 1024 * 1024) {
+            setConflictError("Sister's signed document must not exceed 5MB.");
             return;
         }
 
@@ -479,6 +505,7 @@ export default function BookingModal({
                 consent_letter: file,
                 activity_plan_file: activityPlanFile,
                 sir_rene_signature: signatureFile,
+                sister_signature: sisterSignatureFile,
             },
             {
                 forceFormData: true,
@@ -506,7 +533,8 @@ export default function BookingModal({
                     const fileError =
                         errors.consent_letter ||
                         errors.activity_plan_file ||
-                        errors.sir_rene_signature;
+                        errors.sir_rene_signature ||
+                        errors.sister_signature;
                     const message =
                         errors.consent_letter && /size|large|max/i.test(errors.consent_letter)
                             ? CONSENT_FILE_SIZE_ERROR
@@ -899,7 +927,7 @@ export default function BookingModal({
                 )}
             </div>
 
-            {(requiresActivityPlan || requiresSirReneSignature) && (
+            {(requiresActivityPlan || requiresSirReneSignature || requiresSisterSignature) && (
                 <div className="space-y-3 border-b border-gray-100 px-6 py-5">
                     {requiresActivityPlan && (
                         <div className="relative rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-4 hover:bg-[#F8EDF2]/40">
@@ -968,7 +996,46 @@ export default function BookingModal({
                             />
                         </div>
                     )}
+                    {requiresSisterSignature && (
+                        <div className="relative rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-4 hover:bg-[#F8EDF2]/40">
+                            <div className="flex items-center gap-3">
+                                <Upload className="h-5 w-5 flex-shrink-0 text-gray-400" />
+                                <div className="min-w-0">
+                                    <p className="break-words text-sm font-semibold text-gray-700">
+                                        {sisterSignatureFile?.name || "Upload Sister's Signed Consent Document"}
+                                        <span className="ml-1 text-red-600">*</span>
+                                    </p>
+                                    <p className="text-xs text-gray-400">Required for outsiders and for bookings before 8:00 AM, after 5:00 PM, or on Sunday · PDF, DOC, DOCX, JPG, or PNG · up to 5MB</p>
+                                </div>
+                            </div>
+                            <input
+                                type="file"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                required
+                                aria-label="Upload Sister's signed consent document"
+                                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                                onChange={(e) => {
+                                    const selected = e.target.files?.[0] || null;
+                                    if (selected && selected.size > 5 * 1024 * 1024) {
+                                        setSisterSignatureFile(null);
+                                        e.target.value = '';
+                                        setConflictError("Sister's signed document must not exceed 5MB.");
+                                        toast.error("Sister's signed document must not exceed 5MB.");
+                                        return;
+                                    }
+                                    setSisterSignatureFile(selected);
+                                    setConflictError('');
+                                }}
+                            />
+                        </div>
+                    )}
                     <p className="text-xs text-gray-500">These documents are stored privately and can only be opened by you and authorized booking administrators.</p>
+                </div>
+            )}
+
+            {isSpecialFacilityBooking && (
+                <div className="border-b border-gray-100 px-6 py-4 text-sm text-amber-800 bg-amber-50">
+                    After-hours and Sunday bookings are charged using this facility's configured hourly rate. The final scheduled fee is calculated when the booking is approved.
                 </div>
             )}
 
