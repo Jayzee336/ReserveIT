@@ -85,8 +85,12 @@ class BookingDocumentAttachmentsTest extends TestCase
         $user = $this->createUser();
         $facility = $this->createFacility('documents-lobby', 'Lobby');
 
+        $payload = array_merge($this->bookingPayload($facility), [
+            'consent_letter' => UploadedFile::fake()->create('consent-letter.pdf', 100, 'application/pdf'),
+        ]);
+
         $this->actingAs($user)
-            ->post(route('bookings.store'), $this->bookingPayload($facility))
+            ->post(route('bookings.store'), $payload)
             ->assertSessionHasErrors('activity_plan_file');
 
         $this->assertDatabaseCount('bookings', 0);
@@ -97,8 +101,12 @@ class BookingDocumentAttachmentsTest extends TestCase
         $user = $this->createUser();
         $facility = $this->createFacility('documents-sky-gym', 'Sky Gym');
 
+        $payload = array_merge($this->bookingPayload($facility), [
+            'consent_letter' => UploadedFile::fake()->create('consent-letter.pdf', 100, 'application/pdf'),
+        ]);
+
         $this->actingAs($user)
-            ->post(route('bookings.store'), $this->bookingPayload($facility))
+            ->post(route('bookings.store'), $payload)
             ->assertSessionHasErrors([
                 'activity_plan_file',
                 'sir_rene_signature',
