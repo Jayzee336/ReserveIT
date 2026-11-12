@@ -309,7 +309,7 @@ export default function Dashboard({
                             </div>
                             <div className="mt-5 space-y-4">
                                 {displayedStatusBreakdown.map((item) => {
-                                    const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400' };
+                                    const statusColors = { pending: 'bg-amber-400', approved: 'bg-emerald-500', completed: 'bg-sky-500', declined: 'bg-rose-500', cancelled: 'bg-slate-400', expired: 'bg-violet-500' };
                                     return (
                                         <button key={item.status} type="button" onClick={() => setSelectedDetail({ title: `${item.status[0].toUpperCase()}${item.status.slice(1)} bookings`, description: `Your ${item.status} reservations in the selected period.`, items: statusDetails[item.status] ?? [], mode: 'bookings' })} className="group block w-full rounded-lg p-1 text-left transition hover:bg-[#FCFAFB] focus:outline-none focus:ring-2 focus:ring-[#B96B8D]">
                                             <div className="mb-1 flex justify-between gap-3 text-xs">
