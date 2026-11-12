@@ -7,7 +7,7 @@ use App\Models\Facility;
 use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 use Tests\TestCase;
 
 class PendingBookingExpirationTest extends TestCase
