@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
 use App\Models\Facility;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -142,6 +143,42 @@ class UserManagementWorkflowTest extends TestCase
             'user_id' => $facilityAdmin->id,
             'facility_id' => $facility->id,
         ]);
+    }
+
+    public function test_deleting_a_user_preserves_approved_booking_history_and_owner_reference(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $bookingOwner = User::factory()->create(['role' => 'user']);
+        $facility = $this->createFacility('user-delete-preserve-booking');
+
+        $booking = Booking::create([
+            'facility_id' => $facility->id,
+            'user_id' => $bookingOwner->id,
+            'date' => now()->addDays(3)->toDateString(),
+            'start_time' => '09:00:00',
+            'end_time' => '10:00:00',
+            'status' => 'approved',
+            'notes' => 'Historical booking must remain after account deletion.',
+        ]);
+
+        $response = $this->actingAs($superAdmin)->delete(
+            route('admin.users.destroy', $bookingOwner)
+        );
+
+        $response->assertRedirect();
+
+        $this->assertSoftDeleted('users', ['id' => $bookingOwner->id]);
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'user_id' => $bookingOwner->id,
+            'status' => 'approved',
+        ]);
+
+        $historicalBooking = Booking::with('user')->findOrFail($booking->id);
+
+        $this->assertNotNull($historicalBooking->user);
+        $this->assertTrue($historicalBooking->user->trashed());
+        $this->assertSame($bookingOwner->id, $historicalBooking->user->id);
     }
 
     public function test_last_active_super_admin_cannot_be_demoted(): void
