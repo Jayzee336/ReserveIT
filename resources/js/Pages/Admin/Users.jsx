@@ -317,6 +317,120 @@ function DeleteUserConfirmModal({
     );
 }
 
+
+function FacilityMultiSelect({ facilities = [], selectedIds = [], onChange, disabled = false }) {
+    const [search, setSearch] = useState('');
+
+    const normalizedSearch = search.trim().toLowerCase();
+    const filteredFacilities = facilities.filter((facility) =>
+        facility.name.toLowerCase().includes(normalizedSearch)
+    );
+    const allFilteredSelected =
+        filteredFacilities.length > 0 &&
+        filteredFacilities.every((facility) => selectedIds.includes(facility.id));
+
+    const toggleFacility = (facilityId) => {
+        onChange(
+            selectedIds.includes(facilityId)
+                ? selectedIds.filter((id) => id !== facilityId)
+                : [...selectedIds, facilityId]
+        );
+    };
+
+    const selectAllFiltered = () => {
+        const next = new Set(selectedIds);
+        filteredFacilities.forEach((facility) => next.add(facility.id));
+        onChange(Array.from(next));
+    };
+
+    return (
+        <div className="space-y-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-sm font-semibold text-gray-800">
+                        {selectedIds.length} {selectedIds.length === 1 ? 'facility' : 'facilities'} selected
+                    </p>
+                    <p className="text-xs text-gray-500">
+                        Choose the facilities this admin can manage.
+                    </p>
+                </div>
+                <div className="flex items-center gap-3 text-xs font-semibold">
+                    <button
+                        type="button"
+                        onClick={selectAllFiltered}
+                        disabled={disabled || filteredFacilities.length === 0 || allFilteredSelected}
+                        className="text-blue-700 transition hover:text-blue-900 disabled:cursor-not-allowed disabled:text-gray-400"
+                    >
+                        Select {normalizedSearch ? 'results' : 'all'}
+                    </button>
+                    <span className="h-3.5 w-px bg-gray-200" />
+                    <button
+                        type="button"
+                        onClick={() => onChange([])}
+                        disabled={disabled || selectedIds.length === 0}
+                        className="text-gray-500 transition hover:text-gray-800 disabled:cursor-not-allowed disabled:text-gray-300"
+                    >
+                        Clear
+                    </button>
+                </div>
+            </div>
+
+            <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                    type="search"
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Search facilities by name..."
+                    aria-label="Search facilities"
+                    disabled={disabled}
+                    className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50"
+                />
+            </div>
+
+            <div className="max-h-56 space-y-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50/70 p-2">
+                {filteredFacilities.length === 0 ? (
+                    <p className="px-3 py-8 text-center text-sm text-gray-500">
+                        {facilities.length === 0
+                            ? 'No facilities are available.'
+                            : 'No facilities match your search.'}
+                    </p>
+                ) : (
+                    filteredFacilities.map((facility) => {
+                        const isSelected = selectedIds.includes(facility.id);
+
+                        return (
+                            <label
+                                key={facility.id}
+                                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition ${isSelected
+                                    ? 'border-blue-200 bg-blue-50'
+                                    : 'border-transparent bg-white hover:border-gray-200 hover:bg-gray-50'
+                                } ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    disabled={disabled}
+                                    onChange={() => toggleFacility(facility.id)}
+                                    className="h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <Building2 className={`h-4 w-4 shrink-0 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
+                                <span className={`min-w-0 flex-1 text-sm ${isSelected ? 'font-semibold text-blue-900' : 'font-medium text-gray-700'}`}>
+                                    {facility.name}
+                                </span>
+                                {isSelected && <Check className="h-4 w-4 shrink-0 text-blue-600" />}
+                            </label>
+                        );
+                    })
+                )}
+            </div>
+            <p className="text-xs text-gray-500">
+                You can select multiple facilities. Use the search field to narrow the list.
+            </p>
+        </div>
+    );
+}
+
 function AddUserModal({ facilities = [], onClose }) {
     const [form, setForm] = useState({
         name: '',
@@ -467,29 +581,11 @@ function AddUserModal({ facilities = [], onClose }) {
                             <label className="mb-1 block text-xs font-medium text-gray-400">
                                 Assigned Facilities
                             </label>
-                            <select
-                                multiple
-                                value={form.assigned_facility_ids}
-                                onChange={(e) =>
-                                    updateField(
-                                        'assigned_facility_ids',
-                                        Array.from(
-                                            e.target.selectedOptions,
-                                            (option) => option.value
-                                        )
-                                    )
-                                }
-                                className="block min-h-28 w-full rounded-xl border border-gray-200 bg-white p-2.5 text-sm focus:ring-2 focus:ring-[#C65B8A]"
-                            >
-                                {facilities.map((facility) => (
-                                    <option key={facility.id} value={facility.id}>
-                                        {facility.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <p className="mt-1 text-xs text-gray-400">
-                                Select the facilities this admin should manage.
-                            </p>
+<FacilityMultiSelect
+                                facilities={facilities}
+                                selectedIds={form.assigned_facility_ids}
+                                onChange={(ids) => updateField('assigned_facility_ids', ids)}
+                            />
                         </div>
                     )}
 
@@ -636,47 +732,11 @@ function EditUserModal({ user, facilities = [], onClose }) {
                                 Assigned Facilities
                             </label>
 
-                            {facilities.length === 0 ? (
-                                <p className="text-xs italic text-gray-400">
-                                    No facilities available.
-                                </p>
-                            ) : (
-                                <div className="flex max-h-48 flex-wrap gap-2 overflow-y-auto rounded-xl border border-gray-100 p-1">
-                                    {facilities.map((facility) => {
-                                        const isSelected =
-                                            form.assigned_facility_ids.includes(
-                                                facility.id
-                                            );
-
-                                        return (
-                                            <button
-                                                key={facility.id}
-                                                type="button"
-                                                onClick={() =>
-                                                    toggleFacility(facility.id)
-                                                }
-                                                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
-                                                    isSelected
-                                                        ? 'bg-[#F8EDF2] font-semibold text-[#A44773] ring-1 ring-inset ring-[#493344]/30'
-                                                        : 'bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-200 hover:bg-gray-100'
-                                                }`}
-                                            >
-                                                <Building2
-                                                    className={`h-3.5 w-3.5 ${
-                                                        isSelected
-                                                            ? 'text-[#493344]'
-                                                            : 'text-gray-400'
-                                                    }`}
-                                                />
-                                                {facility.name}
-                                                {isSelected && (
-                                                    <Check className="ml-0.5 h-3 w-3 text-[#493344]" />
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
+<FacilityMultiSelect
+                                facilities={facilities}
+                                selectedIds={form.assigned_facility_ids}
+                                onChange={(ids) => updateField('assigned_facility_ids', ids)}
+                            />
 
                             <p className="mt-1.5 text-xs text-gray-400">
                                 Click to toggle facility permissions.
@@ -784,55 +844,12 @@ function FacilityAssignmentModal({ user, facilities = [], onClose }) {
                             : ' Unchecking a facility removes their access immediately.'}
                     </p>
 
-                    <div className="max-h-72 space-y-2 overflow-y-auto">
-                        {facilities.length === 0 ? (
-                            <p className="py-6 text-center text-sm text-gray-400">
-                                No facilities available.
-                            </p>
-                        ) : (
-                            facilities.map((facility) => {
-                                const isChecked = selectedIds.includes(
-                                    facility.id
-                                );
-
-                                return (
-                                    <label
-                                        key={facility.id}
-                                        className={`flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition ${
-                                            isChecked
-                                                ? 'border-blue-300 bg-blue-50'
-                                                : 'border-gray-200 bg-white hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={isChecked}
-                                            onChange={() =>
-                                                toggleFacility(facility.id)
-                                            }
-                                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                        />
-                                        <Building2
-                                            className={`h-4 w-4 ${
-                                                isChecked
-                                                    ? 'text-blue-600'
-                                                    : 'text-gray-400'
-                                            }`}
-                                        />
-                                        <span
-                                            className={`text-sm font-medium ${
-                                                isChecked
-                                                    ? 'text-blue-900'
-                                                    : 'text-gray-700'
-                                            }`}
-                                        >
-                                            {facility.name}
-                                        </span>
-                                    </label>
-                                );
-                            })
-                        )}
-                    </div>
+<FacilityMultiSelect
+                        facilities={facilities}
+                        selectedIds={selectedIds}
+                        onChange={setSelectedIds}
+                        disabled={isSaving}
+                    />
 
                     <div className="mt-5 flex justify-end gap-2">
                         <button
