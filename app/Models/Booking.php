@@ -108,7 +108,9 @@ class Booking extends Model
     // A booking belongs to one user.
     public function user()
     {
-        return $this->belongsTo(User::class);
+        // Keep the original owner available when rendering historical bookings.
+        // Soft-deleted accounts remain excluded from normal User queries.
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     // Restrict facility administrators to bookings for their assigned facilities.
