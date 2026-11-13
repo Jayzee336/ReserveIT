@@ -77,14 +77,14 @@ class BookingApprovalController extends Controller
         // Apply the status filter to the appropriate dataset.
         if ($status) {
             if ($status === 'pending') {
-                $reviewedQuery->where('id', 0);
-                $pastUnapprovedQuery->where('id', 0);
+                $reviewedQuery->whereRaw('1 = 0');
+                $pastUnapprovedQuery->whereRaw('1 = 0');
             } elseif ($status === 'past_unapproved') {
-                $pendingQuery->where('id', 0);
-                $reviewedQuery->where('id', 0);
+                $pendingQuery->whereRaw('1 = 0');
+                $reviewedQuery->whereRaw('1 = 0');
             } elseif (in_array($status, ['approved', 'declined', 'cancelled'], true)) {
-                $pendingQuery->where('id', 0);
-                $pastUnapprovedQuery->where('id', 0);
+                $pendingQuery->whereRaw('1 = 0');
+                $pastUnapprovedQuery->whereRaw('1 = 0');
                 $reviewedQuery->where('status', $status);
             }
         }
