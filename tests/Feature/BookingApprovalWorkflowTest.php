@@ -68,7 +68,7 @@ class BookingApprovalWorkflowTest extends TestCase
             $this->actingAs($admin)
                 ->get(route('admin.bookings.index', ['search' => '', 'status' => $status]))
                 ->assertOk()
-                ->assertInertia(fn (\\Inertia\\Testing\\AssertableInertia $page) => $page
+                ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
                     ->component('Facilitator/Bookings')
                     ->has($primaryProp, $primaryCount)
                     ->where($primaryProp . '.0.id', $expectedId)
