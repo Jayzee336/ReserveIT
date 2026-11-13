@@ -124,6 +124,26 @@ class UserManagementWorkflowTest extends TestCase
         );
     }
 
+    public function test_changing_facility_admin_to_super_admin_removes_facility_assignments(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $facilityAdmin = User::factory()->create(['role' => 'facility_admin']);
+        $facility = $this->createFacility('user-role-super-admin-assignment');
+        $facilityAdmin->managedFacilities()->attach($facility);
+
+        $response = $this->actingAs($superAdmin)->patch(
+            route('admin.users.updateRole', $facilityAdmin),
+            ['role' => 'super_admin']
+        );
+
+        $response->assertRedirect();
+        $this->assertSame('super_admin', $facilityAdmin->fresh()->role);
+        $this->assertDatabaseMissing('facility_user', [
+            'user_id' => $facilityAdmin->id,
+            'facility_id' => $facility->id,
+        ]);
+    }
+
     public function test_last_active_super_admin_cannot_be_demoted(): void
     {
         $superAdmin = User::factory()->create([
