@@ -181,6 +181,44 @@ class UserManagementWorkflowTest extends TestCase
         $this->assertSame($bookingOwner->id, $historicalBooking->user->id);
     }
 
+    public function test_super_admin_can_recreate_an_account_after_the_previous_account_was_soft_deleted(): void
+    {
+        $superAdmin = User::factory()->create(['role' => 'super_admin']);
+        $deletedUser = User::factory()->create([
+            'name' => 'Previous Account',
+            'username' => 'reusableaccount',
+            'email' => 'reusable-account@example.com',
+            'role' => 'user',
+        ]);
+
+        $oldUserId = $deletedUser->id;
+        $deletedUser->delete();
+
+        $response = $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'name' => 'Recreated Account',
+            'username' => 'reusableaccount',
+            'email' => 'reusable-account@example.com',
+            'role' => 'user',
+            'password_mode' => 'generated',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertSoftDeleted('users', ['id' => $oldUserId]);
+
+        $newUser = User::query()
+            ->where('username', 'reusableaccount')
+            ->where('email', 'reusable-account@example.com')
+            ->firstOrFail();
+
+        $this->assertNotSame($oldUserId, $newUser->id);
+        $this->assertSame('Recreated Account', $newUser->name);
+        $this->assertDatabaseHas('users', [
+            'id' => $oldUserId,
+            'username' => 'reusableaccount',
+            'email' => 'reusable-account@example.com',
+        ]);
+    }
+
     public function test_last_active_super_admin_cannot_be_demoted(): void
     {
         $superAdmin = User::factory()->create([
