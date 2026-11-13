@@ -475,7 +475,7 @@ function AddUserModal({ facilities = [], onClose }) {
                                         'assigned_facility_ids',
                                         Array.from(
                                             e.target.selectedOptions,
-                                            (option) => Number(option.value)
+                                            (option) => option.value
                                         )
                                     )
                                 }
@@ -714,30 +714,39 @@ function FacilityAssignmentModal({ user, facilities = [], onClose }) {
     const handleSave = () => {
         setIsSaving(true);
 
-        router.patch(
-            route('admin.users.update', user.id),
-            {
-                name: user.name,
-                username: user.username,
-                email: user.email,
-                assigned_facility_ids: selectedIds,
+        const isRolePromotion = user.pendingRoleChange === true;
+        const endpoint = isRolePromotion
+            ? route('admin.users.updateRole', user.id)
+            : route('admin.users.update', user.id);
+        const payload = isRolePromotion
+            ? {
+                  role: 'facility_admin',
+                  assigned_facility_ids: selectedIds,
+              }
+            : {
+                  name: user.name,
+                  username: user.username,
+                  email: user.email,
+                  assigned_facility_ids: selectedIds,
+              };
+
+        router.patch(endpoint, payload, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(
+                    isRolePromotion
+                        ? `${user.name} is now a Facility Admin with ${selectedIds.length} assigned ${selectedIds.length === 1 ? 'facility' : 'facilities'}.`
+                        : `${user.name}'s facility assignments updated.`
+                );
+                onClose();
             },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.success(
-                        `${user.name}'s facility assignments updated.`
-                    );
-                    onClose();
-                },
-                onError: (errors) =>
-                    toast.error(
-                        Object.values(errors)[0] ||
-                            'Failed to update facility assignments.'
-                    ),
-                onFinish: () => setIsSaving(false),
-            }
-        );
+            onError: (errors) =>
+                toast.error(
+                    Object.values(errors)[0] ||
+                        'Failed to save facility assignments.'
+                ),
+            onFinish: () => setIsSaving(false),
+        });
     };
 
     return (
@@ -750,7 +759,9 @@ function FacilityAssignmentModal({ user, facilities = [], onClose }) {
                 <div className="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white px-6 py-4">
                     <div>
                         <h2 className="font-bold text-gray-900">
-                            Manage Facility Assignments
+                            {user.pendingRoleChange
+                                ? 'Assign Facilities to Facility Admin'
+                                : 'Manage Facility Assignments'}
                         </h2>
                         <p className="mt-0.5 text-xs text-gray-500">
                             {user.name} · {ROLE_LABELS[user.role] ?? user.role}
@@ -768,7 +779,9 @@ function FacilityAssignmentModal({ user, facilities = [], onClose }) {
                 <div className="px-6 py-5">
                     <p className="mb-3 text-sm text-gray-600">
                         Select the facilities this user should manage.
-                        Unchecking a facility removes their access immediately.
+                        {user.pendingRoleChange
+                            ? ' Their role will change to Facility Admin when you save.'
+                            : ' Unchecking a facility removes their access immediately.'}
                     </p>
 
                     <div className="max-h-72 space-y-2 overflow-y-auto">
@@ -982,6 +995,15 @@ export default function Users({
 
     const handleRoleChange = (user, newRole) => {
         if (newRole === user.role) return;
+
+        if (newRole === 'facility_admin') {
+            setFacilityAssignUser({
+                ...user,
+                pendingRoleChange: true,
+                assigned_facility_ids: [],
+            });
+            return;
+        }
 
         setUpdatingId(user.id);
 
