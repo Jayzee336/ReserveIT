@@ -45,6 +45,38 @@ class BookingApprovalWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_super_admin_can_filter_system_wide_bookings_by_status(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'super_admin',
+            'is_active' => true,
+        ]);
+
+        $mainFacility = $this->createFacility('global-filter-main', 'Main Conference Room');
+        $labFacility = $this->createFacility('global-filter-lab', 'Lab 1');
+
+        $pending = $this->createBooking($mainFacility, 'pending');
+        $pending->update(['date' => now()->addDays(2)->toDateString()]);
+        $approved = $this->createBooking($labFacility, 'approved');
+        $declined = $this->createBooking($mainFacility, 'declined');
+
+        foreach ([
+            'pending' => [$pending->id, 'pendingBookings', 1, 'reviewedBookings', 0],
+            'approved' => [$approved->id, 'reviewedBookings', 1, 'pendingBookings', 0],
+            'declined' => [$declined->id, 'reviewedBookings', 1, 'pendingBookings', 0],
+        ] as $status => [$expectedId, $primaryProp, $primaryCount, $emptyProp, $emptyCount]) {
+            $this->actingAs($admin)
+                ->get(route('admin.bookings.index', ['search' => '', 'status' => $status]))
+                ->assertOk()
+                ->assertInertia(fn (\\Inertia\\Testing\\AssertableInertia $page) => $page
+                    ->component('Facilitator/Bookings')
+                    ->has($primaryProp, $primaryCount)
+                    ->where($primaryProp . '.0.id', $expectedId)
+                    ->has($emptyProp, $emptyCount)
+                );
+        }
+    }
+
     public function test_facility_admin_can_filter_cancelled_booking_history_and_view_reason(): void
     {
         $admin = User::factory()->create([
