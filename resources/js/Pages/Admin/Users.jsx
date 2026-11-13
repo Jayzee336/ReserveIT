@@ -615,20 +615,6 @@ function EditUserModal({ user, facilities = [], onClose }) {
     const updateField = (key, value) =>
         setForm((f) => ({ ...f, [key]: value }));
 
-    const toggleFacility = (facilityId) => {
-        setForm((f) => {
-            const current = f.assigned_facility_ids;
-            const exists = current.includes(facilityId);
-
-            return {
-                ...f,
-                assigned_facility_ids: exists
-                    ? current.filter((id) => id !== facilityId)
-                    : [...current, facilityId],
-            };
-        });
-    };
-
     const handleSubmit = (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -739,7 +725,7 @@ function EditUserModal({ user, facilities = [], onClose }) {
                             />
 
                             <p className="mt-1.5 text-xs text-gray-400">
-                                Click to toggle facility permissions.
+                                Use search and checkboxes to manage this user's facility access.
                             </p>
                         </div>
                     )}
@@ -762,14 +748,6 @@ function FacilityAssignmentModal({ user, facilities = [], onClose }) {
         user.assigned_facility_ids ?? []
     );
     const [isSaving, setIsSaving] = useState(false);
-
-    const toggleFacility = (facilityId) => {
-        setSelectedIds((prev) =>
-            prev.includes(facilityId)
-                ? prev.filter((id) => id !== facilityId)
-                : [...prev, facilityId]
-        );
-    };
 
     const handleSave = () => {
         setIsSaving(true);
