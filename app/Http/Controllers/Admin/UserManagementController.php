@@ -47,8 +47,8 @@ class UserManagementController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:30', 'unique:users,username'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:30', Rule::unique('users', 'username')->whereNull('deleted_at')],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')->whereNull('deleted_at')],
             'uic_member_type' => [
                 Rule::requiredIf(fn () => str_ends_with(strtolower(trim((string) $request->input('email'))), '@uic.edu.ph')),
                 'nullable',
@@ -100,8 +100,8 @@ class UserManagementController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:30', Rule::unique('users', 'username')->ignore($user->id)],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'username' => ['required', 'string', 'lowercase', 'alpha_dash', 'max:30', Rule::unique('users', 'username')->whereNull('deleted_at')->ignore($user->id)],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')->whereNull('deleted_at')->ignore($user->id)],
             'uic_member_type' => ['sometimes', 'nullable', Rule::in(['student', 'teacher'])],
             'assigned_facility_ids' => ['sometimes', 'nullable', 'array', 'max:100'],
             'assigned_facility_ids.*' => ['required', 'string', 'distinct', 'exists:facilities,id'],
