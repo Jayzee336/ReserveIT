@@ -464,12 +464,12 @@ function AddUserModal({ facilities = [], onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-3 sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden p-3 sm:p-4">
             <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onClose}
             />
-            <div className="relative my-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl sm:max-h-[calc(100dvh-2rem)]">
+            <div className="relative flex max-h-[calc(100dvh-1.5rem)] min-h-0 w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl sm:max-h-[calc(100dvh-2rem)]">
                 <div className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-gradient-to-r from-[#F8EDF2] to-white px-6 py-4">
                     <h2 className="font-bold text-gray-900">Add User</h2>
                     <button
@@ -481,7 +481,8 @@ function AddUserModal({ facilities = [], onClose }) {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">\n                    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
+                <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
                     <input
                         type="text"
                         required
